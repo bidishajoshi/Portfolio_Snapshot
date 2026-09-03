@@ -4,10 +4,11 @@ import { motion } from "framer-motion";
 import { stories } from "@/data/stories";
 import { Clock, MapPin, ArrowRight } from "lucide-react";
 import SafeImage from "@/components/ui/SafeImage";
+import Link from "next/link";
 
 export default function Stories({ stories: liveStories }: { stories?: Array<{ id: string; title: string; introduction: string | null; location: string | null; story_date: string | null }> }) {
   const displayedStories = liveStories?.length
-    ? liveStories.map((story) => ({ ...story, cover: "", excerpt: story.introduction ?? "", date: story.story_date ?? "", readTime: "" }))
+    ? liveStories.map((story) => ({ ...story, cover: "", excerpt: story.introduction ?? "", date: story.story_date ?? "", readTime: "", slug: story.title.toLowerCase().replace(/\s+/g, "-") }))
     : stories;
   return (
     <section id="stories" className="section-padding bg-ink border-t border-border/50">
@@ -76,10 +77,10 @@ export default function Stories({ stories: liveStories }: { stories?: Array<{ id
                   {story.excerpt}
                 </p>
 
-                <div className="flex items-center gap-2 text-cyan-glow text-sm font-semibold cursor-pointer group">
+                <Link href={`/stories/${story.slug}`} className="flex items-center gap-2 text-cyan-glow text-sm font-semibold cursor-pointer group">
                   <span>Read Full Story</span>
                   <ArrowRight size={16} className="group-hover:translate-x-2 transition-transform" />
-                </div>
+                </Link>
               </div>
             </motion.div>
           ))}

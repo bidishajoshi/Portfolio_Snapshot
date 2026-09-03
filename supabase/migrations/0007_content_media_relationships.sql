@@ -18,6 +18,9 @@ BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_films_video_media') THEN
     ALTER TABLE films ADD CONSTRAINT fk_films_video_media FOREIGN KEY (video_media_id) REFERENCES media(id) ON DELETE SET NULL;
   END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_categories_cover_media') THEN
+    ALTER TABLE categories ADD CONSTRAINT fk_categories_cover_media FOREIGN KEY (cover_media_id) REFERENCES media(id) ON DELETE SET NULL;
+  END IF;
 END $$;
 
 CREATE INDEX IF NOT EXISTS idx_services_media ON services (media_id);

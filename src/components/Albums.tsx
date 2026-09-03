@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { albums } from "@/data/albums";
 import { BookOpen } from "lucide-react";
 import SafeImage from "@/components/ui/SafeImage";
+import Link from "next/link";
 
 export default function Albums() {
   return (
@@ -26,6 +27,7 @@ export default function Albums() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {albums.map((album, idx) => (
+            <Link href={`/albums/${album.slug}`} key={album.id} className="block">
             <motion.div
               key={album.id}
               initial={{ opacity: 0, y: 30 }}
@@ -65,6 +67,7 @@ export default function Albums() {
                 </div>
               </div>
             </motion.div>
+            </Link>
           ))}
         </div>
       </div>
