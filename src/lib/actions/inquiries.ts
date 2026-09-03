@@ -27,3 +27,11 @@ export async function deleteInquiry(id: string) {
   if (error) throw new Error(error.message);
   revalidatePath("/admin/inquiries");
 }
+
+export async function setInquiryStatus(id: string, status: "new" | "read" | "replied" | "completed") {
+  await requireAdmin();
+  const supabase = createAdminClient();
+  const { error } = await supabase.from("inquiries").update({ status, is_read: status !== "new" }).eq("id", id);
+  if (error) throw new Error(error.message);
+  revalidatePath("/admin/inquiries");
+}

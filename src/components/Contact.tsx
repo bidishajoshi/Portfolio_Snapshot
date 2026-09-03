@@ -3,12 +3,20 @@
 import { motion } from "framer-motion";
 import { contact } from "@/data/site";
 import { Send } from "lucide-react";
+import { submitInquiry } from "@/lib/actions/social";
 
 export default function Contact() {
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // form handling logic here
-    alert("Inquiry submitted.");
+    const form = e.currentTarget;
+    const values = new FormData(form);
+    try {
+      await submitInquiry({ name: String(values.get("name") || ""), email: String(values.get("email") || ""), eventType: String(values.get("eventType") || ""), eventDate: String(values.get("eventDate") || ""), message: String(values.get("message") || "") });
+      form.reset();
+      alert("Inquiry submitted.");
+    } catch (error) {
+      alert(error instanceof Error ? error.message : "Could not submit inquiry.");
+    }
   };
 
   return (
@@ -70,18 +78,18 @@ export default function Contact() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                    <div className="flex flex-col gap-2">
                      <label htmlFor="name" className="text-xs text-stone font-semibold uppercase tracking-wider">Name</label>
-                     <input type="text" id="name" required className="bg-ink/50 border border-border rounded px-4 py-3 text-ivory focus:border-gold focus:outline-none transition-colors" placeholder="Jane Doe" />
+                     <input name="name" type="text" id="name" required className="bg-ink/50 border border-border rounded px-4 py-3 text-ivory focus:border-gold focus:outline-none transition-colors" placeholder="Jane Doe" />
                    </div>
                    <div className="flex flex-col gap-2">
                      <label htmlFor="email" className="text-xs text-stone font-semibold uppercase tracking-wider">Email</label>
-                     <input type="email" id="email" required className="bg-ink/50 border border-border rounded px-4 py-3 text-ivory focus:border-gold focus:outline-none transition-colors" placeholder="jane@example.com" />
+                     <input name="email" type="email" id="email" required className="bg-ink/50 border border-border rounded px-4 py-3 text-ivory focus:border-gold focus:outline-none transition-colors" placeholder="jane@example.com" />
                    </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                    <div className="flex flex-col gap-2">
                      <label htmlFor="type" className="text-xs text-stone font-semibold uppercase tracking-wider">Photography Type</label>
-                     <select id="type" required className="bg-ink/50 border border-border rounded px-4 py-3 text-ivory focus:border-gold focus:outline-none transition-colors appearance-none">
+                     <select name="eventType" id="type" required className="bg-ink/50 border border-border rounded px-4 py-3 text-ivory focus:border-gold focus:outline-none transition-colors appearance-none">
                        <option value="">Select an option</option>
                        <option value="wedding">Wedding</option>
                        <option value="portrait">Portrait</option>
@@ -92,13 +100,13 @@ export default function Contact() {
                    </div>
                    <div className="flex flex-col gap-2">
                      <label htmlFor="date" className="text-xs text-stone font-semibold uppercase tracking-wider">Estimated Date</label>
-                     <input type="date" id="date" className="bg-ink/50 border border-border rounded px-4 py-3 text-ivory focus:border-gold focus:outline-none transition-colors" />
+                     <input name="eventDate" type="date" id="date" className="bg-ink/50 border border-border rounded px-4 py-3 text-ivory focus:border-gold focus:outline-none transition-colors" />
                    </div>
                 </div>
 
                 <div className="flex flex-col gap-2">
                   <label htmlFor="message" className="text-xs text-stone font-semibold uppercase tracking-wider">Message Details</label>
-                  <textarea id="message" required rows={4} className="bg-ink/50 border border-border rounded px-4 py-3 text-ivory focus:border-gold focus:outline-none transition-colors resize-y" placeholder="Tell me about your vision..."></textarea>
+                  <textarea name="message" id="message" required rows={4} className="bg-ink/50 border border-border rounded px-4 py-3 text-ivory focus:border-gold focus:outline-none transition-colors resize-y" placeholder="Tell me about your vision..."></textarea>
                 </div>
 
                 <button type="submit" className="mt-4 bg-ivory text-ink hover:bg-gold hover:text-ivory py-4 px-8 rounded font-semibold tracking-wide transition-colors duration-300 flex items-center justify-center gap-2">
