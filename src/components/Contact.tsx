@@ -5,7 +5,8 @@ import { contact } from "@/data/site";
 import { Send } from "lucide-react";
 import { submitInquiry } from "@/lib/actions/social";
 
-export default function Contact() {
+export default function Contact({ contactOverride }: { contactOverride?: { email: string | null; phone: string | null } }) {
+  const displayedContact = { ...contact, ...contactOverride };
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
@@ -30,7 +31,7 @@ export default function Contact() {
            className="text-center mb-16"
         >
           <h2 className="text-label mb-4">Contact</h2>
-          <h3 className="heading-section mb-6">Let's Create Something Beautiful</h3>
+          <h3 className="heading-section mb-6">Let&apos;s Create Something Beautiful</h3>
           <div className="gold-line mx-auto" />
         </motion.div>
 
@@ -53,11 +54,11 @@ export default function Contact() {
              <div className="space-y-6">
                 <div>
                   <p className="text-xs text-stone-dim uppercase tracking-widest mb-1">Email</p>
-                  <a href={`mailto:${contact.email}`} className="text-ivory font-medium hover:text-gold transition-colors">{contact.email}</a>
+                  <a href={`mailto:${displayedContact.email}`} className="text-ivory font-medium hover:text-gold transition-colors">{displayedContact.email || contact.email}</a>
                 </div>
                 <div>
                   <p className="text-xs text-stone-dim uppercase tracking-widest mb-1">Phone</p>
-                  <a href={`tel:${contact.phone}`} className="text-ivory font-medium hover:text-gold transition-colors">{contact.phone}</a>
+                  <a href={`tel:${displayedContact.phone}`} className="text-ivory font-medium hover:text-gold transition-colors">{displayedContact.phone || contact.phone}</a>
                 </div>
                 <div>
                   <p className="text-xs text-stone-dim uppercase tracking-widest mb-1">Location</p>

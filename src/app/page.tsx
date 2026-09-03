@@ -18,7 +18,8 @@ import Footer from "@/components/Footer";
 // though our components currently use local data to ensure a fully beautiful render out-of-the-box.
 export default async function HomePage() {
   const supabase = await createClient();
-  const [{ data: dbServices }, { data: dbStories }, { data: dbTestimonials }] = await Promise.all([
+  const [{ data: settings }, { data: dbServices }, { data: dbStories }, { data: dbTestimonials }] = await Promise.all([
+    supabase.from("site_settings").select("brand_name, photographer_name, tagline, contact_email, contact_phone").maybeSingle(),
     supabase.from("services").select("id, title, description").eq("published", true).order("display_order"),
     supabase.from("stories").select("id, title, introduction, location, story_date").eq("published", true).order("display_order"),
     supabase.from("testimonials").select("id, client_name, review, event_type").eq("published", true).order("display_order"),
@@ -27,7 +28,7 @@ export default async function HomePage() {
   return (
     <main className="flex flex-col min-h-screen relative w-full overflow-x-hidden bg-ink">
       <Navbar />
-      <Hero />
+      <Hero brandOverride={settings ? { name: settings.brand_name, photographer: settings.photographer_name, tagline: settings.tagline } : undefined} />
       <About />
       <Categories />
       <Gallery />
@@ -37,7 +38,7 @@ export default async function HomePage() {
       <Experience />
       <Testimonials testimonials={dbTestimonials?.length ? dbTestimonials : undefined} />
       <Social />
-      <Contact />
+      <Contact contactOverride={settings ? { email: settings.contact_email, phone: settings.contact_phone } : undefined} />
       <Footer />
     </main>
   );
