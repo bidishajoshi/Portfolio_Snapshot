@@ -9,8 +9,7 @@ export default async function AdminStoriesPage() {
   const supabase = await createClient();
   const { data } = await supabase
     .from("stories")
-    .select("id, title, slug, introduction, location, story_date, published, display_order")
-    .order("display_order", { ascending: true });
+    .select("id, title, slug, introduction, location, story_date");
   const stories = data?.length
     ? data
     : localStories.map((story) => ({
@@ -30,7 +29,7 @@ export default async function AdminStoriesPage() {
       }));
 
   const records: ContentMediaRecord[] = stories.filter((story) => story.id && story.id.length > 10).map((story) => ({ id: story.id, title: story.title }));
-  const editableRecords: EditableRecord[] = stories.filter((story) => story.id && story.id.length > 10).map((story) => ({ id: story.id, title: story.title, introduction: story.introduction, location: story.location, date: story.story_date, mediaId: "cover_media_id" in story ? story.cover_media_id : null }));
+  const editableRecords: EditableRecord[] = stories.filter((story) => story.id && story.id.length > 10).map((story) => ({ id: story.id, title: story.title, introduction: story.introduction, location: story.location, date: story.story_date, mediaId: "cover_media_id" in story && typeof story.cover_media_id === "string" ? story.cover_media_id : null }));
 
   return (
     <div className="flex flex-col gap-8">

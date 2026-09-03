@@ -49,7 +49,13 @@ export async function saveContent(input: {
   } else if (input.content === "film") {
     values = { ...common, title: input.title, description: input.description || null, introduction: input.introduction || null, cover_media_id: input.mediaId ?? null, location: input.location || null, film_date: input.date || null };
   } else {
-    values = { ...common, title: input.title, introduction: input.introduction || input.description || null, cover_media_id: input.mediaId ?? null, location: input.location || null, story_date: input.date || null };
+    values = {
+      ...(slug ? { slug } : {}),
+      title: input.title,
+      introduction: input.introduction || input.description || null,
+      location: input.location || null,
+      story_date: input.date || null,
+    };
   }
 
   const query = input.id
