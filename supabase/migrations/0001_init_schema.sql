@@ -585,7 +585,6 @@ create index idx_inquiries_created on inquiries (created_at desc);
 
 -- =========================================================================
 -- ADMIN PROFILE  (mirrors the single Supabase Auth user; not a role system)
-sound
 create table admin_profile (
   id uuid primary key references auth.users(id) on delete cascade,
   display_name text not null default 'Himal Shrestha',

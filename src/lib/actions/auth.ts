@@ -33,17 +33,13 @@ export async function loginAction(_prevState: LoginState, formData: FormData): P
       password: parsed.data.password,
     });
 
-    if (!error) {
-      cookieStore.set("admin_session", "true", { path: "/", httpOnly: true });
-      redirect("/admin");
-    }
-  } catch (e) {
-    // ignore supabase error and allow demo fallback
-  }
+    if (error) return { error: "Invalid email or password." };
 
-  // Fallback demo credentials check (e.g. admin@drdslr.com / any password or admin)
-  cookieStore.set("admin_session", "true", { path: "/", httpOnly: true });
-  redirect("/admin");
+    cookieStore.set("admin_session", "true", { path: "/", httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production" });
+    redirect("/admin");
+  } catch {
+    return { error: "Unable to sign in right now. Check Supabase configuration." };
+  }
 }
 
 export async function logoutAction() {
