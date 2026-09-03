@@ -1,12 +1,12 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Pencil, Plus, X } from "lucide-react";
+import { Pencil, Plus, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MediaPicker } from "@/components/admin/media/media-picker";
-import { saveContent, type EditableContent } from "@/lib/actions/content";
+import { deleteContent, saveContent, type EditableContent } from "@/lib/actions/content";
 import type { Media } from "@/types/database";
 
 export interface EditableRecord {
@@ -24,11 +24,18 @@ export interface EditableRecord {
 export function ContentEditor({ content, records }: { content: EditableContent; records: EditableRecord[] }) {
   const [editing, setEditing] = useState<EditableRecord | "new" | null>(null);
   const [isPending, startTransition] = useTransition();
+  const remove = (record: EditableRecord) => {
+    if (!confirm(`Delete ${record.title}?`)) return;
+    startTransition(async () => {
+      try { await deleteContent(content, record.id); toast.success("Deleted."); window.location.reload(); }
+      catch (error) { toast.error(error instanceof Error ? error.message : "Could not delete."); }
+    });
+  };
   return (
     <>
       <div className="flex justify-end"><Button size="sm" onClick={() => setEditing("new")}><Plus size={14} /> New {content}</Button></div>
       <div className="flex flex-col gap-3">
-        {records.map((record) => <div key={record.id} className="flex items-center gap-3 rounded-sm border border-border bg-surface px-4 py-3"><div className="min-w-0 flex-1"><p className="text-sm text-ivory truncate">{record.title}</p><p className="text-xs text-stone-dim truncate">{record.review || record.description || record.introduction || "No description yet."}</p></div><button className="text-stone hover:text-gold" title={`Edit ${content}`} onClick={() => setEditing(record)}><Pencil size={15} /></button></div>)}
+        {records.map((record) => <div key={record.id} className="flex items-center gap-3 rounded-sm border border-border bg-surface px-4 py-3"><div className="min-w-0 flex-1"><p className="text-sm text-ivory truncate">{record.title}</p><p className="text-xs text-stone-dim truncate">{record.review || record.description || record.introduction || "No description yet."}</p></div><button className="text-stone hover:text-gold" title={`Edit ${content}`} onClick={() => setEditing(record)}><Pencil size={15} /></button><button disabled={isPending} className="text-stone hover:text-danger" title={`Delete ${content}`} onClick={() => remove(record)}><Trash2 size={15} /></button></div>)}
         {records.length === 0 && <p className="py-12 text-center text-sm text-stone">No {content}s yet. Create one to add text and media.</p>}
       </div>
       {editing && <ContentForm content={content} record={editing === "new" ? null : editing} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); window.location.reload(); }} isPending={isPending} startTransition={startTransition} />}

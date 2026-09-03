@@ -26,6 +26,9 @@ export async function saveContent(input: {
   review?: string;
   mediaId?: string | null;
 }) {
+  if (input.date && !/^\d{4}-\d{2}-\d{2}$/.test(input.date)) {
+    throw new Error("Date must use YYYY-MM-DD format.");
+  }
   await requireAdmin();
   const supabase = createAdminClient();
   const table = contentTables[input.content];
@@ -57,4 +60,13 @@ export async function saveContent(input: {
   revalidatePath(`/admin/${table}`);
   revalidatePath("/");
   return data;
+}
+
+export async function deleteContent(content: EditableContent, id: string) {
+  await requireAdmin();
+  const supabase = createAdminClient();
+  const { error } = await supabase.from(contentTables[content]).delete().eq("id", id);
+  if (error) throw new Error(error.message);
+  revalidatePath(`/admin/${contentTables[content]}`);
+  revalidatePath("/");
 }
