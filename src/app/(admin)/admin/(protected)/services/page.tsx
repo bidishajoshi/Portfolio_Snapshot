@@ -56,7 +56,7 @@ export default async function AdminServicesPage() {
         </div>
       )}
       <ContentMediaManager content="service" records={records} />
-      <ContentEditor content="service" records={editableRecords} />
+      <ContentEditor content="service" records={editableRecords} canDelete={false} />
     </div>
   );
 }
