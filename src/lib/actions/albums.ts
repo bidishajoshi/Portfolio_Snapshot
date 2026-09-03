@@ -30,14 +30,11 @@ export async function deleteAlbum(id: string) {
 export async function setAlbumMedia(albumId: string, mediaIds: string[]) {
   await requireAdmin();
   const supabase = createAdminClient();
-  const { error: deleteError } = await supabase.from("album_photos").delete().eq("album_id", albumId);
+  const { error: deleteError } = await supabase.from("album_media").delete().eq("album_id", albumId);
   if (deleteError) throw new Error(deleteError.message);
   if (mediaIds.length > 0) {
-    const { data: photos, error: photoError } = await supabase.from("photos").select("id, media_id").in("media_id", mediaIds);
-    if (photoError) throw new Error(photoError.message);
-    const photoByMedia = new Map((photos ?? []).map((photo) => [photo.media_id, photo.id]));
-    const rows = mediaIds.filter((mediaId) => photoByMedia.has(mediaId)).map((mediaId, index) => ({ album_id: albumId, photo_id: photoByMedia.get(mediaId)!, display_order: index }));
-    const { error } = await supabase.from("album_photos").insert(rows);
+    const rows = mediaIds.map((mediaId, index) => ({ album_id: albumId, media_id: mediaId, display_order: index }));
+    const { error } = await supabase.from("album_media").insert(rows);
     if (error) throw new Error(error.message);
   }
   revalidatePath(`/albums/${albumId}`);
