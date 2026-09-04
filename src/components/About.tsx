@@ -39,15 +39,22 @@ export default function About({
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.8 }}
-            className="relative aspect-[3/4] w-full max-w-md mx-auto lg:mx-0 img-card card-3d"
+            className="relative aspect-[4/5] w-full max-w-lg mx-auto lg:mx-0 group"
           >
-            <div className="w-full h-full card-3d-inner relative">
-              <div className="absolute inset-4 border border-cyan-glow/30 z-10 translate-x-4 translate-y-4 rounded" />
+            {/* Outer metallic & glassmorphic decorative glow frames */}
+            <div className="absolute -inset-3 rounded-2xl bg-gradient-to-tr from-cyan-glow/20 via-gold/15 to-transparent blur-md opacity-60 group-hover:opacity-100 transition-opacity duration-700" />
+            <div className="absolute inset-0 rounded-2xl border-2 border-cyan-glow/30 translate-x-3 translate-y-3 z-0 transition-transform duration-500 group-hover:translate-x-4 group-hover:translate-y-4" />
+            <div className="absolute inset-0 rounded-2xl border border-white/10 -translate-x-2 -translate-y-2 z-0" />
+            
+            <div className="w-full h-full relative z-10 rounded-2xl overflow-hidden shadow-2xl border border-border/80 bg-ink">
               <SafeImage
                 src={displayedPortrait}
-                alt="Photographer Portrait"
-                className="w-full h-full object-cover relative z-20 shadow-2xl rounded"
+                alt="Himal Shrestha - DR DSLR Lead Photographer"
+                className="w-full h-full object-cover object-top transform transition-transform duration-700 group-hover:scale-105"
               />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-6">
+                <p className="font-display text-lg text-ivory tracking-wide">DR DSLR • Himal Shrestha</p>
+              </div>
             </div>
           </motion.div>
 

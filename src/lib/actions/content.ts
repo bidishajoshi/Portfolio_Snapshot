@@ -176,3 +176,56 @@ export async function deleteContent(content: EditableContent, id: string) {
   revalidatePath(adminPath);
   revalidatePath("/");
 }
+
+export async function saveMultiplePhotos(input: {
+  title: string;
+  categoryId?: string;
+  location?: string;
+  date?: string;
+  description?: string;
+  mediaList: Array<{ id: string; title?: string; altText?: string }>;
+  featured?: boolean;
+  published?: boolean;
+}) {
+  if (input.date && !/^\d{4}-\d{2}-\d{2}$/.test(input.date)) {
+    throw new Error("Date must use YYYY-MM-DD format.");
+  }
+  if (!input.mediaList || input.mediaList.length === 0) {
+    throw new Error("Please select at least one photo.");
+  }
+
+  await requireAdmin();
+  const supabase = createAdminClient();
+  const isPublished = input.published ?? true;
+  const isFeatured = input.featured ?? true;
+
+  const rows = await Promise.all(
+    input.mediaList.map(async (m, index) => {
+      const itemTitle = input.mediaList.length === 1 ? input.title : `${input.title} #${index + 1}`;
+      const slug = await generateUniqueSlug(supabase, "photos", itemTitle);
+      return {
+        title: itemTitle,
+        slug,
+        caption: input.description || null,
+        media_id: m.id,
+        category_id: input.categoryId || null,
+        location: input.location || null,
+        photo_date: input.date || null,
+        alt_text: m.altText || input.title || null,
+        status: isPublished ? "published" : "draft",
+        featured: isFeatured,
+        is_featured: isFeatured,
+        is_visible: true,
+        display_order: index,
+      };
+    })
+  );
+
+  const { data, error } = await supabase.from("photos").insert(rows).select();
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/admin/gallery");
+  revalidatePath("/");
+  return data;
+}
+

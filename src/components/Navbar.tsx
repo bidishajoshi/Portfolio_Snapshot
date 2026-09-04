@@ -6,6 +6,7 @@ import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { brand, navLinks } from "@/data/site";
 import clsx from "clsx";
+import { DslrCameraControl } from "@/components/DslrCameraControl";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -27,9 +28,14 @@ export default function Navbar() {
       )}
     >
       <div className="section-container flex items-center justify-between">
-        <Link href="#home" className="text-xl font-display font-medium text-ivory z-50 relative tracking-wider">
-          {brand.name}
-        </Link>
+        <div className="flex items-center gap-4 z-50">
+          <Link href="#home" className="text-xl font-display font-medium text-ivory relative tracking-wider">
+            {brand.name}
+          </Link>
+          <div className="hidden sm:block">
+            <DslrCameraControl />
+          </div>
+        </div>
 
         {/* Desktop Nav */}
         <nav className="hidden md:flex items-center gap-8">
@@ -47,20 +53,23 @@ export default function Navbar() {
           </ul>
           <Link
             href="#contact"
-            className="px-5 py-2.5 bg-ivory text-ink hover:bg-gold hover:text-ivory transition-colors duration-300 rounded text-sm font-semibold tracking-wide"
+            className="px-5 py-2.5 bg-ivory text-ink hover:bg-cyan-glow hover:text-ink transition-colors duration-300 rounded-md text-sm font-semibold tracking-wide shadow-sm"
           >
             Book a Shoot
           </Link>
         </nav>
 
-        {/* Mobile Toggle */}
-        <button
-          className="md:hidden z-50 relative text-ivory p-2"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          aria-label="Toggle Menu"
-        >
-          {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
+        {/* Mobile Toggle & Shutter Button */}
+        <div className="flex items-center gap-2 md:hidden z-50">
+          <DslrCameraControl />
+          <button
+            className="text-ivory p-2"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle Menu"
+          >
+            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile Menu */}

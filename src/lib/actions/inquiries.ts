@@ -35,3 +35,37 @@ export async function setInquiryStatus(id: string, status: "new" | "read" | "rep
   if (error) throw new Error(error.message);
   revalidatePath("/admin/inquiries");
 }
+
+export async function createInquiry(input: {
+  name: string;
+  email: string;
+  phone?: string;
+  subject?: string;
+  eventType?: string;
+  eventDate?: string;
+  message: string;
+}) {
+  const supabase = createAdminClient();
+  const cleanPhone = input.phone?.trim() || null;
+  const cleanSubject = input.subject?.trim() || (input.eventType ? `${input.eventType} Photography Inquiry` : "General Photography Inquiry");
+
+  const { data, error } = await supabase
+    .from("inquiries")
+    .insert({
+      name: input.name.trim(),
+      email: input.email.trim(),
+      phone: cleanPhone,
+      subject: cleanSubject,
+      event_type: input.eventType || null,
+      event_date: input.eventDate || null,
+      message: input.message.trim(),
+      status: "new",
+      is_read: false,
+    })
+    .select()
+    .single();
+
+  if (error) throw new Error(error.message);
+  revalidatePath("/admin/inquiries");
+  return data;
+}
