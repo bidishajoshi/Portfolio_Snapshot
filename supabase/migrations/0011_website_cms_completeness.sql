@@ -48,6 +48,23 @@ alter table social_links add column if not exists display_order integer not null
 alter table stories add column if not exists subtitle text;
 
 -- Keep media relationships reusable and searchable.
+-- Some live databases are partially migrated and may be missing the columns that the CMS depends on.
+alter table categories add column if not exists display_order integer not null default 0;
+alter table categories add column if not exists published boolean not null default true;
+alter table albums add column if not exists display_order integer not null default 0;
+alter table albums add column if not exists published boolean not null default false;
+alter table photos add column if not exists status text not null default 'draft';
+alter table photos add column if not exists display_order integer not null default 0;
+alter table services add column if not exists display_order integer not null default 0;
+alter table services add column if not exists published boolean not null default true;
+alter table stories add column if not exists display_order integer not null default 0;
+alter table stories add column if not exists published boolean not null default false;
+alter table testimonials add column if not exists display_order integer not null default 0;
+alter table testimonials add column if not exists published boolean not null default true;
+alter table hero_slides add column if not exists display_order integer not null default 0;
+alter table hero_slides add column if not exists enabled boolean not null default true;
+alter table about_stats add column if not exists display_order integer not null default 0;
+
 create index if not exists idx_media_folder_kind on media (folder, kind);
 create index if not exists idx_photos_published_order on photos (status, display_order);
 create index if not exists idx_albums_published_order on albums (published, display_order);

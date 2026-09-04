@@ -1,6 +1,5 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
-import { cookies } from "next/headers";
 
 export class UnauthorizedError extends Error {
   constructor(message = "Not authorized") {
@@ -10,9 +9,6 @@ export class UnauthorizedError extends Error {
 }
 
 export async function requireAdmin() {
-  const cookieStore = await cookies();
-  const adminCookie = cookieStore.get("admin_session")?.value;
-
   try {
     const supabase = await createClient();
     const {
@@ -35,15 +31,6 @@ export async function requireAdmin() {
     }
   } catch (err) {
     // Supabase auth error fallback
-  }
-
-  if (adminCookie === "true" || adminCookie === "authenticated") {
-    const supabase = await createClient();
-    return {
-      user: { id: "admin-id", email: "admin@drdslr.com" },
-      profile: { id: "admin-id", display_name: "Himal Shrestha (Admin)" },
-      supabase,
-    };
   }
 
   throw new UnauthorizedError("You must be signed in.");

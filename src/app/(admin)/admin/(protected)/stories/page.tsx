@@ -1,5 +1,4 @@
 import { createClient } from "@/lib/supabase/server";
-import { stories as localStories } from "@/data/stories";
 import { ContentMediaManager, type ContentMediaRecord } from "@/components/admin/content-media-manager";
 import { ContentEditor, type EditableRecord } from "@/components/admin/content-editor";
 
@@ -9,27 +8,12 @@ export default async function AdminStoriesPage() {
   const supabase = await createClient();
   const { data } = await supabase
     .from("stories")
-    .select("id, title, slug, introduction, location, story_date");
-  const stories = data?.length
-    ? data
-    : localStories.map((story) => ({
-        ...story,
-        id: String(story.id),
-        cover_media_id: null,
-        related_album_id: null,
-        related_film_id: null,
-        tags: [],
-        seo_title: null,
-        seo_description: null,
-        og_media_id: null,
-        created_at: "",
-        updated_at: "",
-        story_date: story.date,
-        introduction: story.excerpt,
-      }));
+    .select("id, title, slug, introduction, location, story_date, cover_media_id, published")
+    .order("display_order");
+  const stories = data ?? [];
 
   const records: ContentMediaRecord[] = stories.filter((story) => story.id && story.id.length > 10).map((story) => ({ id: story.id, title: story.title }));
-  const editableRecords: EditableRecord[] = stories.filter((story) => story.id && story.id.length > 10).map((story) => ({ id: story.id, title: story.title, introduction: story.introduction, location: story.location, date: story.story_date, mediaId: "cover_media_id" in story && typeof story.cover_media_id === "string" ? story.cover_media_id : null }));
+  const editableRecords: EditableRecord[] = stories.filter((story) => story.id && story.id.length > 10).map((story) => ({ id: story.id, title: story.title, introduction: story.introduction, location: story.location, date: story.story_date, mediaId: story.cover_media_id }));
 
   return (
     <div className="flex flex-col gap-8">
@@ -53,7 +37,7 @@ export default async function AdminStoriesPage() {
                   {story.introduction && <p className="text-sm text-stone mt-3">{story.introduction}</p>}
                 </div>
                 <span className="shrink-0 text-xs text-stone-dim">
-                  {"published" in story && story.published ? "Published" : "Draft"}
+                  {story.published ? "Published" : "Draft"}
                 </span>
               </div>
               {(story.location || story.story_date) && (

@@ -35,4 +35,5 @@ export async function assignContentMedia(input: {
   }
 
   revalidatePath(`/admin/${input.content === "service" ? "services" : `${input.content}s`}`);
+  revalidatePath("/");
 }

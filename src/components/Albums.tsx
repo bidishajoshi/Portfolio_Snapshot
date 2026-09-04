@@ -1,13 +1,12 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { albums } from "@/data/albums";
 import { BookOpen } from "lucide-react";
 import SafeImage from "@/components/ui/SafeImage";
 import Link from "next/link";
 
 export default function Albums({ albums: liveAlbums }: { albums?: Array<{ id: string; title: string; slug: string; cover: string; location: string | null; date: string; description: string | null; photoCount: number }> }) {
-  const displayedAlbums = liveAlbums?.length ? liveAlbums : albums;
+  const displayedAlbums = liveAlbums ?? [];
   return (
     <section id="albums" className="section-padding bg-surface">
       <div className="section-container">

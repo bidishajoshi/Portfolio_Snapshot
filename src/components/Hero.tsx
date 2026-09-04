@@ -5,7 +5,7 @@ import { brand } from "@/data/site";
 import Link from "next/link";
 import SafeImage from "@/components/ui/SafeImage";
 
-export default function Hero({ brandOverride }: { brandOverride?: { name: string; photographer: string; tagline: string } }) {
+export default function Hero({ brandOverride, backgroundImage }: { brandOverride?: { name: string; photographer: string; tagline: string }; backgroundImage?: string | null }) {
   const displayedBrand = brandOverride ?? brand;
   return (
     <section id="home" className="relative h-screen w-full flex items-center justify-center overflow-hidden">
@@ -14,7 +14,7 @@ export default function Hero({ brandOverride }: { brandOverride?: { name: string
         <div className="absolute inset-0 bg-gradient-to-b from-ink/70 via-ink/40 to-ink z-10" />
         <div className="absolute inset-0 bg-radial-at-c from-cyan-glow/10 via-transparent to-transparent opacity-40 pointer-events-none z-10" />
         <SafeImage
-          src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=2000&q=85"
+          src={backgroundImage ?? undefined}
           alt="Hero Photography"
           className="w-full h-full object-cover object-center scale-105 animate-pulse duration-10000"
           style={{ animationDuration: '25s' }}

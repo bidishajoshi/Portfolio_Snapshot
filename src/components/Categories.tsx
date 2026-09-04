@@ -1,12 +1,11 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { categories } from "@/data/categories";
 import { ArrowRight } from "lucide-react";
 import SafeImage from "@/components/ui/SafeImage";
 
 export default function Categories({ categories: liveCategories }: { categories?: Array<{ id: string; name: string; description: string | null; cover: string }> }) {
-  const displayedCategories = liveCategories?.length ? liveCategories : categories;
+  const displayedCategories = liveCategories ?? [];
   return (
     <section className="section-padding bg-ink">
       <div className="section-container">

@@ -28,6 +28,7 @@ export async function saveContent(input: {
   mediaId?: string | null;
   categoryId?: string;
   altText?: string;
+  published?: boolean;
 }) {
   if (input.date && !/^\d{4}-\d{2}-\d{2}$/.test(input.date)) {
     throw new Error("Date must use YYYY-MM-DD format.");
@@ -39,18 +40,20 @@ export async function saveContent(input: {
   const slug = input.content === "testimonial"
     ? undefined
     : await generateUniqueSlug(supabase, table, slugBase, input.id);
+  const published = input.published ?? true;
   const common = {
     ...(slug ? { slug } : {}),
-    ...(input.content === "service" ? {} : { published: true, display_order: 0 }),
+    published,
+    display_order: 0,
   };
   let values: Record<string, unknown>;
 
   if (input.content === "photo") {
-    values = { title: input.title, slug, media_id: input.mediaId ?? null, category_id: input.categoryId || null, location: input.location || null, shot_date: input.date || null, alt_text: input.altText || null, status: "published" };
+    values = { title: input.title, slug, media_id: input.mediaId ?? null, category_id: input.categoryId || null, location: input.location || null, shot_date: input.date || null, alt_text: input.altText || null, status: published ? "published" : "draft" };
   } else if (input.content === "service") {
     values = { ...common, title: input.title, description: input.description || null, media_id: input.mediaId ?? null };
   } else if (input.content === "testimonial") {
-    values = { client_name: input.clientName || input.title, review: input.review || input.description || "", client_media_id: input.mediaId ?? null, published: true, display_order: 0 };
+    values = { client_name: input.clientName || input.title, review: input.review || input.description || "", client_media_id: input.mediaId ?? null, published, display_order: 0 };
   } else if (input.content === "film") {
     values = { ...common, title: input.title, description: input.description || null, introduction: input.introduction || null, cover_media_id: input.mediaId ?? null, location: input.location || null, film_date: input.date || null };
   } else {
@@ -60,6 +63,8 @@ export async function saveContent(input: {
       introduction: input.introduction || input.description || null,
       location: input.location || null,
       story_date: input.date || null,
+      published,
+      display_order: 0,
     };
   }
 

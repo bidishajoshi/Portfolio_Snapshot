@@ -2,13 +2,10 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { testimonials } from "@/data/testimonials";
 import { Quote, ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function Testimonials({ testimonials: liveTestimonials }: { testimonials?: Array<{ id: string; client_name: string; review: string; event_type: string | null }> }) {
-  const displayedTestimonials = liveTestimonials?.length
-    ? liveTestimonials.map((item) => ({ name: item.client_name, review: item.review, eventType: item.event_type ?? "Client", avatar: null }))
-    : testimonials;
+  const displayedTestimonials = (liveTestimonials ?? []).map((item) => ({ name: item.client_name, review: item.review, eventType: item.event_type ?? "Client", avatar: null }));
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const next = () => setCurrentIndex((prev) => (prev + 1) % displayedTestimonials.length);
@@ -35,7 +32,9 @@ export default function Testimonials({ testimonials: liveTestimonials }: { testi
         <div className="max-w-4xl mx-auto relative px-12 md:px-24">
           <Quote size={64} className="text-gold/20 absolute -top-10 left-4 md:left-12 rotate-180" />
           
-          <div className="min-h-[250px] flex items-center justify-center">
+          {displayedTestimonials.length === 0 ? (
+            <div className="min-h-[250px] flex items-center justify-center text-sm text-stone">No testimonials published yet.</div>
+          ) : <div className="min-h-[250px] flex items-center justify-center">
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentIndex}
@@ -61,12 +60,12 @@ export default function Testimonials({ testimonials: liveTestimonials }: { testi
                 </div>
               </motion.div>
             </AnimatePresence>
-          </div>
+          </div>}
 
-          <button onClick={prev} className="absolute left-0 top-1/2 -translate-y-1/2 text-stone hover:text-gold transition-colors p-2" aria-label="Previous testimonial">
+          <button onClick={prev} disabled={displayedTestimonials.length === 0} className="absolute left-0 top-1/2 -translate-y-1/2 text-stone hover:text-gold transition-colors p-2 disabled:opacity-30" aria-label="Previous testimonial">
              <ChevronLeft size={32} />
           </button>
-          <button onClick={next} className="absolute right-0 top-1/2 -translate-y-1/2 text-stone hover:text-gold transition-colors p-2" aria-label="Next testimonial">
+          <button onClick={next} disabled={displayedTestimonials.length === 0} className="absolute right-0 top-1/2 -translate-y-1/2 text-stone hover:text-gold transition-colors p-2 disabled:opacity-30" aria-label="Next testimonial">
              <ChevronRight size={32} />
           </button>
 

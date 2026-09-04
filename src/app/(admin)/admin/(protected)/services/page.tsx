@@ -1,5 +1,4 @@
 import { createClient } from "@/lib/supabase/server";
-import { services as localServices } from "@/data/services";
 import { ContentMediaManager, type ContentMediaRecord } from "@/components/admin/content-media-manager";
 import { ContentEditor, type EditableRecord } from "@/components/admin/content-editor";
 
@@ -9,21 +8,11 @@ export default async function AdminServicesPage() {
   const supabase = await createClient();
   const { data } = await supabase
     .from("services")
-    .select("id, title, slug, description");
-  const services = (data?.length
-    ? data
-    : localServices.map((service) => ({
-        ...service,
-        id: String(service.id),
-        media_id: null,
-        cta_label: null,
-        cta_href: null,
-        created_at: "",
-        updated_at: "",
-      }))) as Array<{ id: string; title: string; slug: string; description: string | null; media_id?: string | null; price_label?: string | null; published?: boolean }>;
+    .select("id, title, slug, description, published, media_id, price_label");
+  const services = (data ?? []) as Array<{ id: string; title: string; slug: string; description: string | null; media_id?: string | null; price_label?: string | null; published?: boolean }>;
 
   const records: ContentMediaRecord[] = services.filter((service) => service.id && service.id.length > 10).map((service) => ({ id: service.id, title: service.title }));
-  const editableRecords: EditableRecord[] = services.filter((service) => service.id && service.id.length > 10).map((service) => ({ id: service.id, title: service.title, description: service.description, mediaId: "media_id" in service ? service.media_id : null }));
+  const editableRecords: EditableRecord[] = services.filter((service) => service.id && service.id.length > 10).map((service) => ({ id: service.id, title: service.title, description: service.description, mediaId: service.media_id ?? null, published: service.published ?? true }));
 
   return (
     <div className="flex flex-col gap-8">

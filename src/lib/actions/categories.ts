@@ -55,6 +55,7 @@ export async function createCategory(input: CategoryInput) {
   if (error) throw new Error(error.message);
   revalidatePath("/admin/categories");
   revalidatePath("/");
+  revalidatePath("/");
   return data as Category;
 }
 
@@ -121,4 +122,5 @@ export async function deleteCategory(id: string) {
   const { error } = await supabase.from("categories").delete().eq("id", id);
   if (error) throw new Error(error.message);
   revalidatePath("/admin/categories");
+  revalidatePath("/");
 }

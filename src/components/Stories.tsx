@@ -1,15 +1,23 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { stories } from "@/data/stories";
 import { Clock, MapPin, ArrowRight } from "lucide-react";
 import SafeImage from "@/components/ui/SafeImage";
 import Link from "next/link";
 
-export default function Stories({ stories: liveStories }: { stories?: Array<{ id: string; title: string; introduction: string | null; location: string | null; story_date: string | null }> }) {
-  const displayedStories = liveStories?.length
-    ? liveStories.map((story) => ({ ...story, cover: "", excerpt: story.introduction ?? "", date: story.story_date ?? "", readTime: "", slug: story.title.toLowerCase().replace(/\s+/g, "-") }))
-    : stories;
+export default function Stories({ stories: liveStories }: { stories?: Array<{ id: string; title: string; introduction?: string | null; location?: string | null; story_date?: string | null; slug?: string; cover?: string | null; excerpt?: string | null; date?: string | null; readTime?: string }> }) {
+  const displayedStories = (liveStories ?? []).map((story) => ({
+        id: story.id,
+        title: story.title,
+        introduction: story.introduction ?? story.excerpt ?? "",
+        location: story.location ?? "",
+        story_date: story.story_date ?? story.date ?? null,
+        cover: story.cover ?? "",
+        excerpt: story.excerpt ?? story.introduction ?? "",
+        date: story.date ?? story.story_date ?? "",
+        readTime: story.readTime ?? "",
+        slug: story.slug ?? story.title.toLowerCase().replace(/\s+/g, "-"),
+      }));
   return (
     <section id="stories" className="section-padding bg-ink border-t border-border/50">
       <div className="section-container">
@@ -47,7 +55,7 @@ export default function Stories({ stories: liveStories }: { stories?: Array<{ id
               >
                 <div className="aspect-[16/10] w-full card-3d-inner relative">
                     <SafeImage
-                    src={story.cover || "https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=1200&q=80"}
+                    src={story.cover || undefined}
                     alt={story.title}
                     className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
                   />

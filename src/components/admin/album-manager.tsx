@@ -8,7 +8,7 @@ import { MediaPicker } from "@/components/admin/media/media-picker";
 import { deleteAlbum, setAlbumMedia } from "@/lib/actions/albums";
 import type { Media } from "@/types/database";
 
-type Album = { id: string; title: string; description: string | null; location: string | null; event_date: string | null; cover_media_id: string | null };
+type Album = { id: string; title: string; description: string | null; location: string | null; event_date: string | null; cover_media_id: string | null; published: boolean; featured: boolean };
 
 export function AlbumManager({ albums }: { albums: Album[] }) {
   const [items, setItems] = useState(albums);

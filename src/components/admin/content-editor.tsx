@@ -21,6 +21,7 @@ export interface EditableRecord {
   mediaId?: string | null;
   categoryId?: string | null;
   altText?: string | null;
+  published?: boolean;
 }
 
 export function ContentEditor({ content, records, canDelete = true }: { content: EditableContent; records: EditableRecord[]; canDelete?: boolean }) {
@@ -56,6 +57,7 @@ function ContentForm({ content, record, onClose, onSaved, isPending, startTransi
   const [media, setMedia] = useState<Media | null>(null);
   const [categoryId, setCategoryId] = useState(record?.categoryId ?? "");
   const [altText, setAltText] = useState(record?.altText ?? "");
+  const [published, setPublished] = useState(record?.published ?? true);
   const [picker, setPicker] = useState(false);
   const isTestimonial = content === "testimonial";
   const isStory = content === "story";
@@ -63,12 +65,12 @@ function ContentForm({ content, record, onClose, onSaved, isPending, startTransi
 
   const save = () => startTransition(async () => {
     try {
-      await saveContent({ content, id: record?.id, title: title || clientName, description, introduction, location, date, clientName, review, mediaId: media?.id ?? record?.mediaId ?? null, categoryId, altText });
+      await saveContent({ content, id: record?.id, title: title || clientName, description, introduction, location, date, clientName, review, mediaId: media?.id ?? record?.mediaId ?? null, categoryId, altText, published });
       toast.success("Saved."); onSaved();
     } catch (error) { toast.error(error instanceof Error ? error.message : "Could not save."); }
   });
 
-  return <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/70 px-4" onClick={onClose}><div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-sm border border-border bg-surface p-6" onClick={(event) => event.stopPropagation()}><div className="flex items-center justify-between mb-5"><p className="font-display text-xl text-ivory">{record ? "Edit" : "New"} {content}</p><button onClick={onClose} className="text-stone hover:text-ivory"><X size={18} /></button></div><div className="flex flex-col gap-4">{isTestimonial ? <><Input label="Client name" value={clientName} onChange={(event) => setClientName(event.target.value)} autoFocus /><Field label="Review" value={review} onChange={setReview} /></> : <><Input label="Title" value={title} onChange={(event) => setTitle(event.target.value)} autoFocus /><Field label={isStory ? "Introduction" : "Description"} value={isStory ? introduction : description} onChange={isStory ? setIntroduction : setDescription} />{(isStory || content === "film") && <><Input label="Location" value={location} onChange={(event) => setLocation(event.target.value)} /><Input label="Date" value={date} onChange={(event) => setDate(event.target.value)} /></>}</>}<div><p className="text-sm text-stone mb-2">{isTestimonial ? "Client photo" : "Cover photo"}</p><Button variant="secondary" size="sm" onClick={() => setPicker(true)}>Choose photo</Button>{media && <span className="ml-3 text-xs text-gold">{media.title}</span>}</div><div className="flex justify-end gap-2 pt-2"><Button variant="secondary" size="sm" onClick={onClose}>Cancel</Button><Button size="sm" onClick={save} disabled={isPending}>{isPending ? "Saving..." : "Save"}</Button></div></div></div>{picker && <MediaPicker multiple={false} folder={content === "film" ? "film" : content === "story" ? "story" : "photo"} onSelect={(items) => setMedia(items[0] ?? null)} onClose={() => setPicker(false)} />}</div>;
+  return <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/70 px-4" onClick={onClose}><div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-sm border border-border bg-surface p-6" onClick={(event) => event.stopPropagation()}><div className="flex items-center justify-between mb-5"><p className="font-display text-xl text-ivory">{record ? "Edit" : "New"} {content}</p><button onClick={onClose} className="text-stone hover:text-ivory"><X size={18} /></button></div><div className="flex flex-col gap-4">{isTestimonial ? <><Input label="Client name" value={clientName} onChange={(event) => setClientName(event.target.value)} autoFocus /><Field label="Review" value={review} onChange={setReview} /></> : <><Input label="Title" value={title} onChange={(event) => setTitle(event.target.value)} autoFocus /><Field label={isStory ? "Introduction" : "Description"} value={isStory ? introduction : description} onChange={isStory ? setIntroduction : setDescription} />{(isStory || content === "film") && <><Input label="Location" value={location} onChange={(event) => setLocation(event.target.value)} /><Input label="Date" value={date} onChange={(event) => setDate(event.target.value)} /></>}</>}<div><p className="text-sm text-stone mb-2">{isTestimonial ? "Client photo" : "Cover photo"}</p><Button variant="secondary" size="sm" onClick={() => setPicker(true)}>Choose photo</Button>{media && <span className="ml-3 text-xs text-gold">{media.title}</span>}</div><label className="flex items-center gap-2 text-sm text-stone"><input type="checkbox" checked={published} onChange={(event) => setPublished(event.target.checked)} /> Published</label><div className="flex justify-end gap-2 pt-2"><Button variant="secondary" size="sm" onClick={onClose}>Cancel</Button><Button size="sm" onClick={save} disabled={isPending}>{isPending ? "Saving..." : "Save"}</Button></div></div></div>{picker && <MediaPicker multiple={false} folder={content === "film" ? "film" : content === "story" ? "story" : "photo"} onSelect={(items) => setMedia(items[0] ?? null)} onClose={() => setPicker(false)} />}</div>;
 }
 
 function Field({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) { return <div className="flex flex-col gap-1.5"><label className="text-sm text-stone">{label}</label><textarea value={value} onChange={(event) => onChange(event.target.value)} rows={4} className="bg-ink border border-border rounded-sm px-3.5 py-2.5 text-sm text-ivory outline-none focus:border-gold resize-none" /></div>; }

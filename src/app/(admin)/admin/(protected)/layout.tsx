@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import { getAdminSession } from "@/lib/supabase/auth";
 import { AdminNav } from "@/components/admin/admin-nav";
 
+export const dynamic = "force-dynamic";
+
 export default async function ProtectedAdminLayout({
   children,
 }: {

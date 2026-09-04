@@ -1,14 +1,11 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { services } from "@/data/services";
 import * as LucideIcons from "lucide-react";
 import type { ComponentType } from "react";
 
 export default function Services({ services: liveServices }: { services?: Array<{ id: string; title: string; description: string | null }> }) {
-  const displayedServices = liveServices?.length
-    ? liveServices.map((service) => ({ ...service, icon: "camera" }))
-    : services;
+  const displayedServices = (liveServices ?? []).map((service) => ({ ...service, icon: "camera" }));
   return (
     <section id="services" className="section-padding bg-ink border-t border-border/50">
       <div className="section-container">

@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { photos, photoCategories } from "@/data/photos";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import clsx from "clsx";
 import SafeImage from "@/components/ui/SafeImage";
@@ -10,8 +10,17 @@ import SafeImage from "@/components/ui/SafeImage";
 export default function Gallery({ photos: livePhotos, categories: liveCategories }: { photos?: Array<{ id: string; title: string; category: string; image: string; location: string; date: string; aspect?: "portrait" | "landscape" | "square" }>; categories?: string[] }) {
   const [filter, setFilter] = useState<string>("All");
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
-  const displayedPhotos = livePhotos?.length ? livePhotos : photos;
-  const displayedCategories = liveCategories?.length ? ["All", ...liveCategories] : photoCategories;
+  const displayedPhotos = livePhotos ?? [];
+  const displayedCategories = ["All", ...(liveCategories ?? [])];
+
+  useEffect(() => {
+    const handleCategoryFilter = (event: Event) => {
+      const category = (event as CustomEvent<string>).detail;
+      if (displayedCategories.includes(category)) setFilter(category);
+    };
+    window.addEventListener("filter-category", handleCategoryFilter);
+    return () => window.removeEventListener("filter-category", handleCategoryFilter);
+  }, [liveCategories]);
 
   const filteredPhotos = filter === "All" ? displayedPhotos : displayedPhotos.filter(p => p.category === filter);
 
