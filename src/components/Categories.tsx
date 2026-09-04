@@ -43,7 +43,7 @@ export default function Categories({ categories: liveCategories }: { categories?
                   <p className="text-sm text-stone mb-4 opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-500 delay-100 line-clamp-2">
                     {cat.description}
                   </p>
-                  <div className="flex items-center text-cyan-glow text-sm font-semibold opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-500 delay-200">
+                  <div className="flex items-center text-yellow text-sm font-semibold opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-500 delay-200">
                     <span>View Category</span>
                     <ArrowRight size={16} className="ml-2 group-hover:translate-x-1 transition-transform" />
                   </div>

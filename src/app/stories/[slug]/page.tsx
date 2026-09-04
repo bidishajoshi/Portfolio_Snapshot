@@ -1,21 +1,34 @@
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+import StoryDetailClient from "./StoryDetailClient";
+import { cloudinaryImageUrl, cloudinaryVideoUrl } from "@/lib/cloudinary/url";
 
 export const dynamic = "force-dynamic";
 
 export default async function StoryPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const supabase = await createClient();
+  const supabase = createAdminClient();
+
   const { data: story } = await supabase
     .from("stories")
-    .select("id, title, slug, introduction, location, story_date, cover_media_id")
+    .select("id, title, slug, introduction, location, story_date, cover_media_id, subtitle, tags")
     .eq("slug", slug)
     .maybeSingle();
 
-  if (!story) return <main className="min-h-screen bg-ink p-10 text-ivory">Story not found.</main>;
+  if (!story) {
+    return (
+      <main className="min-h-screen bg-ink p-10 text-ivory flex flex-col items-center justify-center gap-4">
+        <h1 className="font-display text-3xl">Visual Story not found</h1>
+        <Link href="/#stories" className="text-cyan-glow hover:underline flex items-center gap-2">
+          <ArrowLeft size={16} /> Back to stories
+        </Link>
+      </main>
+    );
+  }
 
   let storyImage = "";
-  if (story?.cover_media_id) {
+  if (story.cover_media_id) {
     const { data: media } = await supabase
       .from("media")
       .select("cloudinary_public_id")
@@ -23,42 +36,49 @@ export default async function StoryPage({ params }: { params: Promise<{ slug: st
       .maybeSingle();
 
     if (media?.cloudinary_public_id) {
-      storyImage = `https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/f_auto,q_auto,w_1400,c_fill/${media.cloudinary_public_id}`;
+      storyImage = cloudinaryImageUrl(media.cloudinary_public_id, {
+        width: 1600,
+        height: 1000,
+        crop: "fill",
+      });
     }
   }
 
-  const storyGallery = story
-    ? await supabase
-        .from("story_media")
-        .select("media:media(title, cloudinary_public_id, kind)")
-        .eq("story_id", story.id)
-        .order("display_order")
-    : { data: [] as Array<{ media?: { title: string; cloudinary_public_id: string; kind: string } | null }> };
+  const { data: storyMediaList } = await supabase
+    .from("story_media")
+    .select("id, media:media(id, title, cloudinary_public_id, kind)")
+    .eq("story_id", story.id)
+    .order("display_order");
 
-  const galleryItems: Array<{ title: string; cloudinary_public_id: string; kind: string }> =
-    (storyGallery.data ?? [])
-      .map((entry) => entry.media)
-      .filter((media): media is { title: string; cloudinary_public_id: string; kind: string } => Boolean(media));
+  const galleryItems = (storyMediaList ?? [])
+    .map((entry) => {
+      const m = (entry as unknown as { media: { id: string; title: string; cloudinary_public_id: string; kind: string } | null }).media;
+      if (!m) return null;
+      return {
+        id: m.id,
+        title: m.title || story.title,
+        cloudinary_public_id: m.cloudinary_public_id,
+        kind: m.kind,
+        url: cloudinaryImageUrl(m.cloudinary_public_id, { width: 1400, height: 950, crop: "fill" }),
+        videoUrl: m.kind === "video" ? cloudinaryVideoUrl(m.cloudinary_public_id) : undefined,
+      };
+    })
+    .filter((item): item is NonNullable<typeof item> => Boolean(item));
+
+  const category = story.subtitle || (story.tags && story.tags.length > 0 ? story.tags[0] : null);
 
   return (
-    <main className="min-h-screen bg-ink p-8 md:p-16">
-      <Link href="/#stories" className="text-gold">Back to stories</Link>
-      <article className="mx-auto mt-10 max-w-4xl">
-        <p className="text-sm text-gold">{story.location}</p>
-        <h1 className="mt-3 font-display text-5xl text-ivory">{story.title}</h1>
-        {storyImage && <img src={storyImage} alt={story.title} className="mt-8 h-[360px] w-full rounded-xl object-cover" />}
-        <p className="mt-6 text-lg leading-relaxed text-stone">{story.introduction}</p>
-        {galleryItems.length > 0 && (
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {galleryItems.map((media) => media.kind === "video" ? (
-              <video key={media.cloudinary_public_id} controls className="aspect-[4/3] w-full rounded-sm object-cover" src={`https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/video/upload/${media.cloudinary_public_id}.mp4`} />
-            ) : (
-              <img key={media.cloudinary_public_id} src={`https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/f_auto,q_auto,w_1000,c_fill/${media.cloudinary_public_id}`} alt={media.title} className="aspect-[4/3] w-full rounded-sm object-cover" />
-            ))}
-          </div>
-        )}
-        <div className="mt-10 space-y-6 text-stone" />
-      </article>
-    </main>
+    <StoryDetailClient
+      story={{
+        id: story.id,
+        title: story.title,
+        introduction: story.introduction,
+        location: story.location,
+        story_date: story.story_date,
+        category,
+        coverImage: storyImage || undefined,
+      }}
+      galleryItems={galleryItems}
+    />
   );
-}
+}

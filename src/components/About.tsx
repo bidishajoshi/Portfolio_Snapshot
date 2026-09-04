@@ -42,9 +42,9 @@ export default function About({
             className="relative aspect-[4/5] w-full max-w-lg mx-auto lg:mx-0 group"
           >
             {/* Outer metallic & glassmorphic decorative glow frames */}
-            <div className="absolute -inset-3 rounded-2xl bg-gradient-to-tr from-cyan-glow/20 via-gold/15 to-transparent blur-md opacity-60 group-hover:opacity-100 transition-opacity duration-700" />
-            <div className="absolute inset-0 rounded-2xl border-2 border-cyan-glow/30 translate-x-3 translate-y-3 z-0 transition-transform duration-500 group-hover:translate-x-4 group-hover:translate-y-4" />
-            <div className="absolute inset-0 rounded-2xl border border-white/10 -translate-x-2 -translate-y-2 z-0" />
+            <div className="absolute -inset-3 rounded-2xl bg-gradient-to-tr from-maroon-deep/50 via-yellow/20 to-blue-500/15 blur-md opacity-70 group-hover:opacity-100 transition-opacity duration-700" />
+            <div className="absolute inset-0 rounded-2xl border-2 border-yellow/35 translate-x-3 translate-y-3 z-0 transition-transform duration-500 group-hover:translate-x-4 group-hover:translate-y-4" />
+            <div className="absolute inset-0 rounded-2xl border border-rose-900/30 -translate-x-2 -translate-y-2 z-0" />
             
             <div className="w-full h-full relative z-10 rounded-2xl overflow-hidden shadow-2xl border border-border/80 bg-ink">
               <SafeImage
@@ -77,7 +77,7 @@ export default function About({
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
               {displayedStats.map((stat, idx) => (
                 <div key={idx} className="flex flex-col p-4 glass-card rounded-lg border border-border/40">
-                  <span className="font-display text-4xl text-cyan-glow mb-1">
+                  <span className="font-display text-4xl text-yellow mb-1">
                     {stat.value < 10 ? `0${stat.value}` : stat.value}{stat.suffix}
                   </span>
                   <span className="text-xs text-stone-dim uppercase tracking-wider font-semibold">

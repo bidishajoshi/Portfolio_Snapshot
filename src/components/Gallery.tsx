@@ -62,10 +62,10 @@ export default function Gallery({
   }, [lightboxIndex, nextImage, prevImage]);
 
   return (
-    <section id="gallery" className="section-padding bg-surface-raised min-h-screen relative overflow-hidden">
-      {/* Background visual accents */}
-      <div className="absolute -top-40 right-0 w-96 h-96 bg-cyan-glow/5 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-40 left-0 w-96 h-96 bg-gold/5 rounded-full blur-3xl pointer-events-none" />
+    <section id="gallery" className="section-padding bg-surface/60 min-h-screen relative overflow-hidden">
+      {/* Background visual accents: Maroon and Amber Yellow blooms */}
+      <div className="absolute -top-40 right-0 w-96 h-96 bg-maroon-deep/35 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-40 left-0 w-96 h-96 bg-yellow/15 rounded-full blur-3xl pointer-events-none" />
 
       <div className="section-container relative z-10">
         <motion.div
@@ -75,7 +75,7 @@ export default function Gallery({
           transition={{ duration: 0.6 }}
           className="text-center mb-12"
         >
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-surface border border-cyan-glow/20 text-cyan-glow text-xs uppercase tracking-widest font-mono mb-4">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-surface border border-yellow/30 text-yellow text-xs uppercase tracking-widest font-mono mb-4 shadow-sm">
             <Camera size={12} />
             <span>Curated Portfolio</span>
           </div>
@@ -92,10 +92,10 @@ export default function Gallery({
                 key={cat}
                 onClick={() => setFilter(cat)}
                 className={clsx(
-                  "px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider transition-all duration-300 border",
+                  "px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider transition-all duration-300 border cursor-pointer",
                   filter === cat
-                    ? "bg-cyan-glow text-ink border-cyan-glow shadow-md shadow-cyan-glow/20 scale-105 font-bold"
-                    : "bg-surface/80 text-stone border-border/60 hover:border-cyan-glow/50 hover:text-ivory"
+                    ? "bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-ink border-amber-400 shadow-md shadow-amber-500/25 scale-105 font-bold"
+                    : "bg-surface/80 text-stone border-border/60 hover:border-yellow/50 hover:text-ivory"
                 )}
               >
                 {cat}
@@ -119,8 +119,8 @@ export default function Gallery({
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ duration: 0.4 }}
-                  key={photo.id}
-                  className="img-card mb-4 rounded-xl overflow-hidden cursor-pointer relative group border border-border/40 hover:border-cyan-glow/50 shadow-lg transition-all"
+                  key={photo.id || idx}
+                  className="group relative cursor-pointer overflow-hidden rounded-xl bg-surface border border-border/50 hover:border-yellow/50 transition-all duration-500 shadow-xl"
                   onClick={() => openLightbox(idx)}
                 >
                   <SafeImage
@@ -131,7 +131,7 @@ export default function Gallery({
                   />
                   {/* Category Pill Tag always visible on top right */}
                   <div className="absolute top-3 right-3 z-10">
-                    <span className="px-2.5 py-1 rounded-full text-[10px] uppercase font-mono tracking-wider font-semibold bg-black/75 backdrop-blur-md text-ivory border border-white/10 group-hover:border-cyan-glow/50 group-hover:text-cyan-glow transition-colors">
+                    <span className="px-2.5 py-1 rounded-full text-[10px] uppercase font-mono tracking-wider font-semibold bg-black/80 backdrop-blur-md text-ivory border border-white/10 group-hover:border-yellow/60 group-hover:text-yellow transition-colors">
                       {photo.category}
                     </span>
                   </div>
@@ -142,7 +142,7 @@ export default function Gallery({
                     <div className="flex items-center gap-3 text-stone-dim text-xs mt-1.5">
                       {photo.location && (
                         <span className="inline-flex items-center gap-1">
-                          <MapPin size={11} className="text-cyan-glow" />
+                          <MapPin size={11} className="text-yellow" />
                           {photo.location}
                         </span>
                       )}
@@ -165,7 +165,7 @@ export default function Gallery({
               {lightboxIndex + 1} / {filteredPhotos.length}
             </span>
             <button
-              className="text-stone hover:text-cyan-glow transition-colors p-2 rounded-full hover:bg-white/5"
+              className="text-stone hover:text-yellow transition-colors p-2 rounded-full hover:bg-white/5 cursor-pointer"
               onClick={closeLightbox}
               title="Close (Esc)"
             >
@@ -176,7 +176,7 @@ export default function Gallery({
           {/* Main Image with Navigation Arrows */}
           <div className="relative flex-1 flex items-center justify-center w-full max-h-[75vh]" onClick={(e) => e.stopPropagation()}>
             <button
-              className="absolute left-2 sm:left-6 text-stone hover:text-cyan-glow transition-colors p-3 rounded-full hover:bg-white/10 z-20"
+              className="absolute left-2 sm:left-6 text-stone hover:text-yellow transition-colors p-3 rounded-full hover:bg-white/10 z-20 cursor-pointer"
               onClick={prevImage}
               title="Previous (Left Arrow)"
             >

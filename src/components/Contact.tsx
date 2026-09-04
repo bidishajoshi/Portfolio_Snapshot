@@ -120,8 +120,8 @@ export default function Contact({
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-surface-raised border border-cyan-glow/20 text-cyan-glow text-xs uppercase tracking-widest font-mono mb-4 shadow-sm">
-            <Sparkles size={12} className="text-cyan-glow" />
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-surface-raised border border-yellow/30 text-yellow text-xs uppercase tracking-widest font-mono mb-4 shadow-sm">
+            <Sparkles size={12} className="text-yellow" />
             <span>Get in Touch</span>
           </div>
           <h2 className="heading-section mb-4">Let&apos;s Create Something Cinematic</h2>
@@ -140,8 +140,8 @@ export default function Contact({
             transition={{ duration: 0.8 }}
             className="lg:col-span-5 flex flex-col gap-8"
           >
-            <div className="glass-card p-8 rounded-2xl border border-border/50 backdrop-blur-xl relative overflow-hidden group hover:border-cyan-glow/40 transition-all duration-500">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-glow/5 rounded-full blur-2xl pointer-events-none" />
+            <div className="glass-card p-8 rounded-2xl border border-border/50 backdrop-blur-xl relative overflow-hidden group hover:border-yellow/40 transition-all duration-500">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-yellow/5 rounded-full blur-2xl pointer-events-none" />
               
               <h3 className="font-display text-2xl text-ivory mb-3 leading-snug">
                 Every frame begins with a story.
@@ -380,7 +380,7 @@ export default function Contact({
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full sm:w-auto px-8 py-3.5 rounded-lg bg-gradient-to-r from-cyan-glow to-blue-500 hover:from-cyan-glow/90 hover:to-blue-400 text-ink font-semibold text-sm tracking-wide transition-all duration-300 flex items-center justify-center gap-2.5 shadow-lg shadow-cyan-glow/20 disabled:opacity-60 disabled:cursor-not-allowed group"
+                    className="w-full sm:w-auto px-8 py-3.5 rounded-lg bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-500 hover:brightness-110 text-ink font-semibold text-sm tracking-wide transition-all duration-300 flex items-center justify-center gap-2.5 shadow-lg shadow-amber-500/25 disabled:opacity-60 disabled:cursor-not-allowed group cursor-pointer"
                   >
                     {isSubmitting ? (
                       <>

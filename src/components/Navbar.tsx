@@ -28,9 +28,21 @@ export default function Navbar() {
       )}
     >
       <div className="section-container flex items-center justify-between">
-        <div className="flex items-center gap-4 z-50">
-          <Link href="#home" className="text-xl font-display font-medium text-ivory relative tracking-wider">
-            {brand.name}
+        <div className="flex items-center gap-3 sm:gap-4 z-50">
+          <Link
+            href="/"
+            onClick={(e) => {
+              if (window.location.pathname === "/") {
+                e.preventDefault();
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }
+            }}
+            className="group text-xl font-display font-medium text-ivory relative tracking-wider cursor-pointer select-none"
+          >
+            <span className="relative z-10 transition-colors duration-300 group-hover:text-yellow">
+              {brand.name}
+            </span>
+            <span className="absolute -bottom-1 left-0 w-0 h-[1.5px] bg-gradient-to-r from-yellow via-gold to-rose-600 transition-all duration-300 group-hover:w-full opacity-0 group-hover:opacity-100" />
           </Link>
           <div className="hidden sm:block">
             <DslrCameraControl />
@@ -53,7 +65,7 @@ export default function Navbar() {
           </ul>
           <Link
             href="#contact"
-            className="px-5 py-2.5 bg-ivory text-ink hover:bg-cyan-glow hover:text-ink transition-colors duration-300 rounded-md text-sm font-semibold tracking-wide shadow-sm"
+            className="px-5 py-2.5 bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-500 text-ink font-semibold hover:brightness-110 transition-all duration-300 rounded-lg text-sm tracking-wide shadow-md shadow-amber-500/20 cursor-pointer"
           >
             Book a Shoot
           </Link>
