@@ -5,13 +5,14 @@ import { requireAdmin } from "@/lib/supabase/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { generateUniqueSlug } from "@/lib/utils/slug";
 
-export type EditableContent = "service" | "film" | "story" | "testimonial";
+export type EditableContent = "service" | "film" | "story" | "testimonial" | "photo";
 
 const contentTables: Record<EditableContent, string> = {
   service: "services",
   film: "films",
   story: "stories",
   testimonial: "testimonials",
+  photo: "photos",
 };
 
 export async function saveContent(input: {
@@ -25,6 +26,8 @@ export async function saveContent(input: {
   clientName?: string;
   review?: string;
   mediaId?: string | null;
+  categoryId?: string;
+  altText?: string;
 }) {
   if (input.date && !/^\d{4}-\d{2}-\d{2}$/.test(input.date)) {
     throw new Error("Date must use YYYY-MM-DD format.");
@@ -42,7 +45,9 @@ export async function saveContent(input: {
   };
   let values: Record<string, unknown>;
 
-  if (input.content === "service") {
+  if (input.content === "photo") {
+    values = { title: input.title, slug, media_id: input.mediaId ?? null, category_id: input.categoryId || null, location: input.location || null, shot_date: input.date || null, alt_text: input.altText || null, status: "published" };
+  } else if (input.content === "service") {
     values = { ...common, title: input.title, description: input.description || null, media_id: input.mediaId ?? null };
   } else if (input.content === "testimonial") {
     values = { client_name: input.clientName || input.title, review: input.review || input.description || "", client_media_id: input.mediaId ?? null, published: true, display_order: 0 };

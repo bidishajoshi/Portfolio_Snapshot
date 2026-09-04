@@ -19,6 +19,8 @@ export interface EditableRecord {
   clientName?: string | null;
   review?: string | null;
   mediaId?: string | null;
+  categoryId?: string | null;
+  altText?: string | null;
 }
 
 export function ContentEditor({ content, records, canDelete = true }: { content: EditableContent; records: EditableRecord[]; canDelete?: boolean }) {
@@ -52,13 +54,16 @@ function ContentForm({ content, record, onClose, onSaved, isPending, startTransi
   const [clientName, setClientName] = useState(record?.clientName ?? "");
   const [review, setReview] = useState(record?.review ?? "");
   const [media, setMedia] = useState<Media | null>(null);
+  const [categoryId, setCategoryId] = useState(record?.categoryId ?? "");
+  const [altText, setAltText] = useState(record?.altText ?? "");
   const [picker, setPicker] = useState(false);
   const isTestimonial = content === "testimonial";
   const isStory = content === "story";
+  const isPhoto = content === "photo";
 
   const save = () => startTransition(async () => {
     try {
-      await saveContent({ content, id: record?.id, title: title || clientName, description, introduction, location, date, clientName, review, mediaId: media?.id ?? record?.mediaId ?? null });
+      await saveContent({ content, id: record?.id, title: title || clientName, description, introduction, location, date, clientName, review, mediaId: media?.id ?? record?.mediaId ?? null, categoryId, altText });
       toast.success("Saved."); onSaved();
     } catch (error) { toast.error(error instanceof Error ? error.message : "Could not save."); }
   });
