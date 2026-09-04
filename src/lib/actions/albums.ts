@@ -6,10 +6,35 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { generateUniqueSlug } from "@/lib/utils/slug";
 
 export async function saveAlbum(input: { id?: string; title: string; description?: string; location?: string; eventDate?: string; coverMediaId?: string | null; published?: boolean; featured?: boolean }) {
+  // Validate date before sending to PostgreSQL — prevents "invalid input syntax for type date" 500 errors
+  if (input.eventDate && input.eventDate.trim() !== "") {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(input.eventDate.trim())) {
+      throw new Error("Event date must be in YYYY-MM-DD format (e.g. 2024-05-20), or leave it blank.");
+    }
+    const d = new Date(input.eventDate.trim());
+    if (isNaN(d.getTime())) {
+      throw new Error("Event date is not a valid calendar date. Use YYYY-MM-DD format.");
+    }
+  }
   await requireAdmin();
   const supabase = createAdminClient();
   const slug = await generateUniqueSlug(supabase, "albums", input.title, input.id);
-  const values = { title: input.title, slug, description: input.description || null, location: input.location || null, event_date: input.eventDate || null, cover_media_id: input.coverMediaId ?? null, published: input.published ?? true, featured: input.featured ?? true };
+  const eventDate = input.eventDate && input.eventDate.trim() ? input.eventDate.trim() : null;
+  const isPub = input.published ?? true;
+  const isFeat = input.featured ?? true;
+  const values = {
+    title: input.title,
+    slug,
+    description: input.description || null,
+    location: input.location || null,
+    event_date: eventDate,
+    cover_media_id: input.coverMediaId ?? null,
+    published: isPub,
+    is_published: isPub,
+    featured: isFeat,
+    is_featured: isFeat,
+    is_visible: true,
+  };
   const query = input.id ? supabase.from("albums").update(values).eq("id", input.id).select().single() : supabase.from("albums").insert(values).select().single();
   const { data, error } = await query;
   if (error) throw new Error(error.message);

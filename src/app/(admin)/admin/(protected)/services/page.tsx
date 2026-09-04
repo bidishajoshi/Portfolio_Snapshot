@@ -1,11 +1,12 @@
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { ContentMediaManager, type ContentMediaRecord } from "@/components/admin/content-media-manager";
 import { ContentEditor, type EditableRecord } from "@/components/admin/content-editor";
 
 export const metadata = { title: "Services" };
+export const dynamic = "force-dynamic";
 
 export default async function AdminServicesPage() {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const { data } = await supabase
     .from("services")
     .select("id, title, slug, description, published, media_id, price_label");

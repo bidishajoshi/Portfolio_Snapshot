@@ -130,7 +130,7 @@ export interface Photo {
   alt_text: string | null;
   category_id: string | null;
   location: string | null;
-  shot_date: string | null;
+  photo_date: string | null;
   status: PublishStatus;
   featured: boolean;
   display_order: number;

@@ -4,8 +4,8 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Quote, ChevronLeft, ChevronRight } from "lucide-react";
 
-export default function Testimonials({ testimonials: liveTestimonials }: { testimonials?: Array<{ id: string; client_name: string; review: string; event_type: string | null }> }) {
-  const displayedTestimonials = (liveTestimonials ?? []).map((item) => ({ name: item.client_name, review: item.review, eventType: item.event_type ?? "Client", avatar: null }));
+export default function Testimonials({ testimonials: liveTestimonials }: { testimonials?: Array<{ id: string; client_name: string; review: string; event_type?: string | null; avatar?: string | null }> }) {
+  const displayedTestimonials = (liveTestimonials ?? []).map((item) => ({ name: item.client_name, review: item.review, eventType: item.event_type ?? "Client", avatar: item.avatar ?? null }));
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const next = () => setCurrentIndex((prev) => (prev + 1) % displayedTestimonials.length);

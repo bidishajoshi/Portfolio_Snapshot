@@ -707,7 +707,7 @@ BEGIN
   IF NOT EXISTS (
     SELECT 1 FROM pg_policies
     WHERE schemaname = 'public'
-      AND tablename = 'album_media'
+      AND tablename = 'album_media'`
       AND policyname = 'public read published album_media'
   ) THEN
     CREATE POLICY "public read published album_media"

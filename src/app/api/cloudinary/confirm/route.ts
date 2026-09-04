@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { requireAdmin, UnauthorizedError } from "@/lib/supabase/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getCloudinary } from "@/lib/cloudinary/config";
@@ -195,6 +196,36 @@ export async function POST(request: Request) {
     "MEDIA SAVED SUCCESSFULLY:",
     data
   );
+
+  // If this asset was uploaded as a photo, automatically register it in the photos table so it appears in the gallery
+  if (folder === "photo" && kind === "image" && data?.id) {
+    try {
+      const photoSlug = await generateUniqueSlug(supabase, "photos", title);
+      const { error: photoErr } = await supabase.from("photos").insert({
+        media_id: data.id,
+        title: title,
+        slug: photoSlug,
+        status: "published",
+        published: true,
+        is_published: true,
+        featured: true,
+        is_featured: true,
+        is_visible: true,
+        display_order: 0,
+      });
+      if (photoErr) {
+        console.error("FAILED TO AUTO-CREATE PHOTO RECORD:", photoErr);
+      } else {
+        console.log("PHOTO AUTO-CREATED FOR GALLERY:", title);
+      }
+    } catch (err) {
+      console.error("ERROR AUTO-CREATING PHOTO RECORD:", err);
+    }
+  }
+
+  revalidatePath("/");
+  revalidatePath("/admin/gallery");
+  revalidatePath("/admin/media");
 
   return NextResponse.json({
     media: data,

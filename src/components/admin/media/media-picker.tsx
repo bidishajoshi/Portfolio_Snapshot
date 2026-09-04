@@ -41,6 +41,15 @@ export function MediaPicker({
     startTransition(async () => {
       const result = await searchMedia({ query: query || undefined, folder, pageSize: 60 });
       setItems(result.items);
+      setSelectedItems((prev) => {
+        const next = new Map(prev);
+        for (const item of result.items) {
+          if (selectedIds.has(item.id)) {
+            next.set(item.id, item);
+          }
+        }
+        return next;
+      });
     });
   };
 
@@ -79,7 +88,13 @@ export function MediaPicker({
   };
 
   const confirm = () => {
-    onSelect(Array.from(selectedItems.values()));
+    const map = new Map(selectedItems);
+    for (const item of items) {
+      if (selectedIds.has(item.id) && !map.has(item.id)) {
+        map.set(item.id, item);
+      }
+    }
+    onSelect(Array.from(map.values()));
     onClose();
   };
 
@@ -187,7 +202,18 @@ export function MediaPicker({
               folder={folder ?? "photo"}
               onUploaded={(media) => {
                 setItems((prev) => [media, ...prev]);
-                toggle(media);
+                setSelectedIds((prev) => {
+                  const next = new Set(prev);
+                  if (!multiple) next.clear();
+                  next.add(media.id);
+                  return next;
+                });
+                setSelectedItems((prev) => {
+                  const next = new Map(prev);
+                  if (!multiple) next.clear();
+                  next.set(media.id, media);
+                  return next;
+                });
                 setTab("browse");
               }}
             />

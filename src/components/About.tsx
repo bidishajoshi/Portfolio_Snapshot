@@ -4,7 +4,31 @@ import { motion } from "framer-motion";
 import { aboutContent, stats } from "@/data/site";
 import SafeImage from "@/components/ui/SafeImage";
 
-export default function About() {
+export interface AboutProps {
+  portrait?: string | null;
+  title?: string | null;
+  subtitle?: string | null;
+  bio?: string[] | string | null;
+  stats?: Array<{ value: number; suffix?: string; label: string }> | null;
+}
+
+export default function About({
+  portrait: livePortrait,
+  title: liveTitle,
+  subtitle: liveSubtitle,
+  bio: liveBio,
+  stats: liveStats,
+}: AboutProps = {}) {
+  const displayedPortrait = livePortrait || aboutContent.portrait;
+  const displayedTitle = liveTitle || aboutContent.title;
+  const displayedSubtitle = liveSubtitle || aboutContent.subtitle;
+  const displayedBio: string[] = liveBio
+    ? Array.isArray(liveBio)
+      ? liveBio
+      : liveBio.split(/\n\n+/).map((p) => p.trim()).filter(Boolean)
+    : [...aboutContent.bio];
+  const displayedStats = (liveStats && liveStats.length > 0) ? liveStats : stats;
+
   return (
     <section id="about" className="section-padding bg-surface pt-32 pb-32">
       <div className="section-container">
@@ -20,7 +44,7 @@ export default function About() {
             <div className="w-full h-full card-3d-inner relative">
               <div className="absolute inset-4 border border-cyan-glow/30 z-10 translate-x-4 translate-y-4 rounded" />
               <SafeImage
-                src={aboutContent.portrait}
+                src={displayedPortrait}
                 alt="Photographer Portrait"
                 className="w-full h-full object-cover relative z-20 shadow-2xl rounded"
               />
@@ -33,18 +57,18 @@ export default function About() {
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.8 }}
           >
-            <h2 className="text-label mb-4">{aboutContent.title}</h2>
-            <h3 className="heading-section mb-2">{aboutContent.subtitle}</h3>
+            <h2 className="text-label mb-4">{displayedTitle}</h2>
+            <h3 className="heading-section mb-2">{displayedSubtitle}</h3>
             <div className="gold-line mb-8" />
             
             <div className="space-y-6 text-stone text-lg leading-relaxed mb-12">
-              {aboutContent.bio.map((paragraph, idx) => (
+              {displayedBio.map((paragraph, idx) => (
                 <p key={idx}>{paragraph}</p>
               ))}
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-              {stats.map((stat, idx) => (
+              {displayedStats.map((stat, idx) => (
                 <div key={idx} className="flex flex-col p-4 glass-card rounded-lg border border-border/40">
                   <span className="font-display text-4xl text-cyan-glow mb-1">
                     {stat.value < 10 ? `0${stat.value}` : stat.value}{stat.suffix}

@@ -2,12 +2,21 @@
 
 import { motion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
-import FacebookIcon from "@/components/icons/FacebookIcon";
-import InstagramIcon from "@/components/icons/InstagramIcon";
+import SocialIcon from "@/components/icons/SocialIcon";
 import SafeImage from "@/components/ui/SafeImage";
 
+function getSocialUrl(platform: string, url: string): string {
+  const p = platform.toLowerCase().trim();
+  if (p === "whatsapp") {
+    if (url.startsWith("http://") || url.startsWith("https://")) return url;
+    const cleanNumber = url.replace(/[^0-9]/g, "");
+    return cleanNumber ? `https://wa.me/${cleanNumber}` : "https://wa.me/";
+  }
+  return url;
+}
+
 export default function Social({ socialLinks: liveLinks, photos = [] }: { socialLinks?: Array<{ platform: string; label: string | null; url: string; enabled: boolean }>; photos?: Array<{ id: string; publicId: string; title: string }> }) {
-  const displayedLinks = liveLinks ?? [];
+  const displayedLinks = (liveLinks ?? []).filter((link) => link.enabled);
 
   return (
     <section className="py-24 bg-surface border-t border-border/50">
@@ -47,13 +56,13 @@ export default function Social({ socialLinks: liveLinks, photos = [] }: { social
           {displayedLinks.map((link) => (
             <a 
               key={link.platform}
-              href={link.url}
+              href={getSocialUrl(link.platform, link.url)}
               target="_blank"
               rel="noreferrer"
               className="flex items-center gap-3 text-ivory hover:text-cyan-glow bg-surface-raised hover:bg-surface border border-border hover:border-cyan-glow/40 transition-all duration-300 font-semibold px-6 py-3.5 rounded-full text-sm shadow-md hover:shadow-cyan-glow/10"
             >
-              {link.platform.toLowerCase() === "instagram" ? <InstagramIcon size={18} className="text-cyan-glow" /> : <FacebookIcon size={18} className="text-cyan-glow" />}
-              <span>Follow on {link.platform}</span>
+              <SocialIcon platform={link.platform} size={18} className="text-cyan-glow" />
+              <span>{link.label || `Follow on ${link.platform}`}</span>
               <ArrowUpRight size={16} className="opacity-60" />
             </a>
           ))}

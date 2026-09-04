@@ -1,10 +1,4 @@
 @import "tailwindcss";
-
-/*
-  DR DSLR design tokens - Sapphire & Midnight Photography Palette
-  -------------------------------------------------------------
-*/
-
 :root {
   --color-ink: #090d16;            /* deep midnight background */
   --color-surface: #111726;        /* cards & panels */

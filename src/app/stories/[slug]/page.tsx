@@ -1,6 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 
+export const dynamic = "force-dynamic";
+
 export default async function StoryPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const supabase = await createClient();
@@ -8,7 +10,6 @@ export default async function StoryPage({ params }: { params: Promise<{ slug: st
     .from("stories")
     .select("id, title, slug, introduction, location, story_date, cover_media_id")
     .eq("slug", slug)
-    .eq("published", true)
     .maybeSingle();
 
   if (!story) return <main className="min-h-screen bg-ink p-10 text-ivory">Story not found.</main>;

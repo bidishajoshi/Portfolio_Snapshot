@@ -11,7 +11,9 @@ export default function Gallery({ photos: livePhotos, categories: liveCategories
   const [filter, setFilter] = useState<string>("All");
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const displayedPhotos = livePhotos ?? [];
-  const displayedCategories = ["All", ...(liveCategories ?? [])];
+  const photoCategories = Array.from(new Set(displayedPhotos.map((p) => p.category).filter(Boolean)));
+  const combinedCategories = Array.from(new Set([...(liveCategories ?? []), ...photoCategories]));
+  const displayedCategories = ["All", ...combinedCategories];
 
   useEffect(() => {
     const handleCategoryFilter = (event: Event) => {
