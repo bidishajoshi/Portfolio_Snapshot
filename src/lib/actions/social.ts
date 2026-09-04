@@ -7,7 +7,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 export async function saveSocialLink(input: { id?: string; platform: string; label?: string; url: string; enabled?: boolean }) {
   await requireAdmin();
   const supabase = createAdminClient();
-  const values = { platform: input.platform, label: input.label || null, url: input.url, enabled: input.enabled ?? true };
+  const values = { platform: input.platform, label: input.label || null, url: input.url };
   const query = input.id ? supabase.from("social_links").update(values).eq("id", input.id) : supabase.from("social_links").insert(values);
   const { error } = await query;
   if (error) throw new Error(error.message);

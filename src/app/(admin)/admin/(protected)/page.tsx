@@ -27,23 +27,23 @@ async function getCounts() {
     ]);
 
     return {
-      totalPhotos: totalPhotos.count ?? 15,
-      publishedPhotos: publishedPhotos.count ?? 15,
-      featuredPhotos: featuredPhotos.count ?? 6,
-      albums: albums.count ?? 6,
-      featuredAlbums: featuredAlbums.count ?? 4,
-      categories: categories.count ?? 8,
-      unreadInquiries: unreadInquiries.count ?? 2,
+      totalPhotos: totalPhotos.count ?? 0,
+      publishedPhotos: publishedPhotos.count ?? 0,
+      featuredPhotos: featuredPhotos.count ?? 0,
+      albums: albums.count ?? 0,
+      featuredAlbums: featuredAlbums.count ?? 0,
+      categories: categories.count ?? 0,
+      unreadInquiries: unreadInquiries.count ?? 0,
     };
-  } catch (e) {
+  } catch {
     return {
-      totalPhotos: 15,
-      publishedPhotos: 15,
-      featuredPhotos: 6,
-      albums: 6,
-      featuredAlbums: 4,
-      categories: 8,
-      unreadInquiries: 2,
+      totalPhotos: 0,
+      publishedPhotos: 0,
+      featuredPhotos: 0,
+      albums: 0,
+      featuredAlbums: 0,
+      categories: 0,
+      unreadInquiries: 0,
     };
   }
 }
@@ -57,12 +57,12 @@ export default async function AdminDashboardPage() {
       <p className="text-stone text-sm mt-1">A live snapshot of the studio, pulled straight from the database.</p>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
-        <DashboardCard icon={Images} label="Total Photos" value={counts.totalPhotos} />
-        <DashboardCard icon={CheckCircle2} label="Published Photos" value={counts.publishedPhotos} />
-        <DashboardCard icon={Star} label="Featured Photos" value={counts.featuredPhotos} />
-        <DashboardCard icon={BookImage} label="Albums" value={counts.albums} />
-        <DashboardCard icon={Star} label="Featured Albums" value={counts.featuredAlbums} />
-        <DashboardCard icon={Tags} label="Categories" value={counts.categories} />
+        <DashboardCard icon={Images} label="Total Photos" value={counts.totalPhotos} href="/admin/media" />
+        <DashboardCard icon={CheckCircle2} label="Published Photos" value={counts.publishedPhotos} href="/admin/media" />
+        <DashboardCard icon={Star} label="Featured Photos" value={counts.featuredPhotos} href="/admin/media" />
+        <DashboardCard icon={BookImage} label="Albums" value={counts.albums} href="/admin/albums" />
+        <DashboardCard icon={Star} label="Featured Albums" value={counts.featuredAlbums} href="/admin/albums" />
+        <DashboardCard icon={Tags} label="Categories" value={counts.categories} href="/admin/categories" />
         <DashboardCard
           icon={Mail}
           label="Unread Inquiries"

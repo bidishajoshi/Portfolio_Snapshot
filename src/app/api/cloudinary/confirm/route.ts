@@ -54,6 +54,8 @@ export async function POST(request: Request) {
 
   const {
     cloudinaryPublicId,
+    secureUrl,
+    resourceType,
     kind,
     folder,
     title,
@@ -151,7 +153,7 @@ export async function POST(request: Request) {
 
       // Cloudinary information
       public_id: resource.public_id,
-      secure_url: resource.secure_url,
+      secure_url: resource.secure_url ?? secureUrl ?? null,
       cloudinary_public_id: resource.public_id,
       cloudinary_version: String(resource.version),
 
@@ -161,6 +163,7 @@ export async function POST(request: Request) {
       width: resource.width ?? null,
       height: resource.height ?? null,
       duration: resource.duration ?? null,
+      resource_type: resource.resource_type ?? resourceType ?? kind,
 
       // Tags
       tags: tags ?? [],

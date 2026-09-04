@@ -26,20 +26,26 @@ export async function loginAction(_prevState: LoginState, formData: FormData): P
 
   const cookieStore = await cookies();
 
+  let authError: Error | null = null;
+
   try {
     const supabase = await createClient();
     const { error } = await supabase.auth.signInWithPassword({
       email: parsed.data.email,
       password: parsed.data.password,
     });
+    authError = error;
+  } catch (error) {
+    authError = error instanceof Error ? error : new Error("Supabase unavailable");
+  }
 
-    if (error) return { error: "Invalid email or password." };
-
-    cookieStore.set("admin_session", "true", { path: "/", httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production" });
-    redirect("/admin");
-  } catch {
+  if (authError) {
+    if (authError.message === "Invalid login credentials") return { error: "Invalid email or password." };
     return { error: "Unable to sign in right now. Check Supabase configuration." };
   }
+
+  cookieStore.set("admin_session", "true", { path: "/", httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production" });
+  redirect("/admin");
 }
 
 export async function logoutAction() {
@@ -49,7 +55,7 @@ export async function logoutAction() {
   try {
     const supabase = await createClient();
     await supabase.auth.signOut();
-  } catch (e) {
+  } catch {
     // ignore
   }
 

@@ -5,7 +5,8 @@ import { categories } from "@/data/categories";
 import { ArrowRight } from "lucide-react";
 import SafeImage from "@/components/ui/SafeImage";
 
-export default function Categories() {
+export default function Categories({ categories: liveCategories }: { categories?: Array<{ id: string; name: string; description: string | null; cover: string }> }) {
+  const displayedCategories = liveCategories?.length ? liveCategories : categories;
   return (
     <section className="section-padding bg-ink">
       <div className="section-container">
@@ -22,8 +23,8 @@ export default function Categories() {
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {categories.map((cat, idx) => (
-            <motion.div
+          {displayedCategories.map((cat, idx) => (
+            <motion.a href="#gallery" onClick={() => window.dispatchEvent(new CustomEvent("filter-category", { detail: cat.name }))}
               key={cat.id}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -49,7 +50,7 @@ export default function Categories() {
                   </div>
                 </div>
               </div>
-            </motion.div>
+            </motion.a>
           ))}
         </div>
       </div>

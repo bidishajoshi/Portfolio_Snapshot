@@ -14,9 +14,13 @@ interface SignResponse {
 
 interface CloudinaryUploadResponse {
   public_id?: string;
-  resource_type?: string;
+  secure_url?: string;
+  resource_type?: "image" | "video";
   format?: string;
   bytes?: number;
+  width?: number;
+  height?: number;
+  duration?: number;
   error?: {
     message?: string;
   };
@@ -182,6 +186,13 @@ export async function uploadFileToCloudinary(
       },
       body: JSON.stringify({
         cloudinaryPublicId: uploadResult.public_id,
+        secureUrl: uploadResult.secure_url,
+        resourceType: uploadResult.resource_type,
+        format: uploadResult.format,
+        bytes: uploadResult.bytes,
+        width: uploadResult.width,
+        height: uploadResult.height,
+        duration: uploadResult.duration,
         kind,
         folder: opts.folder,
         title: opts.title,
@@ -219,7 +230,7 @@ export async function uploadFileToCloudinary(
         body.detailsFromSupabase ||
         body.error ||
         rawBody ||
-        "Could not save this photo."
+        "Cloudinary upload succeeded, but the file could not be added to the media library."
     );
   }
 

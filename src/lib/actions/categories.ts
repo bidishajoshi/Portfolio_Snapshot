@@ -19,7 +19,12 @@ export async function listCategoriesAdmin(): Promise<CategoryWithCover[]> {
     .select("*")
     .order("display_order");
   if (error) throw new Error(error.message);
-  return (data ?? []).map((category) => ({ ...category, cover: null })) as unknown as CategoryWithCover[];
+  const coverIds = (data ?? []).map((category) => category.cover_media_id).filter(Boolean);
+  const { data: media } = coverIds.length
+    ? await supabase.from("media").select("id, cloudinary_public_id").in("id", coverIds)
+    : { data: [] };
+  const mediaById = new Map((media ?? []).map((item) => [item.id, item]));
+  return (data ?? []).map((category) => ({ ...category, cover: category.cover_media_id ? mediaById.get(category.cover_media_id) ?? null : null })) as unknown as CategoryWithCover[];
 }
 
 export async function createCategory(input: CategoryInput) {

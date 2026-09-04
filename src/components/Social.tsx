@@ -7,7 +7,8 @@ import FacebookIcon from "@/components/icons/FacebookIcon";
 import InstagramIcon from "@/components/icons/InstagramIcon";
 import SafeImage from "@/components/ui/SafeImage";
 
-export default function Social() {
+export default function Social({ socialLinks: liveLinks }: { socialLinks?: Array<{ platform: string; label: string | null; url: string; enabled: boolean }> }) {
+  const displayedLinks = liveLinks?.length ? liveLinks : socialLinks;
   const photos = [
     "https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=800&q=80",
     "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=80",
@@ -50,7 +51,7 @@ export default function Social() {
         </div>
 
         <div className="flex flex-wrap justify-center gap-6">
-          {socialLinks.map((link) => (
+          {displayedLinks.map((link) => (
             <a 
               key={link.platform}
               href={link.url}

@@ -71,6 +71,9 @@ export interface Media {
   slug: string;
   alt_text: string | null;
   cloudinary_public_id: string;
+  public_id?: string;
+  secure_url?: string;
+  resource_type?: MediaKind;
   cloudinary_version: string | null;
   format: string | null;
   bytes: number | null;

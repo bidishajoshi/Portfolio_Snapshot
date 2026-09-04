@@ -7,11 +7,13 @@ import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import clsx from "clsx";
 import SafeImage from "@/components/ui/SafeImage";
 
-export default function Gallery() {
+export default function Gallery({ photos: livePhotos, categories: liveCategories }: { photos?: Array<{ id: string; title: string; category: string; image: string; location: string; date: string; aspect?: "portrait" | "landscape" | "square" }>; categories?: string[] }) {
   const [filter, setFilter] = useState<string>("All");
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const displayedPhotos = livePhotos?.length ? livePhotos : photos;
+  const displayedCategories = liveCategories?.length ? ["All", ...liveCategories] : photoCategories;
 
-  const filteredPhotos = filter === "All" ? photos : photos.filter(p => p.category === filter);
+  const filteredPhotos = filter === "All" ? displayedPhotos : displayedPhotos.filter(p => p.category === filter);
 
   const openLightbox = (index: number) => setLightboxIndex(index);
   const closeLightbox = () => setLightboxIndex(null);
@@ -33,7 +35,7 @@ export default function Gallery() {
           <div className="gold-line mx-auto mb-10" />
           
           <div className="flex flex-wrap justify-center gap-3">
-            {photoCategories.map(cat => (
+            {displayedCategories.map(cat => (
               <button
                 key={cat}
                 onClick={() => setFilter(cat)}

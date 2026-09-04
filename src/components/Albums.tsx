@@ -6,7 +6,8 @@ import { BookOpen } from "lucide-react";
 import SafeImage from "@/components/ui/SafeImage";
 import Link from "next/link";
 
-export default function Albums() {
+export default function Albums({ albums: liveAlbums }: { albums?: Array<{ id: string; title: string; slug: string; cover: string; location: string | null; date: string; description: string | null; photoCount: number }> }) {
+  const displayedAlbums = liveAlbums?.length ? liveAlbums : albums;
   return (
     <section id="albums" className="section-padding bg-surface">
       <div className="section-container">
@@ -26,7 +27,7 @@ export default function Albums() {
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {albums.map((album, idx) => (
+          {displayedAlbums.map((album, idx) => (
             <Link href={`/albums/${album.slug}`} key={album.id} className="block">
             <motion.div
               key={album.id}

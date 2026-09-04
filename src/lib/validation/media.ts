@@ -22,6 +22,13 @@ export const mediaFolderSchema = z.enum([
  */
 export const confirmUploadSchema = z.object({
   cloudinaryPublicId: z.string().min(1).max(500),
+  secureUrl: z.string().url().optional(),
+  resourceType: z.enum(["image", "video"]).optional(),
+  format: z.string().max(20).optional(),
+  bytes: z.number().int().nonnegative().optional(),
+  width: z.number().int().positive().optional(),
+  height: z.number().int().positive().optional(),
+  duration: z.number().nonnegative().optional(),
   kind: z.enum(["image", "video"]),
   folder: mediaFolderSchema,
   title: z.string().min(1, "Give this photo a name.").max(200),
