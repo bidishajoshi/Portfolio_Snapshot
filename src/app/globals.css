@@ -1,16 +1,16 @@
 @import "tailwindcss";
 :root {
-  --color-ink: #0b132b;            /* professional deep blue */
-  --color-ink-deep: #060a16;       /* deepest blue shadow */
+  --color-ink: #18181b;            /* dark grey (zinc-900) instead of blue */
+  --color-ink-deep: #09090b;       /* deepest grey (zinc-950) */
   --color-maroon: #801a36;         /* rich professional maroon */
   --color-maroon-deep: #9d2243;    /* vibrant maroon flare */
   --color-maroon-dark: #4a0e1c;    /* deepest shadow maroon */
-  --color-surface: #14203a;        /* cards & panels: blue slate */
-  --color-surface-raised: #1d2d50; /* hover/raised state */
-  --color-border: #2a3a5a;         /* crisp blue border */
+  --color-surface: #27272a;        /* cards & panels: dark grey (zinc-800) */
+  --color-surface-raised: #3f3f46; /* hover/raised state (zinc-700) */
+  --color-border: #3f3f46;         /* crisp grey border */
   --color-ivory: #fcfbf7;          /* primary text */
-  --color-stone: #a3b1c6;          /* secondary text */
-  --color-stone-dim: #70809b;      /* muted text */
+  --color-stone: #a1a1aa;          /* secondary text (zinc-400) */
+  --color-stone-dim: #71717a;      /* muted text (zinc-500) */
   --color-yellow: #f59e0b;         /* radiant warm golden yellow */
   --color-yellow-rich: #d97706;    /* rich amber yellow */
   --color-yellow-soft: #fde68a;    /* soft champagne yellow */
@@ -56,13 +56,13 @@ html {
 }
 
 body {
-  background-color: var(--color-ink);
+  background-color: #1a050b; /* very deep maroon base instead of blue */
   background-image:
-    radial-gradient(ellipse 80% 50% at 10% 10%, rgba(128, 26, 54, 0.15), transparent 60%),
-    radial-gradient(ellipse 70% 60% at 90% 30%, rgba(30, 58, 138, 0.18), transparent 60%),
-    radial-gradient(ellipse 80% 50% at 50% 90%, rgba(74, 14, 28, 0.18), transparent 65%),
-    radial-gradient(ellipse 60% 40% at 10% 80%, rgba(11, 19, 43, 0.4), transparent 50%),
-    linear-gradient(180deg, var(--color-ink) 0%, #090e1f 50%, var(--color-ink) 100%);
+    radial-gradient(ellipse 75% 55% at 15% 15%, rgba(128, 26, 54, 0.4), transparent 60%),
+    radial-gradient(ellipse 70% 60% at 85% 25%, rgba(245, 158, 11, 0.15), transparent 65%),
+    radial-gradient(ellipse 80% 50% at 50% 90%, rgba(157, 34, 67, 0.3), transparent 70%),
+    radial-gradient(ellipse 65% 50% at 15% 80%, rgba(251, 191, 36, 0.1), transparent 60%),
+    linear-gradient(180deg, #1a050b 0%, #2b0813 40%, #16040a 100%);
   background-attachment: fixed;
   color: var(--color-ivory);
   font-family: var(--font-body);
