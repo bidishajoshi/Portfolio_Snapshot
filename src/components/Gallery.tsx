@@ -204,7 +204,7 @@ export default function Gallery({
             onClick={(e) => e.stopPropagation()}
           >
             <div className="text-center">
-              <h4 className="text-ivory font-display text-xl mb-0.5">{filteredPhotos[lightboxIndex].title}</h4>
+
               <p className="text-stone text-xs flex items-center justify-center gap-2">
                 <span className="text-cyan-glow font-medium">{filteredPhotos[lightboxIndex].category}</span>
                 {filteredPhotos[lightboxIndex].location && <span>• {filteredPhotos[lightboxIndex].location}</span>}

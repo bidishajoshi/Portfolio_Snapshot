@@ -270,7 +270,6 @@ export default function Contact({
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       className="bg-ink/60 border border-border rounded-lg px-4 py-3 text-sm text-ivory placeholder:text-stone-dim focus:border-cyan-glow focus:ring-1 focus:ring-cyan-glow outline-none transition-all"
-                      placeholder="e.g. Aayush Sharma"
                     />
                   </div>
 
@@ -285,7 +284,6 @@ export default function Contact({
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       className="bg-ink/60 border border-border rounded-lg px-4 py-3 text-sm text-ivory placeholder:text-stone-dim focus:border-cyan-glow focus:ring-1 focus:ring-cyan-glow outline-none transition-all"
-                      placeholder="e.g. aayush@example.com"
                     />
                   </div>
                 </div>
@@ -301,7 +299,6 @@ export default function Contact({
                       value={formData.phone}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                       className="bg-ink/60 border border-border rounded-lg px-4 py-3 text-sm text-ivory placeholder:text-stone-dim focus:border-cyan-glow focus:ring-1 focus:ring-cyan-glow outline-none transition-all"
-                      placeholder="e.g. 9844437665"
                     />
                   </div>
 
@@ -315,7 +312,6 @@ export default function Contact({
                       value={formData.subject}
                       onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                       className="bg-ink/60 border border-border rounded-lg px-4 py-3 text-sm text-ivory placeholder:text-stone-dim focus:border-cyan-glow focus:ring-1 focus:ring-cyan-glow outline-none transition-all"
-                      placeholder="e.g. Wedding shoot enquiry"
                     />
                   </div>
                 </div>
@@ -366,7 +362,6 @@ export default function Contact({
                     value={formData.message}
                     onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                     className="bg-ink/60 border border-border rounded-lg px-4 py-3 text-sm text-ivory placeholder:text-stone-dim focus:border-cyan-glow focus:ring-1 focus:ring-cyan-glow outline-none transition-all resize-y"
-                    placeholder="Tell us about your event, location, timing, or creative vision…"
                   />
                 </div>
 
