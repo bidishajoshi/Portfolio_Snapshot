@@ -1,23 +1,23 @@
 @import "tailwindcss";
 :root {
-  --color-ink: #070b15;            /* deep cinematic midnight navy blue */
-  --color-ink-deep: #04070e;       /* deepest midnight shadow */
-  --color-maroon: #250914;         /* deep atmospheric wine maroon */
-  --color-maroon-deep: #3b0d1e;    /* rich velvet maroon flare */
-  --color-maroon-dark: #16040b;    /* deepest shadow maroon */
-  --color-surface: #0e1628;        /* cards & panels: rich midnight slate */
-  --color-surface-raised: #152038; /* hover/raised state */
-  --color-border: #22324f;         /* crisp subtle slate-navy border */
-  --color-ivory: #fcfbf7;          /* primary gallery ivory text */
-  --color-stone: #94a3b8;          /* secondary text */
-  --color-stone-dim: #64748b;      /* muted text */
-  --color-yellow: #fbbf24;         /* radiant warm golden yellow */
-  --color-yellow-rich: #f59e0b;    /* rich amber yellow */
+  --color-ink: #0b132b;            /* professional deep blue */
+  --color-ink-deep: #060a16;       /* deepest blue shadow */
+  --color-maroon: #801a36;         /* rich professional maroon */
+  --color-maroon-deep: #9d2243;    /* vibrant maroon flare */
+  --color-maroon-dark: #4a0e1c;    /* deepest shadow maroon */
+  --color-surface: #14203a;        /* cards & panels: blue slate */
+  --color-surface-raised: #1d2d50; /* hover/raised state */
+  --color-border: #2a3a5a;         /* crisp blue border */
+  --color-ivory: #fcfbf7;          /* primary text */
+  --color-stone: #a3b1c6;          /* secondary text */
+  --color-stone-dim: #70809b;      /* muted text */
+  --color-yellow: #f59e0b;         /* radiant warm golden yellow */
+  --color-yellow-rich: #d97706;    /* rich amber yellow */
   --color-yellow-soft: #fde68a;    /* soft champagne yellow */
-  --color-gold: #f59e0b;           /* primary warm amber/gold */
-  --color-gold-soft: #fbbf24;      /* glowing gold highlight */
-  --color-cyan-glow: #fbbf24;      /* harmonized to radiant warm gold-yellow */
-  --color-danger: #f87171;
+  --color-gold: #d97706;           /* primary warm amber/gold */
+  --color-gold-soft: #f59e0b;      /* glowing gold highlight */
+  --color-cyan-glow: #60a5fa;      /* cool blue accent */
+  --color-danger: #ef4444;
 
   --font-display: var(--font-playfair), Georgia, "Times New Roman", serif;
   --font-body: var(--font-manrope), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -56,24 +56,13 @@ html {
 }
 
 body {
-  background-color: #070b15;
+  background-color: var(--color-ink);
   background-image:
-    /* Top-left deep velvety maroon atmospheric glow */
-    radial-gradient(ellipse 75% 55% at 6% 8%, rgba(65, 14, 33, 0.65), transparent 60%),
-    /* Top-right cinematic midnight sapphire nebula */
-    radial-gradient(ellipse 80% 50% at 94% 12%, rgba(22, 45, 92, 0.55), transparent 65%),
-    /* Center golden-hour amber radiance */
-    radial-gradient(ellipse 65% 35% at 50% 0%, rgba(245, 158, 11, 0.12), transparent 55%),
-    /* Mid-left deep cinematic navy depth */
-    radial-gradient(ellipse 65% 45% at 8% 52%, rgba(18, 38, 76, 0.5), transparent 60%),
-    /* Mid-right velvety burgundy / wine warmth */
-    radial-gradient(ellipse 70% 50% at 92% 58%, rgba(58, 12, 29, 0.58), transparent 65%),
-    /* Lower-center subtle golden ember highlight */
-    radial-gradient(ellipse 70% 40% at 50% 86%, rgba(251, 191, 36, 0.09), transparent 60%),
-    /* Bottom deep midnight anchor */
-    radial-gradient(ellipse 85% 50% at 50% 105%, rgba(10, 18, 38, 0.75), transparent 70%),
-    /* Deep base gradient tying all layers together */
-    linear-gradient(180deg, #070b15 0%, #0a1122 30%, #0d0f1c 65%, #070b15 100%);
+    radial-gradient(ellipse 80% 50% at 10% 10%, rgba(128, 26, 54, 0.15), transparent 60%),
+    radial-gradient(ellipse 70% 60% at 90% 30%, rgba(30, 58, 138, 0.18), transparent 60%),
+    radial-gradient(ellipse 80% 50% at 50% 90%, rgba(74, 14, 28, 0.18), transparent 65%),
+    radial-gradient(ellipse 60% 40% at 10% 80%, rgba(11, 19, 43, 0.4), transparent 50%),
+    linear-gradient(180deg, var(--color-ink) 0%, #090e1f 50%, var(--color-ink) 100%);
   background-attachment: fixed;
   color: var(--color-ivory);
   font-family: var(--font-body);
@@ -243,4 +232,53 @@ body {
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* Hover effects & Animations */
+.link-underline {
+  position: relative;
+  display: inline-block;
+  text-decoration: none;
+}
+.link-underline::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 2px;
+  bottom: -2px;
+  left: 0;
+  background-color: var(--color-cyan-glow);
+  transition: width 0.3s ease-in-out;
+  border-radius: 2px;
+}
+.link-underline:hover::after {
+  width: 100%;
+}
+
+.hover-lift {
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+}
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+}
+
+.icon-glow {
+  transition: all 0.3s ease;
+}
+.icon-glow:hover {
+  color: var(--color-cyan-glow);
+  filter: drop-shadow(0 0 8px rgba(96, 165, 250, 0.6));
+  transform: scale(1.1) rotate(5deg);
+}
+
+/* Footer gradient animation */
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.bg-gradient-animate {
+  background-size: 200% 200%;
+  animation: gradient-shift 15s ease infinite;
 }

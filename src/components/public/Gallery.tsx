@@ -17,6 +17,7 @@ export function Gallery() {
   useEffect(() => {
     const handleCustomFilter = (e: Event) => {
       const category = (e as CustomEvent).detail;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if (photoCategories.includes(category as any)) {
         setActiveCategory(category);
       }

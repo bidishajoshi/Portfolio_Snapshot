@@ -18,6 +18,10 @@ export const contact = {
 export const socialLinks = [
   { platform: "Instagram", url: "https://instagram.com/drdslr", icon: "instagram", enabled: true },
   { platform: "Facebook", url: "https://facebook.com/drdslr", icon: "facebook", enabled: true },
+  { platform: "Twitter", url: "https://twitter.com/drdslr", icon: "twitter", enabled: true },
+  { platform: "LinkedIn", url: "https://linkedin.com/company/drdslr", icon: "linkedin", enabled: true },
+  { platform: "YouTube", url: "https://youtube.com/c/drdslr", icon: "youtube", enabled: true },
+  { platform: "GitHub", url: "https://github.com/drdslr", icon: "github", enabled: true },
 ] as const;
 
 export const aboutContent = {
