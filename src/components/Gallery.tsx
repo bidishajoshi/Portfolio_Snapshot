@@ -127,7 +127,7 @@ export default function Gallery({
                     src={photo.image}
                     alt={photo.title}
                     loading="lazy"
-                    className="w-full h-auto object-cover transform transition-transform duration-700 group-hover:scale-105"
+                    className="w-full aspect-[4/5] object-cover transform transition-transform duration-700 group-hover:scale-105"
                   />
                   {/* Category Pill Tag always visible on top right */}
                   <div className="absolute top-3 right-3 z-10">
