@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { brand, navLinks } from "@/data/site";
 import clsx from "clsx";
 import { DslrCameraControl } from "@/components/DslrCameraControl";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -63,19 +64,23 @@ export default function Navbar() {
               </li>
             ))}
           </ul>
-          <Link
-            href="#contact"
-            className="px-5 py-2.5 bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-500 text-ink font-semibold hover:brightness-110 transition-all duration-300 rounded-lg text-sm tracking-wide shadow-md shadow-amber-500/20 cursor-pointer"
-          >
-            Book a Shoot
-          </Link>
+          <div className="flex items-center gap-4">
+            <ThemeToggle />
+            <Link
+              href="#contact"
+              className="px-5 py-2.5 bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-500 text-ink font-semibold hover:brightness-110 transition-all duration-300 rounded-lg text-sm tracking-wide shadow-md shadow-amber-500/20 cursor-pointer"
+            >
+              Book a Shoot
+            </Link>
+          </div>
         </nav>
 
         {/* Mobile Toggle & Shutter Button */}
-        <div className="flex items-center gap-2 md:hidden z-50">
+        <div className="flex items-center gap-3 md:hidden z-50">
+          <ThemeToggle />
           <DslrCameraControl />
           <button
-            className="text-ivory p-2"
+            className="text-ivory p-2 hover:text-yellow transition-colors"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label="Toggle Menu"
           >

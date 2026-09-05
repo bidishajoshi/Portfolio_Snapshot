@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Manrope, Playfair_Display } from "next/font/google";
 import { Toaster } from "sonner";
+import { ThemeProvider } from "@/components/ThemeProvider";
 import "./globals.css";
 
 const manrope = Manrope({
@@ -25,25 +26,32 @@ export const metadata: Metadata = {
     "DR DSLR is the photography studio of Himal Shrestha, based in Nepal. Wedding, portrait, night, and cinematic photography that captures moments beyond vision.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   return (
     <html
       lang="en"
       className={`${manrope.variable} ${playfair.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col bg-ink text-ivory">
-        {children}
-        <Toaster
-          theme="dark"
-          position="bottom-right"
-          toastOptions={{
-            style: {
-              background: "var(--color-surface)",
-              border: "1px solid var(--color-border)",
-              color: "var(--color-ivory)",
-            },
-          }}
-        />
+      <body className="min-h-full flex flex-col bg-body-bg text-ivory transition-colors duration-500">
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange={false}
+        >
+          {children}
+          <Toaster
+            position="bottom-right"
+            toastOptions={{
+              className: "bg-surface text-ivory border-border",
+            }}
+          />
+        </ThemeProvider>
       </body>
     </html>
   );

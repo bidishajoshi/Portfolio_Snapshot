@@ -131,7 +131,7 @@ export default function Gallery({
                   />
                   {/* Category Pill Tag always visible on top right */}
                   <div className="absolute top-3 right-3 z-10">
-                    <span className="px-2.5 py-1 rounded-full text-[10px] uppercase font-mono tracking-wider font-semibold bg-black/80 backdrop-blur-md text-ivory border border-white/10 group-hover:border-yellow/60 group-hover:text-yellow transition-colors">
+                    <span className="px-2.5 py-1 rounded-full text-[10px] uppercase font-mono tracking-wider font-semibold bg-black/80 backdrop-blur-md text-white border border-white/10 group-hover:border-yellow/60 group-hover:text-yellow transition-colors">
                       {photo.category}
                     </span>
                   </div>

@@ -53,7 +53,7 @@ export default function About({
                 className="w-full h-full object-cover object-top transform transition-transform duration-700 group-hover:scale-105"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-6">
-                <p className="font-display text-lg text-ivory tracking-wide">DR DSLR • Himal Shrestha</p>
+                <p className="font-display text-lg text-white tracking-wide">DR DSLR • Himal Shrestha</p>
               </div>
             </div>
           </motion.div>
