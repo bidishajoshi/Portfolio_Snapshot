@@ -9,7 +9,7 @@ export const brand = {
 } as const;
 
 export const contact = {
-  email: "himalstha87@gmail.com",
+  email: "himalstha85@gmail.com",
   phone: "9844437665",
   location: "Kathmandu, Nepal",
   availability: "Available for selected projects and collaborations.",
