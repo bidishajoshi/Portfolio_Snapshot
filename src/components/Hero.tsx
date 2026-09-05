@@ -26,18 +26,18 @@ export default function Hero({ brandOverride, backgroundImage }: { brandOverride
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2 }}
-          className="text-cyan-glow text-sm tracking-[0.35em] uppercase font-semibold mb-4"
+          className="text-ivory text-sm tracking-[0.35em] uppercase font-semibold mb-4"
         >
-          {displayedBrand.name}
+          {displayedBrand.photographer}
         </motion.p>
         
         <motion.h1
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.4 }}
-          className="font-display text-5xl md:text-7xl lg:text-8xl text-ivory mb-6 leading-tight drop-shadow-lg"
+          className="font-display text-6xl md:text-8xl lg:text-9xl text-transparent bg-clip-text bg-gradient-to-r from-ivory via-cyan-glow to-maroon-deep mb-6 leading-tight drop-shadow-lg font-bold"
         >
-          {displayedBrand.photographer}
+          {displayedBrand.name}
         </motion.h1>
 
         <motion.div
