@@ -9,8 +9,8 @@ export const brand = {
 } as const;
 
 export const contact = {
-  email: "hello@drdslr.com",
-  phone: "+977 9800000000",
+  email: "himalstha87@gmail.com",
+  phone: "9844437665",
   location: "Kathmandu, Nepal",
   availability: "Available for selected projects and collaborations.",
 } as const;
