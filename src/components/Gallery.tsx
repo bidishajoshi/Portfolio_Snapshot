@@ -138,7 +138,6 @@ export default function Gallery({
 
                   {/* Gradient overlay on hover */}
                   <div className="absolute inset-0 bg-gradient-to-t from-ink/95 via-ink/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
-                    <h4 className="text-ivory font-display text-xl leading-tight">{photo.title}</h4>
                     <div className="flex items-center gap-3 text-stone-dim text-xs mt-1.5">
                       {photo.location && (
                         <span className="inline-flex items-center gap-1">
