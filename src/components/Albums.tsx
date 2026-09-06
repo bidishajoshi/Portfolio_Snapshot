@@ -5,7 +5,17 @@ import { BookOpen, Calendar, MapPin } from "lucide-react";
 import SafeImage from "@/components/ui/SafeImage";
 import Link from "next/link";
 
-export default function Albums({ albums: liveAlbums }: { albums?: Array<{ id: string; title: string; slug: string; cover: string; location: string | null; date: string; description: string | null; photoCount: number }> }) {
+export default function Albums({
+  albums: liveAlbums,
+  title,
+  subtitle,
+  description,
+}: {
+  albums?: Array<{ id: string; title: string; slug: string; cover: string; location: string | null; date: string; description: string | null; photoCount: number }>;
+  title?: string | null;
+  subtitle?: string | null;
+  description?: string | null;
+}) {
   const displayedAlbums = liveAlbums ?? [];
   return (
     <section id="albums" className="section-padding bg-surface/50 relative">
@@ -17,11 +27,11 @@ export default function Albums({ albums: liveAlbums }: { albums?: Array<{ id: st
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <h2 className="text-label mb-4">Collections</h2>
-          <h3 className="heading-section mb-6">Featured Albums</h3>
+          <h2 className="text-label mb-4">{subtitle || "Collections"}</h2>
+          <h3 className="heading-section mb-6">{title || "Featured Albums"}</h3>
           <div className="gold-line mx-auto mb-6" />
           <p className="text-stone max-w-2xl mx-auto">
-            Thoughtfully curated photographic series captured across Nepal and beyond.
+            {description || "Thoughtfully curated photographic series captured across Nepal and beyond."}
           </p>
         </motion.div>
 

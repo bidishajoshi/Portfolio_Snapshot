@@ -3,7 +3,15 @@
 import { motion } from "framer-motion";
 import { processSteps } from "@/data/site";
 
-export default function Experience() {
+export default function Experience({
+  title,
+  subtitle,
+  description,
+}: {
+  title?: string | null;
+  subtitle?: string | null;
+  description?: string | null;
+}) {
   return (
     <section id="experience" className="section-padding bg-surface-raised relative">
       <div className="section-container max-w-5xl">
@@ -14,8 +22,9 @@ export default function Experience() {
           transition={{ duration: 0.6 }}
           className="text-center mb-20"
         >
-          <h2 className="text-label mb-4">Process</h2>
-          <h3 className="heading-section mb-6">How I Work</h3>
+          <h2 className="text-label mb-4">{subtitle || "Process"}</h2>
+          <h3 className="heading-section mb-6">{title || "How I Work"}</h3>
+          {description && <p className="text-stone text-sm max-w-md mx-auto mb-4">{description}</p>}
           <div className="gold-line mx-auto" />
         </motion.div>
 

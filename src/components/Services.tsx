@@ -4,7 +4,17 @@ import { motion } from "framer-motion";
 import * as LucideIcons from "lucide-react";
 import type { ComponentType } from "react";
 
-export default function Services({ services: liveServices }: { services?: Array<{ id: string; title: string; description: string | null }> }) {
+export default function Services({
+  services: liveServices,
+  title,
+  subtitle,
+  description,
+}: {
+  services?: Array<{ id: string; title: string; description: string | null }>;
+  title?: string | null;
+  subtitle?: string | null;
+  description?: string | null;
+}) {
   const displayedServices = (liveServices ?? []).map((service) => ({ ...service, icon: "camera" }));
   return (
     <section id="services" className="section-padding bg-ink border-t border-border/50">
@@ -16,8 +26,9 @@ export default function Services({ services: liveServices }: { services?: Array<
            transition={{ duration: 0.6 }}
            className="text-center mb-16"
         >
-          <h2 className="text-label mb-4">Expertise</h2>
-          <h3 className="heading-section mb-6">Services</h3>
+          <h2 className="text-label mb-4">{subtitle || "Expertise"}</h2>
+          <h3 className="heading-section mb-6">{title || "Services"}</h3>
+          {description && <p className="text-stone text-sm max-w-md mx-auto mb-4">{description}</p>}
           <div className="gold-line mx-auto" />
         </motion.div>
 

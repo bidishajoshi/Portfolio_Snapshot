@@ -4,7 +4,17 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Quote, ChevronLeft, ChevronRight } from "lucide-react";
 
-export default function Testimonials({ testimonials: liveTestimonials }: { testimonials?: Array<{ id: string; client_name: string; review: string; event_type?: string | null; avatar?: string | null }> }) {
+export default function Testimonials({
+  testimonials: liveTestimonials,
+  title,
+  subtitle,
+  description,
+}: {
+  testimonials?: Array<{ id: string; client_name: string; review: string; event_type?: string | null; avatar?: string | null }>;
+  title?: string | null;
+  subtitle?: string | null;
+  description?: string | null;
+}) {
   const displayedTestimonials = (liveTestimonials ?? []).map((item) => ({ name: item.client_name, review: item.review, eventType: item.event_type ?? "Client", avatar: item.avatar ?? null }));
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -24,8 +34,9 @@ export default function Testimonials({ testimonials: liveTestimonials }: { testi
            transition={{ duration: 0.6 }}
            className="text-center mb-16"
         >
-          <h2 className="text-label mb-4">Words</h2>
-          <h3 className="heading-section mb-6">Client Stories</h3>
+          <h2 className="text-label mb-4">{subtitle || "Words"}</h2>
+          <h3 className="heading-section mb-6">{title || "Client Stories"}</h3>
+          {description && <p className="text-stone text-sm max-w-md mx-auto mb-4">{description}</p>}
           <div className="gold-line mx-auto" />
         </motion.div>
 

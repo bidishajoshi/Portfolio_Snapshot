@@ -23,8 +23,14 @@ export interface StoryItem {
 
 export default function Stories({
   stories: liveStories,
+  title,
+  subtitle,
+  description,
 }: {
   stories?: StoryItem[];
+  title?: string | null;
+  subtitle?: string | null;
+  description?: string | null;
 }) {
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [activeModalIndex, setActiveModalIndex] = useState<number | null>(null);
@@ -77,11 +83,11 @@ export default function Stories({
           className="text-center mb-16"
         >
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-surface border border-yellow/30 text-yellow text-xs uppercase tracking-widest font-mono mb-4 shadow-sm">
-            <span>Editorial Journal</span>
+            <span>{subtitle || "Editorial Journal"}</span>
           </div>
-          <h2 className="heading-section mb-4">Visual Stories</h2>
+          <h2 className="heading-section mb-4">{title || "Visual Stories"}</h2>
           <p className="text-stone max-w-xl mx-auto text-sm md:text-base">
-            Narrative-driven assignments, field notes, and intimate photographic chronicles.
+            {description || "Narrative-driven assignments, field notes, and intimate photographic chronicles."}
           </p>
           <div className="gold-line mx-auto mt-6" />
 

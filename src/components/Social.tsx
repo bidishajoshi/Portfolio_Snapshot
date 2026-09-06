@@ -15,7 +15,19 @@ function getSocialUrl(platform: string, url: string): string {
   return url;
 }
 
-export default function Social({ socialLinks: liveLinks, photos = [] }: { socialLinks?: Array<{ platform: string; label: string | null; url: string; enabled: boolean }>; photos?: Array<{ id: string; publicId: string; title: string }> }) {
+export default function Social({
+  socialLinks: liveLinks,
+  photos = [],
+  title,
+  subtitle,
+  description,
+}: {
+  socialLinks?: Array<{ platform: string; label: string | null; url: string; enabled: boolean }>;
+  photos?: Array<{ id: string; publicId: string; title: string }>;
+  title?: string | null;
+  subtitle?: string | null;
+  description?: string | null;
+}) {
   const displayedLinks = (liveLinks ?? []).filter((link) => link.enabled);
 
   return (
@@ -28,9 +40,9 @@ export default function Social({ socialLinks: liveLinks, photos = [] }: { social
            transition={{ duration: 0.6 }}
            className="text-center mb-12"
         >
-          <h2 className="text-label mb-3">Community</h2>
-          <h3 className="heading-section mb-4">Follow the Journey</h3>
-          <p className="text-stone">Behind the scenes, field notes, and daily photography updates.</p>
+          <h2 className="text-label mb-3">{subtitle || "Community"}</h2>
+          <h3 className="heading-section mb-4">{title || "Follow the Journey"}</h3>
+          <p className="text-stone">{description || "Behind the scenes, field notes, and daily photography updates."}</p>
         </motion.div>
 
         {/* Minimal grid representation of recent posts */}

@@ -4,7 +4,15 @@ import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import SafeImage from "@/components/ui/SafeImage";
 
-export default function Categories({ categories: liveCategories }: { categories?: Array<{ id: string; name: string; description: string | null; cover: string }> }) {
+export default function Categories({
+  categories: liveCategories,
+  title,
+  subtitle,
+}: {
+  categories?: Array<{ id: string; name: string; description: string | null; cover: string }>;
+  title?: string | null;
+  subtitle?: string | null;
+}) {
   const displayedCategories = liveCategories ?? [];
   return (
     <section className="section-padding bg-ink">
@@ -16,8 +24,8 @@ export default function Categories({ categories: liveCategories }: { categories?
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <h2 className="text-label mb-4">Portfolio</h2>
-          <h3 className="heading-section mb-6">What I Photograph</h3>
+          <h2 className="text-label mb-4">{subtitle || "Portfolio"}</h2>
+          <h3 className="heading-section mb-6">{title || "What I Photograph"}</h3>
           <div className="gold-line mx-auto" />
         </motion.div>
 

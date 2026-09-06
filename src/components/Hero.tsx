@@ -5,7 +5,7 @@ import { brand } from "@/data/site";
 import Link from "next/link";
 import SafeImage from "@/components/ui/SafeImage";
 
-export default function Hero({ brandOverride, backgroundImage }: { brandOverride?: { name: string; photographer: string; tagline: string }; backgroundImage?: string | null }) {
+export default function Hero({ brandOverride, backgroundImage }: { brandOverride?: { name: string; photographer: string; tagline: string; supportingText?: string | null }; backgroundImage?: string | null }) {
   const displayedBrand = brandOverride ?? brand;
   return (
     <section id="home" className="relative h-screen w-full flex items-center justify-center overflow-hidden">
@@ -62,7 +62,7 @@ export default function Hero({ brandOverride, backgroundImage }: { brandOverride
           transition={{ duration: 0.8, delay: 1 }}
           className="text-stone max-w-xl mb-10 text-lg leading-relaxed"
         >
-          {brand.supportingText}
+          {displayedBrand.supportingText || brand.supportingText}
         </motion.p>
 
         <motion.div

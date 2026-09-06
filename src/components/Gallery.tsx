@@ -9,6 +9,9 @@ import SafeImage from "@/components/ui/SafeImage";
 export default function Gallery({
   photos: livePhotos,
   categories: liveCategories,
+  title,
+  subtitle,
+  description,
 }: {
   photos?: Array<{
     id: string;
@@ -20,6 +23,9 @@ export default function Gallery({
     aspect?: "portrait" | "landscape" | "square";
   }>;
   categories?: string[];
+  title?: string | null;
+  subtitle?: string | null;
+  description?: string | null;
 }) {
   const [filter, setFilter] = useState<string>("All");
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
@@ -77,11 +83,11 @@ export default function Gallery({
         >
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-surface border border-yellow/30 text-yellow text-xs uppercase tracking-widest font-mono mb-4 shadow-sm">
             <Camera size={12} />
-            <span>Curated Portfolio</span>
+            <span>{subtitle || "Curated Portfolio"}</span>
           </div>
-          <h2 className="heading-section mb-4">Selected Stories</h2>
+          <h2 className="heading-section mb-4">{title || "Selected Stories"}</h2>
           <p className="text-stone text-sm max-w-md mx-auto">
-            A glimpse into moments immortalized through the lens of DR DSLR.
+            {description || "A glimpse into moments immortalized through the lens of DR DSLR."}
           </p>
           <div className="gold-line mx-auto my-6" />
 
