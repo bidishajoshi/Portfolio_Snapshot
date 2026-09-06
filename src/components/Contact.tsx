@@ -9,8 +9,14 @@ import WhatsappIcon from "@/components/icons/WhatsappIcon";
 
 export default function Contact({
   contactOverride,
+  title,
+  subtitle,
+  description,
 }: {
   contactOverride?: { email: string | null; phone: string | null };
+  title?: string | null;
+  subtitle?: string | null;
+  description?: string | null;
 }) {
   const displayedContact = { ...contact, ...contactOverride };
   const targetWhatsAppNumber = "9844437665";
@@ -122,11 +128,11 @@ export default function Contact({
         >
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-surface-raised border border-yellow/30 text-yellow text-xs uppercase tracking-widest font-mono mb-4 shadow-sm">
             <Sparkles size={12} className="text-yellow" />
-            <span>Get in Touch</span>
+            <span>{subtitle || "Get in Touch"}</span>
           </div>
-          <h2 className="heading-section mb-4">Let&apos;s Create Something Cinematic</h2>
+          <h2 className="heading-section mb-4">{title || "Let's Create Something Cinematic"}</h2>
           <p className="text-stone max-w-lg mx-auto text-sm md:text-base">
-            Have an upcoming wedding, editorial shoot, or portrait session? Reach out below or message us directly on WhatsApp.
+            {description || "Have an upcoming wedding, editorial shoot, or portrait session? Reach out below or message us directly on WhatsApp."}
           </p>
           <div className="gold-line mx-auto mt-6" />
         </motion.div>
