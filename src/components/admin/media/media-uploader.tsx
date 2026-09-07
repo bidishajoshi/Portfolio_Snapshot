@@ -30,16 +30,36 @@ export function MediaUploader({
   const inputRef = useRef<HTMLInputElement>(null);
 
   const addFiles = useCallback((files: FileList | File[]) => {
-    const newItems: QueueItem[] = Array.from(files)
-      .filter((f) => f.type.startsWith("image/") || f.type.startsWith("video/"))
-      .map((file) => ({
-        id: crypto.randomUUID(),
-        file,
-        previewUrl: URL.createObjectURL(file),
-        title: titleFromFilename(file.name),
-        status: "pending" as const,
-        progress: 0,
-      }));
+    const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20 MB max file size
+    const validFiles: File[] = [];
+    const tooLargeFiles: string[] = [];
+
+    Array.from(files).forEach((f) => {
+      if (f.type.startsWith("image/") || f.type.startsWith("video/")) {
+        if (f.size > MAX_FILE_SIZE) {
+          tooLargeFiles.push(f.name);
+        } else {
+          validFiles.push(f);
+        }
+      }
+    });
+
+    if (tooLargeFiles.length > 0) {
+      toast.error(
+        `File(s) exceed 20 MB limit: ${tooLargeFiles.slice(0, 3).join(", ")}${
+          tooLargeFiles.length > 3 ? ` and ${tooLargeFiles.length - 3} more` : ""
+        }`
+      );
+    }
+
+    const newItems: QueueItem[] = validFiles.map((file) => ({
+      id: crypto.randomUUID(),
+      file,
+      previewUrl: URL.createObjectURL(file),
+      title: titleFromFilename(file.name),
+      status: "pending" as const,
+      progress: 0,
+    }));
     setItems((prev) => [...newItems, ...prev]);
   }, []);
 
@@ -112,7 +132,7 @@ export function MediaUploader({
       >
         <UploadCloud size={28} strokeWidth={1.5} className="text-stone" />
         <p className="text-sm text-ivory">Drag photos here, or click to browse</p>
-        <p className="text-xs text-stone-dim">Upload as many as you like — JPG, PNG, WebP, or video</p>
+        <p className="text-xs text-stone-dim">Supports high-res photos & video up to 20 MB each — JPG, PNG, WebP, TIFF</p>
         <input
           ref={inputRef}
           type="file"
