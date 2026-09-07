@@ -15,7 +15,12 @@ export default function Testimonials({
   subtitle?: string | null;
   description?: string | null;
 }) {
-  const displayedTestimonials = (liveTestimonials ?? []).map((item) => ({ name: item.client_name, review: item.review, eventType: item.event_type ?? "Client", avatar: item.avatar ?? null }));
+  const displayedTestimonials = (liveTestimonials ?? []).map((item) => ({
+    name: item.client_name,
+    review: item.review,
+    eventType: item.event_type ?? "Client",
+    avatar: item.avatar && item.avatar.trim() !== "" ? item.avatar : null,
+  }));
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const next = () => setCurrentIndex((prev) => (prev + 1) % displayedTestimonials.length);

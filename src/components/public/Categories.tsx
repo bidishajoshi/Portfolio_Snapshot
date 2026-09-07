@@ -5,6 +5,8 @@ import { ArrowUpRight } from "lucide-react";
 import { SectionHeading } from "./SectionHeading";
 import { categories } from "@/data/categories";
 
+import SafeImage from "@/components/ui/SafeImage";
+
 export function Categories() {
   const handleCategoryClick = (categoryName: string) => {
     // Scroll to gallery section and set filter if possible
@@ -40,7 +42,7 @@ export function Categories() {
             >
               <div className="card-3d-inner relative aspect-[4/5] overflow-hidden rounded-sm bg-surface border border-border/50">
                 {/* Background Image / Placeholder */}
-                <img
+                <SafeImage
                   src={cat.cover}
                   alt={cat.name}
                   className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
