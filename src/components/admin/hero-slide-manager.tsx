@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { Plus, Trash2, Images } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MediaPicker } from "@/components/admin/media/media-picker";
-import { addHeroSlide, removeHeroSlide } from "@/lib/actions/site-content";
+import { addHeroSlidesBulk, removeHeroSlide } from "@/lib/actions/site-content";
 import { cloudinaryImageUrl } from "@/lib/cloudinary/url";
 import type { Media } from "@/types/database";
 
@@ -25,21 +25,22 @@ export function HeroSlideManager({
 
   const handleAddMedia = (items: Media[]) => {
     if (!items.length) return;
-    const selected = items[0];
 
     if (initialSlides.length >= 10) {
       toast.error("Maximum 10 hero photos allowed.");
       return;
     }
 
+    const mediaIds = items.map((it) => it.id);
+
     startTransition(async () => {
       try {
-        await addHeroSlide(selected.id);
-        toast.success("Hero photo added to slider.");
+        await addHeroSlidesBulk(mediaIds);
+        toast.success(`Selected hero photo(s) added to slider.`);
         setPickerOpen(false);
         window.location.reload();
       } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Could not add hero photo.");
+        toast.error(err instanceof Error ? err.message : "Could not add hero photos.");
       }
     });
   };
@@ -157,7 +158,7 @@ export function HeroSlideManager({
 
       {pickerOpen && (
         <MediaPicker
-          multiple={false}
+          multiple={true}
           folder="hero"
           onSelect={handleAddMedia}
           onClose={() => setPickerOpen(false)}

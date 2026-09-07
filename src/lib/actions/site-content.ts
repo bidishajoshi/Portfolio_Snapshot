@@ -53,21 +53,29 @@ export async function setHeroBackground(mediaId: string) {
 }
 
 export async function addHeroSlide(mediaId: string) {
+  return addHeroSlidesBulk([mediaId]);
+}
+
+export async function addHeroSlidesBulk(mediaIds: string[]) {
   await requireAdmin();
   const supabase = createAdminClient();
-  const { count } = await supabase.from("hero_slides").select("id", { count: "exact", head: true });
+  const { data: existing } = await supabase.from("hero_slides").select("id");
+  const existingCount = existing?.length ?? 0;
 
-  if ((count ?? 0) >= 10) {
-    throw new Error("You can select a maximum of 10 hero photos.");
+  const remainingSlots = 10 - existingCount;
+  if (remainingSlots <= 0) {
+    throw new Error("Maximum 10 hero photos allowed.");
   }
 
-  const { error } = await supabase.from("hero_slides").insert({
-    media_id: mediaId,
+  const idsToAdd = mediaIds.slice(0, remainingSlots);
+  const rows = idsToAdd.map((media_id, index) => ({
+    media_id,
     published: true,
     enabled: true,
-    display_order: count ?? 0,
-  });
+    display_order: existingCount + index,
+  }));
 
+  const { error } = await supabase.from("hero_slides").insert(rows);
   if (error) throw new Error(error.message);
 
   revalidatePath("/");
