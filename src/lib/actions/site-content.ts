@@ -52,6 +52,58 @@ export async function setHeroBackground(mediaId: string) {
   revalidatePath("/admin/homepage");
 }
 
+export async function addHeroSlide(mediaId: string) {
+  await requireAdmin();
+  const supabase = createAdminClient();
+  const { count } = await supabase.from("hero_slides").select("id", { count: "exact", head: true });
+
+  if ((count ?? 0) >= 10) {
+    throw new Error("You can select a maximum of 10 hero photos.");
+  }
+
+  const { error } = await supabase.from("hero_slides").insert({
+    media_id: mediaId,
+    published: true,
+    enabled: true,
+    display_order: count ?? 0,
+  });
+
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/");
+  revalidatePath("/admin/homepage");
+}
+
+export async function removeHeroSlide(id: string) {
+  await requireAdmin();
+  const supabase = createAdminClient();
+  const { count } = await supabase.from("hero_slides").select("id", { count: "exact", head: true });
+
+  if ((count ?? 0) <= 1) {
+    throw new Error("Minimum 1 hero photo is required.");
+  }
+
+  const { error } = await supabase.from("hero_slides").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/");
+  revalidatePath("/admin/homepage");
+}
+
+export async function reorderHeroSlides(orderedIds: string[]) {
+  await requireAdmin();
+  const supabase = createAdminClient();
+
+  await Promise.all(
+    orderedIds.map((id, index) =>
+      supabase.from("hero_slides").update({ display_order: index }).eq("id", id)
+    )
+  );
+
+  revalidatePath("/");
+  revalidatePath("/admin/homepage");
+}
+
 export async function updateAboutSection(input: {
   title?: string;
   subtitle?: string;

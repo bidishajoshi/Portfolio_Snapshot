@@ -44,7 +44,7 @@ export default async function HomePage() {
     supabase.from("media").select("id, title, cloudinary_public_id, kind, folder").eq("archived", false),
     supabase.from("photos").select("id, title, media_id, category_id, location, photo_date, status").eq("status", "published").order("display_order"),
     supabase.from("social_links").select("platform, label, url, enabled").eq("enabled", true),
-    supabase.from("hero_slides").select("media:media(cloudinary_public_id)").eq("published", true).eq("enabled", true).order("display_order").limit(1).maybeSingle(),
+    supabase.from("hero_slides").select("id, media:media(cloudinary_public_id)").eq("published", true).eq("enabled", true).order("display_order").limit(10),
     supabase.from("album_media").select("album_id"),
     supabase.from("homepage_sections").select("title, subtitle, content").eq("section_key", "about").maybeSingle(),
     supabase.from("homepage_sections").select("id, section_key, title, subtitle, description, enabled").order("display_order"),
@@ -164,7 +164,15 @@ export default async function HomePage() {
     }
   }
 
-  const heroMedia = (heroSlide?.media as { cloudinary_public_id?: string } | null)?.cloudinary_public_id ?? null;
+  const heroImages = (heroSlide ?? [])
+    .map((slide) => {
+      const media = (slide as any).media as { cloudinary_public_id?: string } | null;
+      return media?.cloudinary_public_id
+        ? cloudinaryImageUrl(media.cloudinary_public_id, { width: 2000 })
+        : null;
+    })
+    .filter((url): url is string => Boolean(url));
+
   const socialPhotos = (dbMedia ?? []).filter((item) => item.kind === "image").slice(0, 4).map((item) => ({ id: item.id, publicId: item.cloudinary_public_id, title: item.title }));
 
   return (
@@ -173,7 +181,7 @@ export default async function HomePage() {
       {isEnabled("hero") && (
         <Hero
           brandOverride={settings ? { name: settings.brand_name, photographer: settings.photographer_name, tagline: settings.tagline, supportingText: heroSec?.description || settings?.seo_description } : undefined}
-          backgroundImage={heroMedia ? cloudinaryImageUrl(heroMedia, { width: 2000 }) : null}
+          backgroundImages={heroImages}
         />
       )}
       {isEnabled("about") && (
