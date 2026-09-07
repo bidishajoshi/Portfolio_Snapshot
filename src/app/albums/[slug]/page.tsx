@@ -28,19 +28,19 @@ export default async function AlbumPage({ params }: { params: Promise<{ slug: st
 
   const { data: links } = await supabase
     .from("album_media")
-    .select("media:media(id, title, cloudinary_public_id, kind)")
+    .select("media:media(id, title, cloudinary_public_id, secure_url, public_id, kind)")
     .eq("album_id", album.id)
     .order("display_order");
 
   let mediaItems = (links ?? [])
-    .map((link) => (link as unknown as { media: { id: string; title: string; cloudinary_public_id: string; kind: string } | null }).media)
-    .filter((item): item is { id: string; title: string; cloudinary_public_id: string; kind: string } => Boolean(item));
+    .map((link) => (link as unknown as { media: { id: string; title: string; cloudinary_public_id: string; secure_url?: string | null; public_id?: string | null; kind: string } | null }).media)
+    .filter((item): item is { id: string; title: string; cloudinary_public_id: string; secure_url?: string | null; public_id?: string | null; kind: string } => Boolean(item));
 
   // If album_media is empty, fallback to cover_media if set
   if (mediaItems.length === 0 && album.cover_media_id) {
     const { data: coverMedia } = await supabase
       .from("media")
-      .select("id, title, cloudinary_public_id, kind")
+      .select("id, title, cloudinary_public_id, secure_url, public_id, kind")
       .eq("id", album.cover_media_id)
       .maybeSingle();
     if (coverMedia) {
@@ -48,18 +48,21 @@ export default async function AlbumPage({ params }: { params: Promise<{ slug: st
     }
   }
 
-  const formattedItems = mediaItems.map((item) => ({
-    id: item.id,
-    title: item.title,
-    cloudinary_public_id: item.cloudinary_public_id,
-    kind: item.kind,
-    url: cloudinaryImageUrl(item.cloudinary_public_id, {
-      width: 1600,
-      height: 1200,
-      crop: "fill",
-    }),
-    videoUrl: item.kind === "video" ? cloudinaryVideoUrl(item.cloudinary_public_id) : undefined,
-  }));
+  const formattedItems = mediaItems.map((item) => {
+    const mId = item.secure_url || item.cloudinary_public_id || item.public_id || "";
+    return {
+      id: item.id,
+      title: item.title,
+      cloudinary_public_id: mId,
+      kind: item.kind,
+      url: cloudinaryImageUrl(mId, {
+        width: 1600,
+        height: 1200,
+        crop: "fill",
+      }),
+      videoUrl: item.kind === "video" ? cloudinaryVideoUrl(mId) : undefined,
+    };
+  });
 
   return (
     <AlbumDetailClient

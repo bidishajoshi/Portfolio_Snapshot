@@ -107,8 +107,8 @@ export function MediaGrid({ refreshKey }: { refreshKey?: number }) {
             <img
               src={
                 item.kind === "video"
-                  ? cloudinaryVideoThumbUrl(item.cloudinary_public_id, 300)
-                  : cloudinaryImageUrl(item.cloudinary_public_id, { width: 300, height: 300, crop: "fill" })
+                  ? cloudinaryVideoThumbUrl(item.secure_url || item.cloudinary_public_id, 300)
+                  : cloudinaryImageUrl(item.secure_url || item.cloudinary_public_id || item.public_id || "", { width: 300, height: 300, crop: "fill" })
               }
               alt={item.alt_text ?? item.title}
               className="h-full w-full object-cover"

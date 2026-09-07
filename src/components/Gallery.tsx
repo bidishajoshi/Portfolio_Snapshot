@@ -132,6 +132,7 @@ export default function Gallery({
                   <SafeImage
                     src={photo.image}
                     alt={photo.title}
+                    variant="medium"
                     loading="lazy"
                     className="w-full aspect-[4/5] object-cover transform transition-transform duration-700 group-hover:scale-105"
                   />
@@ -191,6 +192,7 @@ export default function Gallery({
             <SafeImage
               src={filteredPhotos[lightboxIndex].image}
               alt={filteredPhotos[lightboxIndex].title}
+              variant="original"
               className="max-h-[75vh] max-w-[88vw] object-contain shadow-2xl rounded-lg select-none"
             />
 
@@ -231,7 +233,7 @@ export default function Gallery({
                         : "border-border/40 opacity-50 hover:opacity-100"
                     )}
                   >
-                    <SafeImage src={thumb.image} alt={thumb.title} className="w-full h-full object-cover" />
+                    <SafeImage src={thumb.image} alt={thumb.title} variant="thumb" className="w-full h-full object-cover" />
                   </button>
                 ))}
               </div>

@@ -41,10 +41,10 @@ export default async function HomePage() {
     supabase.from("testimonials").select("id, client_name, review, rating, event_type, client_media_id").eq("published", true).order("created_at", { ascending: false }),
     supabase.from("categories").select("id, name, slug, description, cover_media_id").eq("published", true).order("display_order"),
     supabase.from("albums").select("id, title, slug, description, location, event_date, cover_media_id, featured, is_featured").order("display_order"),
-    supabase.from("media").select("id, title, cloudinary_public_id, kind, folder").eq("archived", false),
+    supabase.from("media").select("id, title, cloudinary_public_id, secure_url, public_id, kind, folder, bytes, width, height, format").eq("archived", false),
     supabase.from("photos").select("id, title, media_id, category_id, location, photo_date, status").eq("status", "published").order("display_order"),
     supabase.from("social_links").select("platform, label, url, enabled").eq("enabled", true),
-    supabase.from("hero_slides").select("id, media:media(cloudinary_public_id)").eq("published", true).eq("enabled", true).order("display_order").limit(10),
+    supabase.from("hero_slides").select("id, media:media(cloudinary_public_id, secure_url, public_id)").eq("published", true).eq("enabled", true).order("display_order").limit(10),
     supabase.from("album_media").select("album_id"),
     supabase.from("homepage_sections").select("title, subtitle, content").eq("section_key", "about").maybeSingle(),
     supabase.from("homepage_sections").select("id, section_key, title, subtitle, description, enabled").order("display_order"),
@@ -66,12 +66,15 @@ export default async function HomePage() {
   const contactSec = getSec("contact_cta");
 
   const mediaById = new Map((dbMedia ?? []).map((item) => [item.id, item]));
+  const getMediaUrlOrId = (m?: { secure_url?: string | null; cloudinary_public_id?: string | null; public_id?: string | null } | null) =>
+    m ? (m.secure_url || m.cloudinary_public_id || m.public_id || "") : "";
+
   const liveCategories = dbCategories?.map((item) => ({
     id: item.id,
     name: item.name,
     description: item.description,
     cover: item.cover_media_id && mediaById.has(item.cover_media_id)
-      ? cloudinaryImageUrl(mediaById.get(item.cover_media_id)!.cloudinary_public_id, { width: 1200, height: 800, crop: "fill" })
+      ? cloudinaryImageUrl(getMediaUrlOrId(mediaById.get(item.cover_media_id)), { width: 1200, height: 800, crop: "fill" })
       : "",
   }));
 
@@ -90,7 +93,7 @@ export default async function HomePage() {
     location: item.location,
     date: item.event_date ?? "",
     cover: item.cover_media_id && mediaById.has(item.cover_media_id)
-      ? cloudinaryImageUrl(mediaById.get(item.cover_media_id)!.cloudinary_public_id, { width: 1200, height: 900, crop: "fill" })
+      ? cloudinaryImageUrl(getMediaUrlOrId(mediaById.get(item.cover_media_id)), { width: 1200, height: 900, crop: "fill" })
       : "",
     photoCount: albumMediaCounts.get(item.id) ?? 0,
   }));
@@ -103,7 +106,7 @@ export default async function HomePage() {
           id: item.id,
           title: item.title,
           category: item.category_id ? categoryById.get(item.category_id) ?? "Other" : "Other",
-          image: cloudinaryImageUrl(media.cloudinary_public_id, { width: 1200 }),
+          image: cloudinaryImageUrl(getMediaUrlOrId(media), { width: 1200 }),
           location: item.location ?? "",
           date: item.photo_date ?? "",
         }
@@ -117,7 +120,7 @@ export default async function HomePage() {
       id: m.id,
       title: m.title,
       category: "Portfolio",
-      image: cloudinaryImageUrl(m.cloudinary_public_id, { width: 1200 }),
+      image: cloudinaryImageUrl(getMediaUrlOrId(m), { width: 1200 }),
       location: "",
       date: "",
     }));
@@ -134,7 +137,7 @@ export default async function HomePage() {
       introduction: story.introduction ?? "",
       location: story.location ?? "",
       story_date: story.story_date ?? null,
-      cover: media ? cloudinaryImageUrl(media.cloudinary_public_id, { width: 1400, height: 900, crop: "fill" }) : "",
+      cover: media ? cloudinaryImageUrl(getMediaUrlOrId(media), { width: 1400, height: 900, crop: "fill" }) : "",
       category: storyCat,
     };
   });
@@ -147,7 +150,7 @@ export default async function HomePage() {
       review: item.review,
       rating: item.rating ?? 5,
       event_type: item.event_type,
-      avatar: media ? cloudinaryImageUrl(media.cloudinary_public_id, { width: 200, height: 200, crop: "fill" }) : null,
+      avatar: media ? cloudinaryImageUrl(getMediaUrlOrId(media), { width: 200, height: 200, crop: "fill" }) : null,
     };
   });
 
@@ -156,24 +159,23 @@ export default async function HomePage() {
   const aboutPortraitMediaId = (aboutContentObj.portrait_media_id as string) || null;
   let aboutPortraitUrl: string | null = null;
   if (aboutPortraitMediaId && mediaById.has(aboutPortraitMediaId)) {
-    aboutPortraitUrl = cloudinaryImageUrl(mediaById.get(aboutPortraitMediaId)!.cloudinary_public_id, { width: 1200, height: 1600, crop: "fill" });
+    aboutPortraitUrl = cloudinaryImageUrl(getMediaUrlOrId(mediaById.get(aboutPortraitMediaId)), { width: 1200, height: 1600, crop: "fill" });
   } else {
     const profileMedia = (dbMedia ?? []).find((m) => m.folder === "profile" && m.kind === "image");
     if (profileMedia) {
-      aboutPortraitUrl = cloudinaryImageUrl(profileMedia.cloudinary_public_id, { width: 1200, height: 1600, crop: "fill" });
+      aboutPortraitUrl = cloudinaryImageUrl(getMediaUrlOrId(profileMedia), { width: 1200, height: 1600, crop: "fill" });
     }
   }
 
   const heroImages = (heroSlide ?? [])
     .map((slide) => {
-      const media = (slide as any).media as { cloudinary_public_id?: string } | null;
-      return media?.cloudinary_public_id
-        ? cloudinaryImageUrl(media.cloudinary_public_id, { width: 2000 })
-        : null;
+      const media = (slide as any).media as { cloudinary_public_id?: string; secure_url?: string; public_id?: string } | null;
+      const mId = getMediaUrlOrId(media);
+      return mId ? cloudinaryImageUrl(mId, { width: 2000 }) : null;
     })
     .filter((url): url is string => Boolean(url));
 
-  const socialPhotos = (dbMedia ?? []).filter((item) => item.kind === "image").slice(0, 4).map((item) => ({ id: item.id, publicId: item.cloudinary_public_id, title: item.title }));
+  const socialPhotos = (dbMedia ?? []).filter((item) => item.kind === "image").slice(0, 4).map((item) => ({ id: item.id, publicId: getMediaUrlOrId(item), title: item.title }));
 
   return (
     <main className="flex flex-col min-h-screen relative w-full overflow-x-hidden bg-ink">

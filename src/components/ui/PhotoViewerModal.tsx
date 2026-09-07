@@ -108,6 +108,7 @@ export default function PhotoViewerModal({
  <SafeImage
  src={currentPhoto.image}
  alt={displayTitle}
+ variant="original"
  className='max-h-[72vh] max-w-[90vw] object-contain shadow-2xl rounded-lg'
  />
  </motion.div>
@@ -170,7 +171,7 @@ export default function PhotoViewerModal({
  : "border-border/40 opacity-60 hover:opacity-100"
  }`}
  >
- <SafeImage src={thumb.image} alt={thumb.title} className='w-full h-full object-cover' />
+ <SafeImage src={thumb.image} alt={thumb.title} variant="thumb" className='w-full h-full object-cover' />
  </button>
  ))}
  </div>

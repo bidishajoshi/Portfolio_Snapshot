@@ -31,12 +31,13 @@ export default async function StoryPage({ params }: { params: Promise<{ slug: st
   if (story.cover_media_id) {
     const { data: media } = await supabase
       .from("media")
-      .select("cloudinary_public_id")
+      .select("cloudinary_public_id, secure_url, public_id")
       .eq("id", story.cover_media_id)
       .maybeSingle();
 
-    if (media?.cloudinary_public_id) {
-      storyImage = cloudinaryImageUrl(media.cloudinary_public_id, {
+    const mediaId = media?.secure_url || media?.cloudinary_public_id || media?.public_id;
+    if (mediaId) {
+      storyImage = cloudinaryImageUrl(mediaId, {
         width: 1600,
         height: 1000,
         crop: "fill",
@@ -46,21 +47,22 @@ export default async function StoryPage({ params }: { params: Promise<{ slug: st
 
   const { data: storyMediaList } = await supabase
     .from("story_media")
-    .select("id, media:media(id, title, cloudinary_public_id, kind)")
+    .select("id, media:media(id, title, cloudinary_public_id, secure_url, public_id, kind)")
     .eq("story_id", story.id)
     .order("display_order");
 
   const galleryItems = (storyMediaList ?? [])
     .map((entry) => {
-      const m = (entry as unknown as { media: { id: string; title: string; cloudinary_public_id: string; kind: string } | null }).media;
+      const m = (entry as unknown as { media: { id: string; title: string; cloudinary_public_id: string; secure_url?: string | null; public_id?: string | null; kind: string } | null }).media;
       if (!m) return null;
+      const mId = m.secure_url || m.cloudinary_public_id || m.public_id || "";
       return {
         id: m.id,
         title: m.title || story.title,
-        cloudinary_public_id: m.cloudinary_public_id,
+        cloudinary_public_id: mId,
         kind: m.kind,
-        url: cloudinaryImageUrl(m.cloudinary_public_id, { width: 1400, height: 950, crop: "fill" }),
-        videoUrl: m.kind === "video" ? cloudinaryVideoUrl(m.cloudinary_public_id) : undefined,
+        url: cloudinaryImageUrl(mId, { width: 1400, height: 950, crop: "fill" }),
+        videoUrl: m.kind === "video" ? cloudinaryVideoUrl(mId) : undefined,
       };
     })
     .filter((item): item is NonNullable<typeof item> => Boolean(item));

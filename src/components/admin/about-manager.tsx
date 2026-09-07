@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { MediaPicker } from "@/components/admin/media/media-picker";
 import { updateAboutSection } from "@/lib/actions/site-content";
 import { cloudinaryImageUrl } from "@/lib/cloudinary/url";
+import SafeImage from "@/components/ui/SafeImage";
 import type { Media } from "@/types/database";
 
 interface AboutManagerProps {
@@ -52,7 +53,7 @@ export function AboutManager({
   const handleMediaSelected = (selected: Media[]) => {
     if (selected.length > 0) {
       setMediaId(selected[0].id);
-      setPublicId(selected[0].cloudinary_public_id);
+      setPublicId(selected[0].secure_url || selected[0].cloudinary_public_id || selected[0].public_id || "");
     }
   };
 
@@ -70,7 +71,7 @@ export function AboutManager({
           </label>
           <div className="relative aspect-[3/4] w-full max-w-[260px] rounded-sm overflow-hidden bg-surface-raised border border-border group mb-4">
             {portraitUrl ? (
-              <img
+              <SafeImage
                 src={portraitUrl}
                 alt="Portrait preview"
                 className="w-full h-full object-cover"

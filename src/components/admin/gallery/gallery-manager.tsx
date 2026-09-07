@@ -9,6 +9,7 @@ import { MediaPicker } from "@/components/admin/media/media-picker";
 import { MediaUploader } from "@/components/admin/media/media-uploader";
 import { ContentEditor, type EditableRecord } from "@/components/admin/content-editor";
 import { saveMultiplePhotos } from "@/lib/actions/content";
+import { cloudinaryImageUrl } from "@/lib/cloudinary/url";
 import type { Media } from "@/types/database";
 
 interface GalleryManagerProps {
@@ -152,6 +153,18 @@ function MultiPhotoStoryModal({
     });
   };
 
+  const moveMedia = (index: number, direction: "prev" | "next") => {
+    const targetIndex = direction === "prev" ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= selectedMedia.length) return;
+    setSelectedMedia((prev) => {
+      const copy = [...prev];
+      const temp = copy[index];
+      copy[index] = copy[targetIndex];
+      copy[targetIndex] = temp;
+      return copy;
+    });
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-4" onClick={onClose}>
       <div
@@ -161,7 +174,7 @@ function MultiPhotoStoryModal({
         <div className="flex items-center justify-between pb-4 border-b border-border mb-6">
           <div>
             <h3 className="font-display text-xl text-ivory">New Multi-Photo Story</h3>
-            <p className="text-xs text-stone mt-0.5">Attach multiple photos under a single category and story title.</p>
+            <p className="text-xs text-stone mt-0.5">Attach multiple high-res photos (up to 50 MB each) under a category and story title.</p>
           </div>
           <button onClick={onClose} className="text-stone hover:text-ivory">
             <X size={20} />
@@ -248,30 +261,65 @@ function MultiPhotoStoryModal({
               >
                 <Images size={28} className="mx-auto text-stone-dim mb-2" />
                 <p className="text-xs text-stone">Click to browse or upload multiple photos for this story</p>
+                <p className="text-[11px] text-stone-dim mt-1">Supports up to 50 MB per photo</p>
               </div>
             ) : (
-              <div className="grid grid-cols-4 sm:grid-cols-6 gap-3 p-3 bg-ink/40 rounded-xl border border-border">
-                {selectedMedia.map((m, index) => (
-                  <div key={m.id} className="group relative aspect-square rounded-lg overflow-hidden border border-border">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={`https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "demo"}/image/upload/c_fill,w_180,h_180/${m.cloudinary_public_id}`}
-                      alt={m.title}
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute top-1 left-1 bg-black/70 px-1.5 py-0.5 rounded text-[10px] font-mono text-ivory">
-                      #{index + 1}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3 bg-ink/40 rounded-xl border border-border">
+                {selectedMedia.map((m, index) => {
+                  const imgUrl = cloudinaryImageUrl(m.secure_url || m.cloudinary_public_id || m.public_id || "", {
+                    width: 240,
+                    height: 240,
+                    crop: "fill",
+                  });
+                  const mbSize = m.bytes ? `${(m.bytes / (1024 * 1024)).toFixed(1)} MB` : undefined;
+
+                  return (
+                    <div key={m.id} className="group relative aspect-square rounded-lg overflow-hidden border border-border bg-surface">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={imgUrl}
+                        alt={m.title}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute top-1 left-1 bg-black/75 px-1.5 py-0.5 rounded text-[10px] font-mono text-ivory flex items-center gap-1">
+                        <span>#{index + 1}</span>
+                        {mbSize && <span className="text-cyan-glow">&bull; {mbSize}</span>}
+                      </div>
+
+                      {/* Photo reordering & delete overlays */}
+                      <div className="absolute inset-x-0 bottom-0 bg-black/80 px-2 py-1 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            disabled={index === 0}
+                            onClick={() => moveMedia(index, "prev")}
+                            className="p-1 text-stone hover:text-ivory disabled:opacity-30"
+                            title="Move left / up"
+                          >
+                            &larr;
+                          </button>
+                          <button
+                            type="button"
+                            disabled={index === selectedMedia.length - 1}
+                            onClick={() => moveMedia(index, "next")}
+                            className="p-1 text-stone hover:text-ivory disabled:opacity-30"
+                            title="Move right / down"
+                          >
+                            &rarr;
+                          </button>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveMedia(m.id)}
+                          className="p-1 text-danger hover:text-red-400"
+                          title="Remove photo"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveMedia(m.id)}
-                      className="absolute top-1 right-1 p-1 bg-black/80 hover:bg-danger text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                      title="Remove photo"
-                    >
-                      <X size={12} />
-                    </button>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

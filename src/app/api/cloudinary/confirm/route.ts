@@ -54,9 +54,17 @@ export async function POST(request: Request) {
   }
 
   const {
+    storageType,
+    storagePath,
     cloudinaryPublicId,
+    publicId,
     secureUrl,
     resourceType,
+    format,
+    bytes,
+    width,
+    height,
+    duration,
     kind,
     folder,
     title,
@@ -64,82 +72,101 @@ export async function POST(request: Request) {
     tags,
   } = parsed.data;
 
-  // Get Cloudinary client
-  let cloudinary;
+  // Create Supabase admin client
+  const supabase = createAdminClient();
 
+  // Generate unique slug
+  let slug: string;
   try {
-    cloudinary = getCloudinary();
+    slug = await generateUniqueSlug(supabase, "media", title);
   } catch (err) {
-    console.error("CLOUDINARY CONFIGURATION ERROR:", err);
-
+    console.error("SLUG GENERATION ERROR:", err);
     return NextResponse.json(
       {
-        error: "Cloudinary is not configured correctly.",
+        error: "Could not generate a unique media slug.",
         details: err instanceof Error ? err.message : String(err),
       },
       { status: 500 }
     );
   }
 
-  // Verify asset exists in Cloudinary
-  let resource;
+  let finalPublicId = publicId || storagePath || cloudinaryPublicId || "";
+  let finalSecureUrl = secureUrl;
+  let finalFormat = format || "jpg";
+  let finalBytes = bytes || 0;
+  let finalWidth = width || null;
+  let finalHeight = height || null;
+  let finalDuration = duration || null;
+  let finalResourceType = resourceType || (kind === "video" ? "video" : "image");
+  let finalVersion: string | null = null;
 
-  try {
-    resource = await cloudinary.api.resource(
-      cloudinaryPublicId,
-      {
-        resource_type: kind === "video" ? "video" : "image",
-      }
-    );
+  if (storageType === "supabase" || (!cloudinaryPublicId && (storagePath || secureUrl))) {
+    const sPath = storagePath || publicId || (secureUrl ? secureUrl.split("/media/").pop() : undefined) || `${folder}/${slug}.jpg`;
+    finalPublicId = sPath;
 
-    console.log("CLOUDINARY RESOURCE VERIFIED:", {
-      public_id: resource.public_id,
-      resource_type: resource.resource_type,
-      format: resource.format,
-      bytes: resource.bytes,
-      width: resource.width,
-      height: resource.height,
+    if (!finalSecureUrl) {
+      const publicData = supabase.storage.from("media").getPublicUrl(sPath);
+      finalSecureUrl = publicData.data.publicUrl;
+    }
+
+    if (!finalFormat && sPath.includes(".")) {
+      finalFormat = sPath.split(".").pop()?.toLowerCase() || "jpg";
+    }
+
+    console.log("CONFIRMING SUPABASE STORAGE ASSET:", {
+      path: sPath,
+      url: finalSecureUrl,
+      bytes: finalBytes,
+      width: finalWidth,
+      height: finalHeight,
+      format: finalFormat,
     });
-  } catch (err) {
-    console.error(
-      "CLOUDINARY VERIFICATION ERROR:",
-      err
-    );
+  } else {
+    // Cloudinary verification
+    let cloudinary;
+    try {
+      cloudinary = getCloudinary();
+    } catch (err) {
+      console.error("CLOUDINARY CONFIGURATION ERROR:", err);
+      return NextResponse.json(
+        {
+          error: "Cloudinary is not configured correctly.",
+          details: err instanceof Error ? err.message : String(err),
+        },
+        { status: 500 }
+      );
+    }
 
-    return NextResponse.json(
-      {
-        error:
-          "Could not verify this upload with Cloudinary. Please try again.",
-      },
-      { status: 422 }
-    );
-  }
+    try {
+      const resource = await cloudinary.api.resource(cloudinaryPublicId!, {
+        resource_type: kind === "video" ? "video" : "image",
+      });
 
-  // Create Supabase admin client
-  const supabase = createAdminClient();
+      finalPublicId = resource.public_id;
+      finalSecureUrl = resource.secure_url ?? secureUrl ?? null;
+      finalFormat = resource.format ?? format ?? "jpg";
+      finalBytes = resource.bytes ?? bytes ?? 0;
+      finalWidth = resource.width ?? width ?? null;
+      finalHeight = resource.height ?? height ?? null;
+      finalDuration = resource.duration ?? duration ?? null;
+      finalResourceType = resource.resource_type ?? resourceType ?? kind;
+      finalVersion = resource.version ? String(resource.version) : null;
 
-  // Generate unique slug
-  let slug;
-
-  try {
-    slug = await generateUniqueSlug(
-      supabase,
-      "media",
-      title
-    );
-  } catch (err) {
-    console.error("SLUG GENERATION ERROR:", err);
-
-    return NextResponse.json(
-      {
-        error: "Could not generate a unique media slug.",
-        details:
-          err instanceof Error
-            ? err.message
-            : String(err),
-      },
-      { status: 500 }
-    );
+      console.log("CLOUDINARY RESOURCE VERIFIED:", {
+        public_id: resource.public_id,
+        bytes: resource.bytes,
+        width: resource.width,
+        height: resource.height,
+      });
+    } catch (err) {
+      console.error("CLOUDINARY VERIFICATION ERROR:", err);
+      return NextResponse.json(
+        {
+          error: "Could not verify this upload with Cloudinary. Please try again.",
+        },
+        { status: 422 }
+      );
+    }
   }
 
   // Save media record to Supabase
@@ -152,21 +179,21 @@ export async function POST(request: Request) {
       slug,
       alt_text: altText ?? null,
 
-      // Cloudinary information
-      public_id: resource.public_id,
-      secure_url: resource.secure_url ?? secureUrl ?? null,
-      cloudinary_public_id: resource.public_id,
-      cloudinary_version: String(resource.version),
+      // Provider identifiers
+      public_id: finalPublicId,
+      secure_url: finalSecureUrl,
+      cloudinary_public_id: finalPublicId,
+      cloudinary_version: finalVersion,
 
-      // File information
-      format: resource.format ?? null,
-      bytes: resource.bytes ?? null,
-      width: resource.width ?? null,
-      height: resource.height ?? null,
-      duration: resource.duration ?? null,
-      resource_type: resource.resource_type ?? resourceType ?? kind,
+      // File information (up to 50 MB)
+      format: finalFormat,
+      bytes: finalBytes,
+      width: finalWidth,
+      height: finalHeight,
+      duration: finalDuration,
+      resource_type: finalResourceType,
 
-      // Tags
+      // Tags & metadata
       tags: tags ?? [],
     })
     .select()
