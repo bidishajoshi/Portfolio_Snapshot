@@ -30,7 +30,7 @@ export function MediaUploader({
   const inputRef = useRef<HTMLInputElement>(null);
 
   const addFiles = useCallback((files: FileList | File[]) => {
-    const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20 MB max file size
+    const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50 MB max file size
     const validFiles: File[] = [];
     const tooLargeFiles: string[] = [];
 
@@ -46,7 +46,7 @@ export function MediaUploader({
 
     if (tooLargeFiles.length > 0) {
       toast.error(
-        `File(s) exceed 20 MB limit: ${tooLargeFiles.slice(0, 3).join(", ")}${
+        `File(s) exceed 50 MB limit: ${tooLargeFiles.slice(0, 3).join(", ")}${
           tooLargeFiles.length > 3 ? ` and ${tooLargeFiles.length - 3} more` : ""
         }`
       );
@@ -132,7 +132,7 @@ export function MediaUploader({
       >
         <UploadCloud size={28} strokeWidth={1.5} className="text-stone" />
         <p className="text-sm text-ivory">Drag photos here, or click to browse</p>
-        <p className="text-xs text-stone-dim">Supports high-res photos & video up to 20 MB each — JPG, PNG, WebP, TIFF</p>
+        <p className="text-xs text-stone-dim">Supports high-res photos & video up to 50 MB each — JPG, PNG, WebP, TIFF</p>
         <input
           ref={inputRef}
           type="file"
