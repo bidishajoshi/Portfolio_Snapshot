@@ -46,13 +46,13 @@ export default function Hero({
     setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
   }, [images.length]);
 
-  // Reset auto-slide 20-second timer whenever user manually moves or slide changes
+  // Reset auto-slide 10-second timer whenever user manually moves or slide changes
   useEffect(() => {
     if (images.length <= 1) return;
 
     timerRef.current = setInterval(() => {
       nextSlide();
-    }, 20000);
+    }, 10000);
 
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
@@ -218,7 +218,7 @@ export default function Hero({
                       key={`progress-${currentIndex}`}
                       initial={{ scaleX: 0 }}
                       animate={{ scaleX: 1 }}
-                      transition={{ duration: 20, ease: "linear" }}
+                      transition={{ duration: 10, ease: "linear" }}
                       className="absolute inset-0 bg-ivory origin-left"
                     />
                   )}
