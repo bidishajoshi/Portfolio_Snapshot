@@ -124,3 +124,12 @@ export async function deleteCategory(id: string) {
   revalidatePath("/admin/categories");
   revalidatePath("/");
 }
+
+export async function unpublishCategory(id: string) {
+  await requireAdmin();
+  const supabase = createAdminClient();
+  const { error } = await supabase.from("categories").update({ published: false }).eq("id", id);
+  if (error) throw new Error(error.message);
+  revalidatePath("/admin/categories");
+  revalidatePath("/");
+}

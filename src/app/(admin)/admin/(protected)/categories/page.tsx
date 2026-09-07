@@ -7,6 +7,7 @@ import {
   listCategoriesAdmin,
   updateCategory,
   deleteCategory,
+  unpublishCategory,
   reorderCategories,
   type CategoryWithCover,
 } from "@/lib/actions/categories";
@@ -54,7 +55,16 @@ export default function CategoriesPage() {
         toast.success("Category deleted.");
         load();
       } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Could not delete.");
+        const msg = err instanceof Error ? err.message : "Could not delete.";
+        if (msg.includes("is used by")) {
+          if (confirm(`${msg}\n\nWould you like to hide (unpublish) "${cat.name}" instead so it disappears from the public site?`)) {
+            await unpublishCategory(cat.id);
+            toast.success(`"${cat.name}" has been hidden (unpublished) from the public site.`);
+            load();
+            return;
+          }
+        }
+        toast.error(msg);
       }
     });
   };
