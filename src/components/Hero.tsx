@@ -87,9 +87,9 @@ export default function Hero({
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      {/* Photo Slider Background */}
+      {/* Photo Slider Background - Full Page Edge-to-Edge */}
       <div className="absolute inset-0 z-0 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-ink/65 via-ink/25 to-ink/90 z-10 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-b from-ink/60 via-ink/20 to-ink/90 z-10 pointer-events-none" />
         <div className="absolute inset-0 bg-radial-at-c from-cyan-glow/10 via-transparent to-transparent opacity-30 pointer-events-none z-10" />
 
         {images.length > 0 ? (
@@ -102,23 +102,11 @@ export default function Hero({
               transition={{ duration: 1.2, ease: "easeOut" }}
               className="absolute inset-0 w-full h-full"
             >
-              {/* Blurred Ambient Background Layer for aspect ratio padding */}
-              <div className="absolute inset-0 z-0">
-                <SafeImage
-                  src={images[currentIndex]}
-                  alt="Hero Background Ambient Blur"
-                  className="w-full h-full object-cover blur-2xl scale-110 opacity-50"
-                />
-              </div>
-
-              {/* Main Photo Layer: Crisp sharpness with center aspect fit */}
-              <div className="relative z-1 w-full h-full flex items-center justify-center">
-                <SafeImage
-                  src={images[currentIndex]}
-                  alt="Hero Photography"
-                  className="w-full h-full object-cover object-center transition-transform duration-1000"
-                />
-              </div>
+              <SafeImage
+                src={images[currentIndex]}
+                alt="Hero Photography"
+                className="w-full h-full object-cover object-center transition-transform duration-1000 scale-105"
+              />
             </motion.div>
           </AnimatePresence>
         ) : null}
