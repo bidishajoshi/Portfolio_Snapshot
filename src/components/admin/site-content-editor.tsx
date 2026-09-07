@@ -71,12 +71,14 @@ export function HeroTextEditor({
     brand_name: string;
     photographer_name: string;
     tagline: string;
+    seo_description?: string | null;
   };
 }) {
   const [values, setValues] = useState({
     brand_name: settings?.brand_name ?? "DR DSLR",
     photographer_name: settings?.photographer_name ?? "Himal Shrestha",
     tagline: settings?.tagline ?? "Capturing Moments Beyond Vision",
+    seo_description: settings?.seo_description ?? "Visual stories crafted through light, emotion and perspective.",
   });
   const [pending, startTransition] = useTransition();
 
@@ -84,7 +86,7 @@ export function HeroTextEditor({
     startTransition(async () => {
       try {
         await updateSiteContent("site_settings", true, values);
-        toast.success("Hero text saved.");
+        toast.success("Hero text & tagline saved.");
       } catch (error) {
         toast.error(error instanceof Error ? error.message : "Could not save hero text.");
       }
@@ -93,8 +95,8 @@ export function HeroTextEditor({
   return (
     <div className="rounded-lg border border-border bg-surface p-5 space-y-4 shadow-sm">
       <div>
-        <h3 className="font-display text-lg text-ivory font-semibold">Hero Brand & Photographer Text</h3>
-        <p className="text-xs text-stone mt-0.5">Edit main title, photographer name, and tagline shown on hero section.</p>
+        <h3 className="font-display text-lg text-ivory font-semibold">Hero Brand, Photographer & Supporting Text</h3>
+        <p className="text-xs text-stone mt-0.5">Edit main title, photographer name, tagline, and intro supporting text shown on hero section.</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
@@ -112,6 +114,19 @@ export function HeroTextEditor({
           label="Tagline"
           value={values.tagline}
           onChange={(e) => setValues({ ...values, tagline: e.target.value })}
+        />
+      </div>
+
+      <div>
+        <label className="block text-xs font-mono uppercase tracking-wider text-stone mb-1.5">
+          Hero Supporting Text / Intro Line
+        </label>
+        <textarea
+          rows={2}
+          value={values.seo_description}
+          onChange={(e) => setValues({ ...values, seo_description: e.target.value })}
+          placeholder="e.g. Visual stories crafted through light, emotion and perspective."
+          className="w-full bg-ink/60 border border-border rounded-lg p-3 text-sm text-ivory placeholder:text-stone-dim focus:border-cyan-glow outline-none transition-all resize-y"
         />
       </div>
 

@@ -171,7 +171,7 @@ export default async function HomePage() {
       <Navbar />
       {isEnabled("hero") && (
         <Hero
-          brandOverride={settings ? { name: settings.brand_name, photographer: settings.photographer_name, tagline: settings.tagline, supportingText: heroSec?.description } : undefined}
+          brandOverride={settings ? { name: settings.brand_name, photographer: settings.photographer_name, tagline: settings.tagline, supportingText: heroSec?.description || settings?.seo_description } : undefined}
           backgroundImage={heroMedia ? cloudinaryImageUrl(heroMedia, { width: 2000 }) : null}
         />
       )}

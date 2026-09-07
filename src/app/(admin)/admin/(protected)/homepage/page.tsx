@@ -10,7 +10,7 @@ export default async function HomepagePage() {
   const [{ data: sections }, { data: heroSlide }, { data: settings }] = await Promise.all([
     supabase.from("homepage_sections").select("id, section_key, title, subtitle, description, enabled").order("display_order"),
     supabase.from("hero_slides").select("id, media_id, media:media(id, cloudinary_public_id, title)").eq("published", true).eq("enabled", true).order("display_order").limit(1).maybeSingle(),
-    supabase.from("site_settings").select("id, brand_name, photographer_name, tagline").maybeSingle(),
+    supabase.from("site_settings").select("id, brand_name, photographer_name, tagline, seo_description").maybeSingle(),
   ]);
 
   const currentMedia = (heroSlide?.media as unknown as { id: string; cloudinary_public_id: string; title: string } | null) ?? null;
