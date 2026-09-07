@@ -169,6 +169,7 @@ export interface Service {
 export interface Testimonial {
   id: string;
   client_name: string;
+  email: string | null;
   client_media_id: string | null;
   review: string;
   rating: number | null;

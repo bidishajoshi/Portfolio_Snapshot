@@ -38,7 +38,7 @@ export default async function HomePage() {
     supabase.from("site_settings").select("brand_name, photographer_name, tagline, contact_email, contact_phone, whatsapp_number, seo_description").maybeSingle(),
     supabase.from("services").select("id, title, description").eq("published", true).order("display_order"),
     supabase.from("stories").select("id, title, slug, introduction, location, story_date, cover_media_id, subtitle, tags").eq("published", true).order("display_order"),
-    supabase.from("testimonials").select("id, client_name, review, event_type, client_media_id").eq("published", true).order("display_order"),
+    supabase.from("testimonials").select("id, client_name, review, rating, event_type, client_media_id").eq("published", true).order("created_at", { ascending: false }),
     supabase.from("categories").select("id, name, slug, description, cover_media_id").eq("published", true).order("display_order"),
     supabase.from("albums").select("id, title, slug, description, location, event_date, cover_media_id, featured, is_featured").order("display_order"),
     supabase.from("media").select("id, title, cloudinary_public_id, kind, folder").eq("archived", false),
@@ -145,6 +145,7 @@ export default async function HomePage() {
       id: item.id,
       client_name: item.client_name,
       review: item.review,
+      rating: item.rating ?? 5,
       event_type: item.event_type,
       avatar: media ? cloudinaryImageUrl(media.cloudinary_public_id, { width: 200, height: 200, crop: "fill" }) : null,
     };
