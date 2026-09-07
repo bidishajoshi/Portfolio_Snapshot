@@ -1,34 +1,28 @@
 import { createAdminClient } from "@/lib/supabase/admin";
-import { ContentEditor, type EditableRecord } from "@/components/admin/content-editor";
+import { ReviewsManager } from "@/components/admin/reviews-manager";
+import type { Testimonial } from "@/types/database";
 
-export const metadata = { title: "Testimonials" };
+export const metadata = { title: "Client Reviews & Testimonials" };
 export const dynamic = "force-dynamic";
 
 export default async function TestimonialsPage() {
   const supabase = createAdminClient();
   const { data } = await supabase
     .from("testimonials")
-    .select("id, client_name, review, event_type, client_media_id, published")
-    .order("display_order");
-  const records: EditableRecord[] = (data ?? []).map((item) => ({
-    id: item.id,
-    title: item.client_name,
-    clientName: item.client_name,
-    review: item.review,
-    eventType: item.event_type,
-    mediaId: item.client_media_id,
-    published: item.published ?? true,
-  }));
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  const testimonials = (data ?? []) as unknown as Testimonial[];
+
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <h1 className="font-display text-3xl text-ivory">Testimonials & Client Stories</h1>
+        <h1 className="font-display text-3xl text-ivory">Client Reviews & Testimonials</h1>
         <p className="text-stone text-sm mt-1">
-          Create and edit client testimonials, stories, and portraits shown on the website.
+          Review, approve, publish, or delete client feedback submitted from the website.
         </p>
       </div>
-      <ContentEditor content="testimonial" records={records} />
+      <ReviewsManager initialTestimonials={testimonials} />
     </div>
   );
 }
-

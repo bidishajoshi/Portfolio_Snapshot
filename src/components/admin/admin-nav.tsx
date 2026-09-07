@@ -33,7 +33,7 @@ const NAV_ITEMS = [
   { href: "/admin/about", label: "About Himal", icon: User },
   { href: "/admin/services", label: "Services", icon: Sparkles },
   { href: "/admin/films", label: "Films", icon: Clapperboard },
-  { href: "/admin/testimonials", label: "Testimonials", icon: Quote },
+  { href: "/admin/testimonials", label: "Client Reviews", icon: Quote },
   { href: "/admin/social", label: "Social Media", icon: Share2 },
   { href: "/admin/inquiries", label: "Inquiries", icon: Mail },
   { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
