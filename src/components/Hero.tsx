@@ -11,13 +11,12 @@ export default function Hero({ brandOverride, backgroundImage }: { brandOverride
     <section id="home" className="relative h-screen w-full flex items-center justify-center overflow-hidden">
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-gradient-to-b from-ink/70 via-ink/40 to-ink z-10" />
-        <div className="absolute inset-0 bg-radial-at-c from-cyan-glow/10 via-transparent to-transparent opacity-40 pointer-events-none z-10" />
+        <div className="absolute inset-0 bg-gradient-to-b from-ink/60 via-ink/25 to-ink/90 z-10 pointer-events-none" />
+        <div className="absolute inset-0 bg-radial-at-c from-cyan-glow/10 via-transparent to-transparent opacity-30 pointer-events-none z-10" />
         <SafeImage
           src={backgroundImage ?? undefined}
           alt="Hero Photography"
-          className="w-full h-full object-cover object-center scale-105 animate-pulse duration-10000"
-          style={{ animationDuration: '25s' }}
+          className="w-full h-full object-cover object-center scale-105 transition-transform duration-10000"
         />
       </div>
 
