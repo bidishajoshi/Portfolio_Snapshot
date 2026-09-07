@@ -95,6 +95,9 @@ export async function uploadFileToCloudinary(
       `https://api.cloudinary.com/v1_1/${sign.cloudName}/${resourceType}/upload`
     );
 
+    // Disable XHR timeout so 40–50MB high-res uploads can complete reliably
+    xhr.timeout = 0;
+
     // Upload progress
     xhr.upload.onprogress = (e) => {
       if (e.lengthComputable && opts.onProgress) {
@@ -135,7 +138,7 @@ export async function uploadFileToCloudinary(
           new Error(
             response.error?.message ||
               response.message ||
-              "Upload to Cloudinary failed."
+              `Upload failed (HTTP ${xhr.status}).`
           )
         );
       }
@@ -145,7 +148,15 @@ export async function uploadFileToCloudinary(
       console.error("CLOUDINARY NETWORK ERROR");
 
       reject(
-        new Error("Network error during upload.")
+        new Error("Network error during file upload. Please check your connection and try again.")
+      );
+    };
+
+    xhr.ontimeout = () => {
+      console.error("CLOUDINARY UPLOAD TIMEOUT");
+
+      reject(
+        new Error("Upload timed out. Please check your internet speed and try again.")
       );
     };
 

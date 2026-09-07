@@ -1,5 +1,8 @@
 import { z } from "zod";
 
+export const MAX_FILE_SIZE_MB = 50;
+export const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024; // 50 MB in bytes (52,428,800 bytes)
+
 export const mediaFolderSchema = z.enum([
   "photo",
   "video",

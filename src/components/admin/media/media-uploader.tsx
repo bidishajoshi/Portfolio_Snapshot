@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils/cn";
 import { uploadFileToCloudinary, titleFromFilename } from "@/lib/cloudinary/upload-client";
+import { MAX_FILE_SIZE_BYTES, MAX_FILE_SIZE_MB } from "@/lib/validation/media";
 import type { MediaFolder, Media } from "@/types/database";
 
 interface QueueItem {
@@ -30,14 +31,19 @@ export function MediaUploader({
   const inputRef = useRef<HTMLInputElement>(null);
 
   const addFiles = useCallback((files: FileList | File[]) => {
-    const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50 MB max file size
     const validFiles: File[] = [];
     const tooLargeFiles: string[] = [];
 
     Array.from(files).forEach((f) => {
-      if (f.type.startsWith("image/") || f.type.startsWith("video/")) {
-        if (f.size > MAX_FILE_SIZE) {
-          tooLargeFiles.push(f.name);
+      const isImageOrVideo =
+        f.type.startsWith("image/") ||
+        f.type.startsWith("video/") ||
+        /\.(jpg|jpeg|png|webp|gif|tiff|tif|bmp|heic|heif|avif|mp4|mov|webm)$/i.test(f.name);
+
+      if (isImageOrVideo) {
+        if (f.size > MAX_FILE_SIZE_BYTES) {
+          const fileSizeMb = (f.size / (1024 * 1024)).toFixed(1);
+          tooLargeFiles.push(`${f.name} (${fileSizeMb} MB)`);
         } else {
           validFiles.push(f);
         }
@@ -46,9 +52,9 @@ export function MediaUploader({
 
     if (tooLargeFiles.length > 0) {
       toast.error(
-        `File(s) exceed 50 MB limit: ${tooLargeFiles.slice(0, 3).join(", ")}${
+        `File(s) exceed ${MAX_FILE_SIZE_MB} MB limit: ${tooLargeFiles.slice(0, 3).join(", ")}${
           tooLargeFiles.length > 3 ? ` and ${tooLargeFiles.length - 3} more` : ""
-        }`
+        }. Please select files up to ${MAX_FILE_SIZE_MB} MB.`
       );
     }
 
@@ -137,7 +143,7 @@ export function MediaUploader({
           ref={inputRef}
           type="file"
           multiple
-          accept="image/*,video/*"
+          accept="image/jpeg,image/png,image/webp,image/gif,image/tiff,image/heic,image/avif,image/*,video/*"
           className="hidden"
           onChange={(e) => {
             if (e.target.files?.length) addFiles(e.target.files);
