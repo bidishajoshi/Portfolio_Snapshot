@@ -7,12 +7,19 @@ import { Button } from "@/components/ui/button";
 import { MediaPicker } from "@/components/admin/media/media-picker";
 import { addHeroSlidesBulk, removeHeroSlide } from "@/lib/actions/site-content";
 import { cloudinaryImageUrl } from "@/lib/cloudinary/url";
+import SafeImage from "@/components/ui/SafeImage";
 import type { Media } from "@/types/database";
 
 export interface HeroSlideItem {
   id: string;
   media_id: string;
-  media?: { id: string; cloudinary_public_id: string; title: string } | null;
+  media?: {
+    id: string;
+    cloudinary_public_id?: string | null;
+    secure_url?: string | null;
+    public_id?: string | null;
+    title: string;
+  } | null;
 }
 
 export function HeroSlideManager({
@@ -105,9 +112,8 @@ export function HeroSlideManager({
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {initialSlides.map((slide, idx) => {
             const media = slide.media;
-            const imgUrl = media?.cloudinary_public_id
-              ? cloudinaryImageUrl(media.cloudinary_public_id, { width: 600, height: 400, crop: "fill" })
-              : null;
+            const imgId = media ? media.secure_url || media.cloudinary_public_id || media.public_id : null;
+            const imgUrl = imgId ? cloudinaryImageUrl(imgId) : null;
 
             return (
               <div
@@ -132,8 +138,7 @@ export function HeroSlideManager({
 
                 <div className="aspect-[16/10] w-full relative overflow-hidden bg-ink">
                   {imgUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
+                    <SafeImage
                       src={imgUrl}
                       alt={media?.title || "Hero Slide"}
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"

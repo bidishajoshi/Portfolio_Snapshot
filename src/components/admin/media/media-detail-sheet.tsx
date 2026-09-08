@@ -90,18 +90,48 @@ export function MediaDetailSheet({
         <div className="rounded-sm overflow-hidden bg-ink mb-5 max-h-72 flex items-center justify-center">
           {media.kind === "video" ? (
             <video
-              src={cloudinaryVideoUrl(media.cloudinary_public_id)}
+              src={cloudinaryVideoUrl(media.secure_url || media.cloudinary_public_id)}
               controls
               className="max-h-72 w-full object-contain"
             />
           ) : (
             // eslint-disable-next-line @next/next/no-img-element
             <img
-              src={cloudinaryImageUrl(media.cloudinary_public_id, { width: 800 })}
+              src={cloudinaryImageUrl(media.secure_url || media.cloudinary_public_id || media.public_id || "", { width: 800 })}
               alt={media.alt_text ?? media.title}
               className="max-h-72 w-full object-contain"
             />
           )}
+        </div>
+
+        {/* Technical Metadata Row */}
+        <div className="flex flex-wrap items-center gap-3 px-3 py-2 rounded bg-ink/50 border border-border text-xs text-stone-dim mb-4">
+          {media.bytes && (
+            <div>
+              <span className="text-stone">Size:</span>{" "}
+              <span className="text-cyan-glow font-mono font-medium">
+                {(media.bytes / (1024 * 1024)).toFixed(2)} MB
+              </span>
+            </div>
+          )}
+          {media.width && media.height && (
+            <div>
+              <span className="text-stone">Dimensions:</span>{" "}
+              <span className="text-ivory font-mono">
+                {media.width} &times; {media.height} px
+              </span>
+            </div>
+          )}
+          {media.format && (
+            <div>
+              <span className="text-stone">Format:</span>{" "}
+              <span className="uppercase text-ivory font-mono">{media.format}</span>
+            </div>
+          )}
+          <div>
+            <span className="text-stone">Folder:</span>{" "}
+            <span className="capitalize text-ivory">{media.folder}</span>
+          </div>
         </div>
 
         {!confirmingDelete ? (

@@ -16,15 +16,43 @@ export const mediaFolderSchema = z.enum([
   "other",
 ]);
 
+export const ALLOWED_IMAGE_EXTENSIONS = [
+  "jpg",
+  "jpeg",
+  "png",
+  "webp",
+  "heic",
+  "heif",
+  "tiff",
+  "tif",
+  "avif",
+] as const;
+
+export const ALLOWED_VIDEO_EXTENSIONS = ["mp4", "mov", "webm"] as const;
+
+export function isAllowedMediaFile(fileName: string, mimeType?: string): boolean {
+  if (mimeType) {
+    if (mimeType.startsWith("image/") || mimeType.startsWith("video/")) {
+      return true;
+    }
+  }
+  const ext = fileName.split(".").pop()?.toLowerCase();
+  if (!ext) return false;
+  return (
+    ALLOWED_IMAGE_EXTENSIONS.includes(ext as (typeof ALLOWED_IMAGE_EXTENSIONS)[number]) ||
+    ALLOWED_VIDEO_EXTENSIONS.includes(ext as (typeof ALLOWED_VIDEO_EXTENSIONS)[number])
+  );
+}
+
 /**
- * Confirms a completed Cloudinary upload and creates the corresponding
- * `media` row. `cloudinaryPublicId` is the only thing we truly trust from
- * the client — everything else (width, height, bytes, format) gets
- * re-verified server-side against Cloudinary's own API before insert
- * (see /api/cloudinary/confirm/route.ts and spec section 59).
+ * Confirms a completed direct-to-storage upload (Supabase Storage or Cloudinary)
+ * and creates the corresponding `media` row.
  */
 export const confirmUploadSchema = z.object({
-  cloudinaryPublicId: z.string().min(1).max(500),
+  storageType: z.enum(["supabase", "cloudinary"]).optional().default("supabase"),
+  storagePath: z.string().min(1).max(500).optional(),
+  cloudinaryPublicId: z.string().min(1).max(500).optional(),
+  publicId: z.string().min(1).max(500).optional(),
   secureUrl: z.string().url().optional(),
   resourceType: z.enum(["image", "video"]).optional(),
   format: z.string().max(20).optional(),

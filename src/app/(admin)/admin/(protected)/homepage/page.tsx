@@ -9,14 +9,14 @@ export default async function HomepagePage() {
   const supabase = await createClient();
   const [{ data: sections }, { data: heroSlides }, { data: settings }] = await Promise.all([
     supabase.from("homepage_sections").select("id, section_key, title, subtitle, description, enabled").order("display_order"),
-    supabase.from("hero_slides").select("id, media_id, display_order, media:media(id, cloudinary_public_id, title)").eq("published", true).eq("enabled", true).order("display_order").limit(10),
+    supabase.from("hero_slides").select("id, media_id, display_order, media:media(id, cloudinary_public_id, secure_url, public_id, title)").eq("published", true).eq("enabled", true).order("display_order").limit(10),
     supabase.from("site_settings").select("id, brand_name, photographer_name, tagline, seo_description").maybeSingle(),
   ]);
 
   const slides = (heroSlides ?? []).map((slide) => ({
     id: slide.id,
     media_id: slide.media_id,
-    media: slide.media as unknown as { id: string; cloudinary_public_id: string; title: string } | null,
+    media: slide.media as unknown as { id: string; cloudinary_public_id: string; secure_url?: string; public_id?: string; title: string } | null,
   }));
 
   return (

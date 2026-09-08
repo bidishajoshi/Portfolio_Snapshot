@@ -95,7 +95,7 @@ export function CategoryFormModal({
                 {cover && (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src={cloudinaryImageUrl(cover.cloudinary_public_id, { width: 100, height: 100, crop: "fill" })}
+                    src={cloudinaryImageUrl(cover.secure_url || cover.cloudinary_public_id || (cover as any).public_id || "", { width: 100, height: 100, crop: "fill" })}
                     alt=""
                     className="h-full w-full object-cover"
                   />

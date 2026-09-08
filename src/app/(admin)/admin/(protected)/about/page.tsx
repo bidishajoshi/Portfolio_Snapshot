@@ -19,10 +19,10 @@ export default async function AboutPage() {
   if (mediaId) {
     const { data: media } = await supabase
       .from("media")
-      .select("cloudinary_public_id")
+      .select("cloudinary_public_id, secure_url, public_id")
       .eq("id", mediaId)
       .maybeSingle();
-    publicId = media?.cloudinary_public_id || null;
+    publicId = media?.secure_url || media?.cloudinary_public_id || media?.public_id || null;
   }
 
   return (
