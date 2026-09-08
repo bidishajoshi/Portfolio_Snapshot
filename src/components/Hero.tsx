@@ -32,32 +32,49 @@ export default function Hero({
       ? [backgroundImage]
       : [];
 
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [[currentIndex, direction], setPage] = useState<[number, number]>([0, 0]);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
+  const paginate = useCallback(
+    (newDirection: number) => {
+      if (images.length <= 1) return;
+      setPage(([prevIndex]) => {
+        let nextIndex = prevIndex + newDirection;
+        if (nextIndex >= images.length) nextIndex = 0;
+        if (nextIndex < 0) nextIndex = images.length - 1;
+        return [nextIndex, newDirection];
+      });
+    },
+    [images.length]
+  );
+
   const nextSlide = useCallback(() => {
-    if (images.length <= 1) return;
-    setCurrentIndex((prev) => (prev + 1) % images.length);
-  }, [images.length]);
+    paginate(1);
+  }, [paginate]);
 
   const prevSlide = useCallback(() => {
-    if (images.length <= 1) return;
-    setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
-  }, [images.length]);
+    paginate(-1);
+  }, [paginate]);
 
-  // Reset auto-slide 2-second timer whenever user manually moves or slide changes
+  const goToSlide = (targetIndex: number) => {
+    if (targetIndex === currentIndex || images.length <= 1) return;
+    const newDir = targetIndex > currentIndex ? 1 : -1;
+    setPage([targetIndex, newDir]);
+  };
+
+  // Reset auto-slide 7-second timer whenever user manually moves or slide changes
   useEffect(() => {
     if (images.length <= 1) return;
 
     timerRef.current = setInterval(() => {
-      nextSlide();
-    }, 2000);
+      paginate(1);
+    }, 7000);
 
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [currentIndex, images.length, nextSlide]);
+  }, [currentIndex, images.length, paginate]);
 
   // Preload next slide image in browser cache for instant transitions
   useEffect(() => {
@@ -75,9 +92,21 @@ export default function Hero({
     if (touchStart === null) return;
     const touchEnd = e.changedTouches[0].clientX;
     const diff = touchStart - touchEnd;
-    if (diff > 40) nextSlide();
-    if (diff < -40) prevSlide();
+    if (diff > 40) paginate(1);
+    if (diff < -40) paginate(-1);
     setTouchStart(null);
+  };
+
+  const slideVariants = {
+    enter: (dir: number) => ({
+      x: dir > 0 ? "100%" : "-100%",
+    }),
+    center: {
+      x: 0,
+    },
+    exit: (dir: number) => ({
+      x: dir > 0 ? "-100%" : "100%",
+    }),
   };
 
   return (
@@ -93,19 +122,23 @@ export default function Hero({
         <div className="absolute inset-0 bg-radial-at-c from-cyan-glow/10 via-transparent to-transparent opacity-30 pointer-events-none z-10" />
 
         {images.length > 0 ? (
-          <AnimatePresence mode="popLayout">
+          <AnimatePresence initial={false} custom={direction} mode="popLayout">
             <motion.div
               key={currentIndex}
-              initial={{ opacity: 0, scale: 1.05 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 1.2, ease: "easeOut" }}
+              custom={direction}
+              variants={slideVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{
+                x: { duration: 0.7, ease: [0.16, 1, 0.3, 1] },
+              }}
               className="absolute inset-0 w-full h-full"
             >
               <SafeImage
                 src={images[currentIndex]}
                 alt="Hero Photography"
-                className="w-full h-full object-cover object-center transition-transform duration-1000 scale-105"
+                className="w-full h-full object-cover object-center"
               />
             </motion.div>
           </AnimatePresence>
@@ -205,7 +238,7 @@ export default function Hero({
               {images.map((_, idx) => (
                 <button
                   key={idx}
-                  onClick={() => setCurrentIndex(idx)}
+                  onClick={() => goToSlide(idx)}
                   className={`relative h-2 rounded-full overflow-hidden transition-all duration-500 cursor-pointer ${
                     idx === currentIndex
                       ? "w-8 bg-cyan-glow shadow-glow"
@@ -218,7 +251,7 @@ export default function Hero({
                       key={`progress-${currentIndex}`}
                       initial={{ scaleX: 0 }}
                       animate={{ scaleX: 1 }}
-                      transition={{ duration: 2, ease: "linear" }}
+                      transition={{ duration: 7, ease: "linear" }}
                       className="absolute inset-0 bg-ivory origin-left"
                     />
                   )}
@@ -234,4 +267,5 @@ export default function Hero({
       )}
     </section>
   );
+}
 }
