@@ -121,6 +121,15 @@ export default function Hero({
   const currentOptimizedSrc = cloudinaryImageUrl(currentRawSrc, { width: 1920 });
   const currentSrcSet = cloudinarySrcSet(currentRawSrc);
 
+  const goToSlide = useCallback(
+    (targetIndex: number) => {
+      if (targetIndex === currentIndex || images.length <= 1) return;
+      const newDir = targetIndex > currentIndex ? 1 : -1;
+      setPage([targetIndex, newDir]);
+    },
+    [currentIndex, images.length]
+  );
+
   return (
     <section
       id="home"
@@ -277,6 +286,25 @@ export default function Hero({
             <ChevronRight size={24} className="group-hover:translate-x-0.5 transition-transform" />
           </button>
         </>
+      )}
+
+      {/* Slide Navigation Dots / Active Pill Indicator */}
+      {images.length > 1 && (
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 flex items-center justify-center gap-2.5 px-4 py-2 rounded-full bg-black/25 backdrop-blur-md border border-white/10 shadow-lg">
+          {images.map((_, idx) => (
+            <button
+              key={idx}
+              onClick={() => goToSlide(idx)}
+              className={`h-2.5 rounded-full transition-all duration-300 cursor-pointer ${
+                idx === currentIndex
+                  ? "w-8 bg-amber-400 shadow-md shadow-amber-400/30"
+                  : "w-2.5 bg-white/40 hover:bg-white/70"
+              }`}
+              aria-label={`Go to slide ${idx + 1}`}
+              title={`Go to slide ${idx + 1}`}
+            />
+          ))}
+        </div>
       )}
     </section>
   );
