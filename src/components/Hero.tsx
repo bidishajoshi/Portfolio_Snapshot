@@ -90,13 +90,13 @@ export default function Hero({
     paginate(-1);
   }, [paginate]);
 
-  // Auto-slide exactly 20000ms (20 seconds). Resets whenever user manually moves or slide changes
+  // Auto-slide exactly 5000ms (5 seconds). Resets whenever user manually moves or slide changes
   useEffect(() => {
     if (images.length <= 1) return;
 
     timerRef.current = setInterval(() => {
       paginate(1);
-    }, 20000);
+    }, 5000);
 
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
