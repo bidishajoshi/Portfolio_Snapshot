@@ -39,11 +39,33 @@ export default function Hero({
   const [initialLoaded, setInitialLoaded] = useState<boolean>(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Preload the FIRST slide immediately into the browser engine so it appears instantly
+  useEffect(() => {
+    if (images.length > 0 && images[0]) {
+      const firstSrc = cloudinaryImageUrl(images[0], { width: 1920 });
+      const link = document.createElement("link");
+      link.rel = "preload";
+      link.as = "image";
+      link.href = firstSrc;
+      const responsiveSrc = cloudinarySrcSet(images[0]);
+      if (responsiveSrc) {
+        link.imageSrcset = responsiveSrc;
+        link.imageSizes = "100vw";
+      }
+      document.head.appendChild(link);
+      return () => {
+        try {
+          document.head.removeChild(link);
+        } catch {}
+      };
+    }
+  }, [images]);
+
   // Safety fallback: ensure loading skeleton disappears even if image load event is delayed
   useEffect(() => {
     const fallbackTimer = setTimeout(() => {
       setInitialLoaded(true);
-    }, 2000);
+    }, 1200);
     return () => clearTimeout(fallbackTimer);
   }, []);
 
