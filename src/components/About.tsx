@@ -49,6 +49,7 @@ export default function About({
             <div className="w-full h-full relative z-10 rounded-2xl overflow-hidden shadow-2xl border border-border/80 bg-ink">
               <SafeImage
                 src={displayedPortrait}
+                fallbackSrc="/images/placeholder/portrait.jpg"
                 alt="Himal Shrestha - DR DSLR Lead Photographer"
                 variant="medium"
                 className="w-full h-full object-cover object-top transform transition-transform duration-700 group-hover:scale-105"

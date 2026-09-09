@@ -38,11 +38,20 @@ export function cloudinaryImageUrl(
   // 2. Direct Cloudinary absolute URL (e.g. https://res.cloudinary.com/cloudname/image/upload/...)
   if (publicId.includes("res.cloudinary.com") && publicId.includes("/image/upload/")) {
     const [baseUrl, rest] = publicId.split("/image/upload/");
-    // Clean any existing transformation string preceding version ("v12345") or public_id
-    const cleanPath = rest.replace(
-      /^(?:[a-zA-Z0-9_,-]+(?:\:[a-zA-Z0-9_,-]+)?\/)*(v\d+.*|[^/]+)$/,
-      "$1"
-    );
+    // Split rest into segments and strip any transformation strings and version tags
+    const segments = rest.split("/");
+    let firstPathIdx = 0;
+    for (let i = 0; i < segments.length; i++) {
+      const seg = segments[i];
+      const isTransform = /^(?:(?:[a-z]{1,2}_[a-zA-Z0-9_.-]+|[a-z0-9_-]+:[a-zA-Z0-9_.-]+),?)+$/.test(seg);
+      const isVersion = /^v\d+$/.test(seg);
+      if (isTransform || isVersion) {
+        firstPathIdx = i + 1;
+      } else {
+        break;
+      }
+    }
+    const cleanPath = segments.slice(firstPathIdx).join("/");
     return `${baseUrl}/image/upload/${transformStr}/${cleanPath}`;
   }
 

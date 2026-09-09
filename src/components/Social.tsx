@@ -56,7 +56,13 @@ export default function Social({
               transition={{ duration: 0.5, delay: idx * 0.1 }}
               className="aspect-square relative group overflow-hidden bg-surface-raised rounded-lg border border-border/40 shadow-lg"
             >
-              <SafeImage src={photo.publicId} alt={photo.title} variant="thumb" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+              <SafeImage
+                src={photo.publicId}
+                fallbackSrc="/images/placeholder/hero.jpg"
+                alt={photo.title}
+                variant="thumb"
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+              />
               <div className="absolute inset-0 bg-gradient-to-t from-ink/80 via-transparent to-transparent flex items-end justify-center p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                  <span className="text-xs font-semibold text-ivory flex items-center gap-1">View Story <ArrowUpRight size={12} /></span>
               </div>

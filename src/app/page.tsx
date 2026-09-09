@@ -14,6 +14,7 @@ import Social from "@/components/Social";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
 import { cloudinaryImageUrl } from "@/lib/cloudinary/url";
+import { stories as fallbackStories } from "@/data/stories";
 
 // Force-dynamic ensures the public site always reflects the latest Supabase data after admin saves
 export const dynamic = "force-dynamic";
@@ -46,13 +47,16 @@ export default async function HomePage() {
     supabase.from("social_links").select("platform, label, url, enabled").eq("enabled", true),
     supabase.from("hero_slides").select("id, media:media(cloudinary_public_id, secure_url, public_id)").eq("published", true).eq("enabled", true).order("display_order").limit(10),
     supabase.from("album_media").select("album_id"),
-    supabase.from("homepage_sections").select("title, subtitle, content").eq("section_key", "about").maybeSingle(),
-    supabase.from("homepage_sections").select("id, section_key, title, subtitle, description, enabled").order("display_order"),
+    supabase.from("homepage_sections").select("name, title, subtitle, content, is_enabled").eq("name", "about").maybeSingle(),
+    supabase.from("homepage_sections").select("id, name, title, subtitle, content, is_enabled").order("order_index"),
   ]);
 
-  const sectionsMap = new Map((homepageSections ?? []).map((s) => [s.section_key, s]));
-  const getSec = (key: string) => sectionsMap.get(key as any);
-  const isEnabled = (key: string) => getSec(key)?.enabled ?? true;
+  const sectionsMap = new Map((homepageSections ?? []).map((s) => [s.name, s]));
+  const getSec = (key: string) => sectionsMap.get(key) || sectionsMap.get(key.replace(/_/g, ""));
+  const isEnabled = (key: string) => {
+    const sec = getSec(key);
+    return sec ? (sec.is_enabled ?? true) : true;
+  };
 
   const heroSec = getSec("hero");
   const selectedWorksSec = getSec("selected_works");
@@ -133,20 +137,31 @@ export default async function HomePage() {
 
   const allGalleryPhotos = [...(livePhotos ?? []).filter((p) => !p.image.includes("ohapodix/image/upload/v178843")), ...directPhotos];
 
-  const liveStories = dbStories?.map((story) => {
-    const media = story.cover_media_id ? mediaById.get(story.cover_media_id) : null;
-    const storyCat = story.subtitle || (story.tags && story.tags.length > 0 ? story.tags[0] : null);
-    return {
-      id: story.id,
-      title: story.title,
-      slug: story.slug ?? story.title.toLowerCase().replace(/\s+/g, "-"),
-      introduction: story.introduction ?? "",
-      location: story.location ?? "",
-      story_date: story.story_date ?? null,
-      cover: media ? cloudinaryImageUrl(getMediaUrlOrId(media), { width: 1400, height: 900, crop: "fill" }) : "",
-      category: storyCat,
-    };
-  });
+  const liveStories = (dbStories && dbStories.length > 0)
+    ? dbStories.map((story) => {
+        const media = story.cover_media_id ? mediaById.get(story.cover_media_id) : null;
+        const storyCat = story.subtitle || (story.tags && story.tags.length > 0 ? story.tags[0] : null);
+        return {
+          id: story.id,
+          title: story.title,
+          slug: story.slug ?? story.title.toLowerCase().replace(/\s+/g, "-"),
+          introduction: story.introduction ?? "",
+          location: story.location ?? "",
+          story_date: story.story_date ?? null,
+          cover: media ? cloudinaryImageUrl(getMediaUrlOrId(media), { width: 1400, height: 900, crop: "fill" }) : "",
+          category: storyCat,
+        };
+      })
+    : fallbackStories.map((story) => ({
+        id: String(story.id),
+        title: story.title,
+        slug: story.slug,
+        introduction: story.excerpt,
+        location: story.location,
+        story_date: story.date,
+        cover: story.cover,
+        category: "Visual Story",
+      }));
 
   const liveTestimonials = dbTestimonials?.map((item) => {
     const media = item.client_media_id ? mediaById.get(item.client_media_id) : null;
@@ -170,6 +185,8 @@ export default async function HomePage() {
     const profileMedia = (dbMedia ?? []).find((m) => m.folder === "profile" && m.kind === "image");
     if (profileMedia) {
       aboutPortraitUrl = cloudinaryImageUrl(getMediaUrlOrId(profileMedia), { width: 1200, height: 1600, crop: "fill" });
+    } else {
+      aboutPortraitUrl = "/images/placeholder/portrait.jpg";
     }
   }
 
@@ -188,7 +205,26 @@ export default async function HomePage() {
   const combinedHero = Array.from(new Set([...heroSlideImages, ...directHeroMedia]));
   const heroImages = combinedHero.length > 0 ? combinedHero : ["/images/placeholder/hero.jpg"];
 
-  const socialPhotos = (dbMedia ?? []).filter((item) => item.kind === "image").slice(0, 4).map((item) => ({ id: item.id, publicId: getMediaUrlOrId(item), title: item.title }));
+  // Curated social photos: use valid user uploads, excluding broken legacy 404s
+  const validSocialImages = (dbMedia ?? [])
+    .filter((item) => item.kind === "image" && !isBrokenLegacy(item) && item.folder !== "hero");
+
+  const directSocialPhotos = validSocialImages.slice(0, 4).map((item) => ({
+    id: item.id,
+    publicId: getMediaUrlOrId(item),
+    title: item.title,
+  }));
+
+  const fallbackSocialPhotos = [
+    { id: "s1", publicId: "/images/placeholder/hero.jpg", title: "DR DSLR Moments" },
+    { id: "s2", publicId: "/images/placeholder/portrait.jpg", title: "DR DSLR Portraits" },
+    { id: "s3", publicId: "/images/placeholder/hero.jpg", title: "DR DSLR Stories" },
+    { id: "s4", publicId: "/images/placeholder/portrait.jpg", title: "DR DSLR Travels" },
+  ];
+
+  const socialPhotos = directSocialPhotos.length >= 4
+    ? directSocialPhotos
+    : [...directSocialPhotos, ...fallbackSocialPhotos].slice(0, 4);
 
   return (
     <main className="flex flex-col min-h-screen relative w-full overflow-x-hidden bg-ink">
