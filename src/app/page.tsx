@@ -254,13 +254,21 @@ export default async function HomePage() {
       {isEnabled("selected_works") && <Categories categories={liveCategories} title={selectedWorksSec?.subtitle} subtitle={selectedWorksSec?.title} />}
       {isEnabled("selected_works") && <Gallery photos={allGalleryPhotos} categories={liveCategories?.map((item) => item.name)} title={selectedWorksSec?.title} subtitle={selectedWorksSec?.subtitle} description={selectedWorksSec?.description} />}
       {isEnabled("featured_albums") && <Albums albums={liveAlbums} title={albumsSec?.title} subtitle={albumsSec?.subtitle} description={albumsSec?.description} />}
-      {isEnabled("stories") && liveStories && liveStories.length > 0 && (
-        <Stories stories={liveStories} title={storiesSec?.title} subtitle={storiesSec?.subtitle} description={storiesSec?.description} />
+      {isEnabled("stories") && (
+        <Stories stories={liveStories ?? []} title={storiesSec?.title} subtitle={storiesSec?.subtitle} description={storiesSec?.description} />
       )}
       {isEnabled("services") && <Services services={dbServices ?? []} title={servicesSec?.title} subtitle={servicesSec?.subtitle} description={servicesSec?.description} />}
       {isEnabled("latest_work") && <Experience title={experienceSec?.title} subtitle={experienceSec?.subtitle} description={experienceSec?.description} />}
       {isEnabled("testimonials") && <Testimonials testimonials={liveTestimonials ?? []} title={testimonialsSec?.title} subtitle={testimonialsSec?.subtitle} description={testimonialsSec?.description} />}
-      {isEnabled("social") && <Social socialLinks={dbSocial ?? []} photos={socialPhotos} title={socialSec?.title} subtitle={socialSec?.subtitle} description={socialSec?.description} />}
+      {isEnabled("social") && (
+        <Social
+          socialLinks={dbSocial ?? []}
+          photos={socialPhotos}
+          title={socialSec?.title && socialSec.title !== "Social Media" ? socialSec.title : "Follow the Journey"}
+          subtitle={socialSec?.subtitle}
+          description={socialSec?.description}
+        />
+      )}
       {isEnabled("contact_cta") && <Contact contactOverride={settings ? { email: settings.contact_email, phone: settings.contact_phone } : undefined} title={contactSec?.title} subtitle={contactSec?.subtitle} description={contactSec?.description} />}
       <Footer
         socialLinks={dbSocial ?? []}
