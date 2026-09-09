@@ -16,7 +16,19 @@ export async function updateSiteContent(table: "site_settings" | "about_content"
 export async function updateHomepageSection(id: string, values: Record<string, unknown>) {
   await requireAdmin();
   const supabase = createAdminClient();
-  const { error } = await supabase.from("homepage_sections").update(values).eq("id", id);
+
+  const updatePayload: Record<string, unknown> = {};
+  if ("title" in values) updatePayload.title = values.title;
+  if ("subtitle" in values) updatePayload.subtitle = values.subtitle;
+  if ("enabled" in values) updatePayload.is_enabled = values.enabled;
+  if ("is_enabled" in values) updatePayload.is_enabled = values.is_enabled;
+  if ("description" in values) {
+    const { data: current } = await supabase.from("homepage_sections").select("content").eq("id", id).maybeSingle();
+    const prevContent = (current?.content && typeof current.content === "object" ? current.content : {}) as Record<string, unknown>;
+    updatePayload.content = { ...prevContent, description: values.description };
+  }
+
+  const { error } = await supabase.from("homepage_sections").update(updatePayload).eq("id", id);
   if (error) throw new Error(error.message);
   revalidatePath("/");
   revalidatePath("/admin/homepage");
