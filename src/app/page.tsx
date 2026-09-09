@@ -113,9 +113,15 @@ export default async function HomePage() {
       : null;
   }).filter((item): item is NonNullable<typeof item> => item !== null);
 
+  const isBrokenLegacy = (m?: any) => {
+    if (!m) return true;
+    const raw = getMediaUrlOrId(m);
+    return raw.includes("res.cloudinary.com/ohapodix") && (raw.includes("/dr-dslr/photo/") || raw.includes("WhatsApp%20Image") || raw.includes("ChatGPT%20Image"));
+  };
+
   const photoMediaIds = new Set((dbPhotos ?? []).map((p) => p.media_id));
   const directPhotos = (dbMedia ?? [])
-    .filter((m) => m.folder === "photo" && m.kind === "image" && !photoMediaIds.has(m.id))
+    .filter((m) => m.folder === "photo" && m.kind === "image" && !photoMediaIds.has(m.id) && !isBrokenLegacy(m))
     .map((m) => ({
       id: m.id,
       title: m.title,
@@ -125,7 +131,7 @@ export default async function HomePage() {
       date: "",
     }));
 
-  const allGalleryPhotos = [...(livePhotos ?? []), ...directPhotos];
+  const allGalleryPhotos = [...(livePhotos ?? []).filter((p) => !p.image.includes("ohapodix/image/upload/v178843")), ...directPhotos];
 
   const liveStories = dbStories?.map((story) => {
     const media = story.cover_media_id ? mediaById.get(story.cover_media_id) : null;
@@ -167,12 +173,20 @@ export default async function HomePage() {
     }
   }
 
-  const heroImages = (heroSlide ?? [])
+  const heroSlideImages = (heroSlide ?? [])
     .map((slide) => {
       const media = (slide as any).media as { cloudinary_public_id?: string; secure_url?: string; public_id?: string } | null;
       return getMediaUrlOrId(media);
     })
     .filter((url): url is string => Boolean(url));
+
+  const directHeroMedia = (dbMedia ?? [])
+    .filter((m) => m.folder === "hero" && m.kind === "image")
+    .map((m) => getMediaUrlOrId(m))
+    .filter(Boolean);
+
+  const combinedHero = Array.from(new Set([...heroSlideImages, ...directHeroMedia]));
+  const heroImages = combinedHero.length > 0 ? combinedHero : ["/images/placeholder/hero.jpg"];
 
   const socialPhotos = (dbMedia ?? []).filter((item) => item.kind === "image").slice(0, 4).map((item) => ({ id: item.id, publicId: getMediaUrlOrId(item), title: item.title }));
 
