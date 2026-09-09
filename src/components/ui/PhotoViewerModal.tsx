@@ -108,7 +108,7 @@ export default function PhotoViewerModal({
  <SafeImage
  src={currentPhoto.image}
  alt={displayTitle}
- variant="original"
+ variant="large"
  className='max-h-[72vh] max-w-[90vw] object-contain shadow-2xl rounded-lg'
  />
  </motion.div>
