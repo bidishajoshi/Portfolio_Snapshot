@@ -54,6 +54,7 @@ export default function Albums({
                     <SafeImage
                       src={album.cover}
                       alt={album.title}
+                      variant="medium"
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                     />
                     <div className="absolute top-4 right-4 bg-ink/85 backdrop-blur-md px-3 py-1 rounded-full text-xs text-yellow font-semibold border border-border/40 shadow-sm">

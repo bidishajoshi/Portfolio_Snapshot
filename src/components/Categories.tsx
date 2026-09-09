@@ -43,6 +43,7 @@ export default function Categories({
                 <SafeImage
                   src={cat.cover}
                   alt={cat.name}
+                  variant="medium"
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                 />
                 

@@ -148,6 +148,7 @@ export default function Stories({
                     <SafeImage
                       src={story.cover || undefined}
                       alt={story.title}
+                      variant="medium"
                       className="w-full h-full object-cover transform transition-transform duration-700 group-hover:scale-105"
                     />
                     

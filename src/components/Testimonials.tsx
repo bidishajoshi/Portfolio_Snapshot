@@ -14,6 +14,7 @@ import {
   X,
 } from "lucide-react";
 import { submitPublicReview } from "@/lib/actions/testimonials";
+import SafeImage from "@/components/ui/SafeImage";
 
 export default function Testimonials({
   testimonials: liveTestimonials,
@@ -146,7 +147,7 @@ export default function Testimonials({
                   <div className="flex flex-col items-center">
                      <div className="w-11 h-11 rounded-full bg-surface-raised mb-2.5 flex items-center justify-center overflow-hidden border border-border/70 shadow-inner">
                         {displayedTestimonials[currentIndex].avatar ? (
-                          <img src={displayedTestimonials[currentIndex].avatar} alt={displayedTestimonials[currentIndex].name} className="w-full h-full object-cover" />
+                          <SafeImage src={displayedTestimonials[currentIndex].avatar} alt={displayedTestimonials[currentIndex].name} variant="thumb" className="w-full h-full object-cover" />
                         ) : (
                           <span className="text-gold font-display text-base font-semibold">{displayedTestimonials[currentIndex].name.charAt(0)}</span>
                         )}
