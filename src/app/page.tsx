@@ -14,6 +14,7 @@ import Social from "@/components/Social";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
 import { cloudinaryImageUrl } from "@/lib/cloudinary/url";
+import { stories as fallbackStories } from "@/data/stories";
 
 // Force-dynamic ensures the public site always reflects the latest Supabase data after admin saves
 export const dynamic = "force-dynamic";
@@ -144,20 +145,31 @@ export default async function HomePage() {
 
   const allGalleryPhotos = [...(livePhotos ?? []).filter((p) => !p.image.includes("ohapodix/image/upload/v178843")), ...directPhotos];
 
-  const liveStories = dbStories?.map((story) => {
-    const media = story.cover_media_id ? mediaById.get(story.cover_media_id) : null;
-    const storyCat = story.subtitle || (story.tags && story.tags.length > 0 ? story.tags[0] : null);
-    return {
-      id: story.id,
-      title: story.title,
-      slug: story.slug ?? story.title.toLowerCase().replace(/\s+/g, "-"),
-      introduction: story.introduction ?? "",
-      location: story.location ?? "",
-      story_date: story.story_date ?? null,
-      cover: media ? cloudinaryImageUrl(getMediaUrlOrId(media), { width: 1400, height: 900, crop: "fill" }) : "",
-      category: storyCat,
-    };
-  });
+  const liveStories = (dbStories && dbStories.length > 0)
+    ? dbStories.map((story) => {
+        const media = story.cover_media_id ? mediaById.get(story.cover_media_id) : null;
+        const storyCat = story.subtitle || (story.tags && story.tags.length > 0 ? story.tags[0] : null);
+        return {
+          id: story.id,
+          title: story.title,
+          slug: story.slug ?? story.title.toLowerCase().replace(/\s+/g, "-"),
+          introduction: story.introduction ?? "",
+          location: story.location ?? "",
+          story_date: story.story_date ?? null,
+          cover: media ? cloudinaryImageUrl(getMediaUrlOrId(media), { width: 1400, height: 900, crop: "fill" }) : "",
+          category: storyCat,
+        };
+      })
+    : fallbackStories.map((story) => ({
+        id: String(story.id),
+        title: story.title,
+        slug: story.slug,
+        introduction: story.excerpt,
+        location: story.location,
+        story_date: story.date,
+        cover: story.cover,
+        category: "Visual Story",
+      }));
 
   const liveTestimonials = dbTestimonials?.map((item) => {
     const media = item.client_media_id ? mediaById.get(item.client_media_id) : null;

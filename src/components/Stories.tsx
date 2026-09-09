@@ -147,6 +147,7 @@ export default function Stories({
                   <div className="aspect-[16/10] w-full relative overflow-hidden">
                     <SafeImage
                       src={story.cover || undefined}
+                      fallbackSrc="/images/placeholder/hero.jpg"
                       alt={story.title}
                       variant="medium"
                       className="w-full h-full object-cover transform transition-transform duration-700 group-hover:scale-105"
