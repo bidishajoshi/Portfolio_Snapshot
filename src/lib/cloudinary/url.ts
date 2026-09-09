@@ -46,6 +46,11 @@ export function cloudinaryImageUrl(
     return `${baseUrl}/image/upload/${transformStr}/${cleanPath}`;
   }
 
+  // 2.5. Already an optimized render endpoint
+  if (publicId.startsWith("/api/media/render")) {
+    return publicId;
+  }
+
   // 3. Supabase Storage URLs or relative paths (photo/..., hero/..., album/..., etc.)
   let cleanedId = publicId;
 
@@ -73,10 +78,10 @@ export function cloudinaryImageUrl(
       ? cleanedId.slice("media/".length)
       : cleanedId;
 
-    // Use Supabase Storage dynamic image transformation service for fast, compressed delivery (drops 50MB to ~150KB)
+    // Use Next.js high-speed WebP image renderer with Sharp (supports 50MB files, never 400s)
     const targetWidth = width || 1200;
     const targetQuality = typeof quality === "number" ? quality : 80;
-    return `${SUPABASE_URL}/storage/v1/render/image/public/media/${objectPath}?width=${targetWidth}&quality=${targetQuality}&resize=contain`;
+    return `/api/media/render?path=${encodeURIComponent(objectPath)}&width=${targetWidth}&quality=${targetQuality}`;
   }
 
   // 4. Other direct absolute URLs (e.g. external CDN)
