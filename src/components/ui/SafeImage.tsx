@@ -46,12 +46,10 @@ export default function SafeImage({
 
   const [imgSrc, setImgSrc] = useState<string>(() => getValidSrc(src, activeFallback, variant));
   const [hasError, setHasError] = useState<boolean>(false);
-  const [isLoaded, setIsLoaded] = useState<boolean>(false);
 
   useEffect(() => {
     setImgSrc(getValidSrc(src, activeFallback, variant));
     setHasError(false);
-    setIsLoaded(false);
   }, [src, activeFallback, variant]);
 
   const finalSrc = hasError ? activeFallback : imgSrc;
@@ -61,40 +59,29 @@ export default function SafeImage({
       : undefined;
 
   return (
-    <div className={`relative overflow-hidden bg-ink/40 ${aspectRatio || ""}`}>
-      {/* Background loading shimmer */}
-      {!isLoaded && !hasError && (
-        <div className="absolute inset-0 z-0 bg-surface-raised/20 animate-pulse pointer-events-none" />
-      )}
-
-      <img
-        {...props}
-        src={finalSrc}
-        srcSet={srcSet || undefined}
-        sizes={srcSet ? "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" : undefined}
-        alt={alt || "DR DSLR Photography"}
-        loading={priority ? "eager" : loading || "lazy"}
-        fetchPriority={priority ? "high" : "auto"}
-        decoding="async"
-        className={`relative z-1 ${className} transition-opacity duration-300 ${
-          isLoaded ? "opacity-100" : "opacity-90"
-        }`}
-        onLoad={(e) => {
-          setIsLoaded(true);
-          onLoad?.(e);
-        }}
-        onError={(e) => {
-          const target = e.currentTarget;
-          target.srcset = "";
-          target.src = activeFallback;
-          if (!hasError) {
-            setHasError(true);
-            setImgSrc(activeFallback);
-          }
-          setIsLoaded(true);
-          onError?.(e);
-        }}
-      />
-    </div>
+    <img
+      {...props}
+      src={finalSrc}
+      srcSet={srcSet || undefined}
+      sizes={srcSet ? "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" : undefined}
+      alt={alt || "DR DSLR Photography"}
+      loading={priority ? "eager" : loading || "lazy"}
+      fetchPriority={priority ? "high" : "auto"}
+      decoding="async"
+      className={className}
+      onLoad={(e) => {
+        onLoad?.(e);
+      }}
+      onError={(e) => {
+        const target = e.currentTarget;
+        target.srcset = "";
+        target.src = activeFallback;
+        if (!hasError) {
+          setHasError(true);
+          setImgSrc(activeFallback);
+        }
+        onError?.(e);
+      }}
+    />
   );
 }

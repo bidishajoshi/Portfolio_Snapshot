@@ -52,7 +52,15 @@ export default async function HomePage() {
   ]);
 
   const sectionsMap = new Map((homepageSections ?? []).map((s) => [s.name, s]));
-  const getSec = (key: string) => sectionsMap.get(key) || sectionsMap.get(key.replace(/_/g, ""));
+  const getSec = (key: string) => {
+    const sec = sectionsMap.get(key) || sectionsMap.get(key.replace(/_/g, ""));
+    if (!sec) return null;
+    const content = (sec.content && typeof sec.content === "object" ? sec.content : {}) as Record<string, unknown>;
+    return {
+      ...sec,
+      description: (content.description as string) || null,
+    };
+  };
   const isEnabled = (key: string) => {
     const sec = getSec(key);
     return sec ? (sec.is_enabled ?? true) : true;
