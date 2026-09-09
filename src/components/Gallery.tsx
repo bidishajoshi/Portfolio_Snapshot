@@ -29,10 +29,15 @@ export default function Gallery({
 }) {
   const [filter, setFilter] = useState<string>("All");
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [visibleCount, setVisibleCount] = useState<number>(12);
   const displayedPhotos = livePhotos ?? [];
   const photoCategories = Array.from(new Set(displayedPhotos.map((p) => p.category).filter(Boolean)));
   const combinedCategories = Array.from(new Set([...(liveCategories ?? []), ...photoCategories]));
   const displayedCategories = ["All", ...combinedCategories];
+
+  useEffect(() => {
+    setVisibleCount(12);
+  }, [filter]);
 
   useEffect(() => {
     const handleCategoryFilter = (event: Event) => {
@@ -44,6 +49,8 @@ export default function Gallery({
   }, [liveCategories, displayedCategories]);
 
   const filteredPhotos = filter === "All" ? displayedPhotos : displayedPhotos.filter((p) => p.category === filter);
+  const photosToShow = filteredPhotos.slice(0, visibleCount);
+  const hasMore = visibleCount < filteredPhotos.length;
 
   const openLightbox = (index: number) => setLightboxIndex(index);
   const closeLightbox = () => setLightboxIndex(null);
@@ -118,7 +125,7 @@ export default function Gallery({
         ) : (
           <motion.div layout className="masonry-grid">
             <AnimatePresence>
-              {filteredPhotos.map((photo, idx) => (
+              {photosToShow.map((photo, idx) => (
                 <motion.div
                   layout
                   initial={{ opacity: 0, scale: 0.95 }}
@@ -160,6 +167,18 @@ export default function Gallery({
             </AnimatePresence>
           </motion.div>
         )}
+
+        {/* Progressive Load More Button */}
+        {hasMore && (
+          <div className="mt-12 text-center">
+            <button
+              onClick={() => setVisibleCount((prev) => prev + 12)}
+              className="px-8 py-3 rounded-full bg-surface border border-yellow/40 text-yellow hover:bg-yellow hover:text-ink font-semibold text-xs uppercase tracking-wider transition-all duration-300 shadow-lg shadow-yellow/10 hover:scale-105 cursor-pointer font-mono"
+            >
+              Load More Photos ({filteredPhotos.length - visibleCount} remaining)
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Lightbox Overlay */}
@@ -192,7 +211,7 @@ export default function Gallery({
             <SafeImage
               src={filteredPhotos[lightboxIndex].image}
               alt={filteredPhotos[lightboxIndex].title}
-              variant="original"
+              variant="large"
               className="max-h-[75vh] max-w-[88vw] object-contain shadow-2xl rounded-lg select-none"
             />
 
