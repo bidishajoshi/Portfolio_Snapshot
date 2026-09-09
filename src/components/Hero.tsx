@@ -232,37 +232,6 @@ export default function Hero({
             <ChevronRight size={24} className="group-hover:translate-x-0.5 transition-transform" />
           </button>
 
-          {/* Slide Pagination & Progress Line */}
-          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center gap-3">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/10 shadow-lg">
-              {images.map((_, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => goToSlide(idx)}
-                  className={`relative h-2 rounded-full overflow-hidden transition-all duration-500 cursor-pointer ${
-                    idx === currentIndex
-                      ? "w-8 bg-cyan-glow shadow-glow"
-                      : "w-2 bg-white/30 hover:bg-white/60"
-                  }`}
-                  aria-label={`Go to slide ${idx + 1}`}
-                >
-                  {idx === currentIndex && (
-                    <motion.div
-                      key={`progress-${currentIndex}`}
-                      initial={{ scaleX: 0 }}
-                      animate={{ scaleX: 1 }}
-                      transition={{ duration: 7, ease: "linear" }}
-                      className="absolute inset-0 bg-ivory origin-left"
-                    />
-                  )}
-                </button>
-              ))}
-            </div>
-
-            <span className="text-[10px] font-mono tracking-widest text-stone-dim uppercase">
-              {currentIndex + 1} / {images.length}
-            </span>
-          </div>
         </>
       )}
     </section>
