@@ -46,16 +46,17 @@ export function cloudinaryImageUrl(
     return `${baseUrl}/image/upload/${transformStr}/${cleanPath}`;
   }
 
-  // 3. Supabase Storage URLs or storage relative paths (photo/..., hero/..., album/..., etc.)
+  // 3. Supabase Storage URLs or relative paths (photo/..., hero/..., album/..., etc.)
   let cleanedId = publicId;
-  if (cleanedId.includes("/storage/v1/render/image/public/media/")) {
-    cleanedId = cleanedId
-      .replace("/storage/v1/render/image/public/media/", "/storage/v1/object/public/media/")
-      .split("?")[0];
+
+  // Extract objectPath if it's a full Supabase URL or relative path
+  if (cleanedId.includes("/storage/v1/object/public/media/")) {
+    cleanedId = cleanedId.split("/storage/v1/object/public/media/")[1].split("?")[0];
+  } else if (cleanedId.includes("/storage/v1/render/image/public/media/")) {
+    cleanedId = cleanedId.split("/storage/v1/render/image/public/media/")[1].split("?")[0];
   }
 
-  if (
-    cleanedId.includes("supabase.co") ||
+  const isSupabaseFolder =
     cleanedId.startsWith("photo/") ||
     cleanedId.startsWith("album/") ||
     cleanedId.startsWith("story/") ||
@@ -65,15 +66,17 @@ export function cloudinaryImageUrl(
     cleanedId.startsWith("testimonial/") ||
     cleanedId.startsWith("film/") ||
     cleanedId.startsWith("other/") ||
-    cleanedId.startsWith("media/")
-  ) {
-    if (cleanedId.startsWith("http://") || cleanedId.startsWith("https://")) {
-      return cleanedId;
-    }
+    cleanedId.startsWith("media/");
+
+  if (isSupabaseFolder) {
     const objectPath = cleanedId.startsWith("media/")
       ? cleanedId.slice("media/".length)
       : cleanedId;
-    return `${SUPABASE_URL}/storage/v1/object/public/media/${objectPath}`;
+
+    // Use Supabase Storage dynamic image transformation service for fast, compressed delivery (drops 50MB to ~150KB)
+    const targetWidth = width || 1200;
+    const targetQuality = typeof quality === "number" ? quality : 80;
+    return `${SUPABASE_URL}/storage/v1/render/image/public/media/${objectPath}?width=${targetWidth}&quality=${targetQuality}&resize=contain`;
   }
 
   // 4. Other direct absolute URLs (e.g. external CDN)
@@ -102,37 +105,20 @@ export function responsiveMediaUrl(
 
   switch (variant) {
     case "thumb":
-      return cloudinaryImageUrl(id, { width: 400, quality: "auto", crop: "fill" });
+      return cloudinaryImageUrl(id, { width: 400, quality: 80, crop: "fill" });
     case "medium":
-      return cloudinaryImageUrl(id, { width: 800, quality: "auto", crop: "limit" });
+      return cloudinaryImageUrl(id, { width: 800, quality: 80, crop: "limit" });
     case "large":
-      return cloudinaryImageUrl(id, { width: 1600, quality: "auto", crop: "limit" });
+      return cloudinaryImageUrl(id, { width: 1600, quality: 85, crop: "limit" });
     case "original":
       // Capped high-res delivery version to prevent 50MB browser hang
-      return cloudinaryImageUrl(id, { width: 2400, quality: "auto", crop: "limit" });
+      return cloudinaryImageUrl(id, { width: 2000, quality: 85, crop: "limit" });
   }
 }
 
 /** Generates a `srcset` string across common breakpoints for responsive <img>. */
-export function cloudinarySrcSet(publicId: string, widths: number[] = [640, 960, 1280, 1600, 1920, 2560]): string {
-  if (!publicId) return "";
-
-  const isCloudinary =
-    publicId.includes("res.cloudinary.com") ||
-    (!publicId.startsWith("http") &&
-      !publicId.startsWith("/") &&
-      !publicId.startsWith("photo/") &&
-      !publicId.startsWith("hero/") &&
-      !publicId.startsWith("album/") &&
-      !publicId.startsWith("story/") &&
-      !publicId.startsWith("profile/") &&
-      !publicId.startsWith("service/") &&
-      !publicId.startsWith("testimonial/") &&
-      !publicId.startsWith("film/") &&
-      !publicId.startsWith("other/") &&
-      !publicId.startsWith("media/"));
-
-  if (!isCloudinary || !CLOUD_NAME) return "";
+export function cloudinarySrcSet(publicId: string, widths: number[] = [400, 800, 1200, 1600]): string {
+  if (!publicId || publicId.startsWith("data:")) return "";
 
   return widths
     .map((w) => `${cloudinaryImageUrl(publicId, { width: w })} ${w}w`)
