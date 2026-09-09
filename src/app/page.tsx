@@ -67,7 +67,7 @@ export default async function HomePage() {
 
   const mediaById = new Map((dbMedia ?? []).map((item) => [item.id, item]));
   const getMediaUrlOrId = (m?: { secure_url?: string | null; cloudinary_public_id?: string | null; public_id?: string | null } | null) =>
-    m ? (m.secure_url || m.cloudinary_public_id || m.public_id || "") : "";
+    m ? (m.cloudinary_public_id || m.public_id || m.secure_url || "") : "";
 
   const liveCategories = dbCategories?.map((item) => ({
     id: item.id,

@@ -96,19 +96,20 @@ export function responsiveMediaUrl(
 ): string {
   const id = typeof mediaOrId === "string"
     ? mediaOrId
-    : mediaOrId.secure_url || mediaOrId.cloudinary_public_id || mediaOrId.public_id || "";
+    : mediaOrId.cloudinary_public_id || mediaOrId.public_id || mediaOrId.secure_url || "";
 
   if (!id) return "";
 
   switch (variant) {
     case "thumb":
-      return cloudinaryImageUrl(id, { width: 400, quality: 80, crop: "fill" });
+      return cloudinaryImageUrl(id, { width: 400, quality: "auto", crop: "fill" });
     case "medium":
-      return cloudinaryImageUrl(id, { width: 1200, quality: 85, crop: "limit" });
+      return cloudinaryImageUrl(id, { width: 800, quality: "auto", crop: "limit" });
     case "large":
-      return cloudinaryImageUrl(id, { width: 2400, quality: 90, crop: "limit" });
+      return cloudinaryImageUrl(id, { width: 1600, quality: "auto", crop: "limit" });
     case "original":
-      return cloudinaryImageUrl(id, { crop: "original", quality: "original" });
+      // Capped high-res delivery version to prevent 50MB browser hang
+      return cloudinaryImageUrl(id, { width: 2400, quality: "auto", crop: "limit" });
   }
 }
 

@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { responsiveMediaUrl } from "@/lib/cloudinary/url";
+import { responsiveMediaUrl, cloudinarySrcSet } from "@/lib/cloudinary/url";
 
-interface SafeImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
+export interface SafeImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   fallbackSrc?: string;
   variant?: "thumb" | "medium" | "large" | "original";
+  aspectRatio?: string;
+  priority?: boolean;
 }
 
 const DEFAULT_FALLBACK =
@@ -14,16 +16,13 @@ const DEFAULT_FALLBACK =
 function getValidSrc(
   src: string | Blob | undefined | null,
   fallback: string,
-  variant?: "thumb" | "medium" | "large" | "original"
+  variant: "thumb" | "medium" | "large" | "original" = "medium"
 ): string {
   if (typeof src === "string" && src.trim() !== "") {
     if (src.includes("/storage/v1/render/image/public/media/")) {
       return src.replace("/storage/v1/render/image/public/media/", "/storage/v1/object/public/media/").split("?")[0];
     }
-    if (variant && variant !== "original") {
-      return responsiveMediaUrl(src, variant);
-    }
-    return src;
+    return responsiveMediaUrl(src, variant);
   }
   if (typeof fallback === "string" && fallback.trim() !== "") {
     return fallback;
@@ -34,9 +33,14 @@ function getValidSrc(
 export default function SafeImage({
   src,
   alt,
-  variant,
+  variant = "medium",
   fallbackSrc = DEFAULT_FALLBACK,
-  className,
+  className = "",
+  aspectRatio,
+  priority = false,
+  loading,
+  onLoad,
+  onError,
   ...props
 }: SafeImageProps) {
   const activeFallback =
@@ -46,32 +50,57 @@ export default function SafeImage({
 
   const [imgSrc, setImgSrc] = useState<string>(() => getValidSrc(src, activeFallback, variant));
   const [hasError, setHasError] = useState<boolean>(false);
+  const [isLoaded, setIsLoaded] = useState<boolean>(false);
 
   useEffect(() => {
     setImgSrc(getValidSrc(src, activeFallback, variant));
     setHasError(false);
+    setIsLoaded(false);
   }, [src, activeFallback, variant]);
 
   const finalSrc = hasError ? activeFallback : getValidSrc(imgSrc, activeFallback, variant);
+  const srcSet =
+    !hasError && typeof src === "string" && (variant === "medium" || variant === "large")
+      ? cloudinarySrcSet(src)
+      : undefined;
 
   return (
-    <img
-      {...props}
-      src={finalSrc}
-      alt={alt || "Photography"}
-      className={className}
-      onError={() => {
-        if (typeof imgSrc === "string" && imgSrc.includes("/storage/v1/render/image/public/media/")) {
-          const direct = imgSrc.replace("/storage/v1/render/image/public/media/", "/storage/v1/object/public/media/").split("?")[0];
-          setImgSrc(direct);
-          return;
-        }
-        if (!hasError) {
-          setHasError(true);
-          setImgSrc(activeFallback);
-        }
-      }}
-    />
+    <div className={`relative overflow-hidden bg-ink/60 ${aspectRatio || ""}`}>
+      {/* Skeleton Blur & Shimmer Placeholder */}
+      {!isLoaded && !hasError && (
+        <div className="absolute inset-0 z-0 bg-gradient-to-r from-ink/80 via-surface-raised/40 to-ink/80 animate-pulse pointer-events-none" />
+      )}
+
+      <img
+        {...props}
+        src={finalSrc}
+        srcSet={srcSet || undefined}
+        sizes={srcSet ? "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" : undefined}
+        alt={alt || "DR DSLR Photography"}
+        loading={priority ? "eager" : loading || "lazy"}
+        fetchPriority={priority ? "high" : "auto"}
+        decoding="async"
+        className={`${className} transition-opacity duration-500 ${isLoaded ? "opacity-100" : "opacity-0"}`}
+        onLoad={(e) => {
+          setIsLoaded(true);
+          onLoad?.(e);
+        }}
+        onError={(e) => {
+          if (typeof imgSrc === "string" && imgSrc.includes("/storage/v1/render/image/public/media/")) {
+            const direct = imgSrc
+              .replace("/storage/v1/render/image/public/media/", "/storage/v1/object/public/media/")
+              .split("?")[0];
+            setImgSrc(direct);
+            return;
+          }
+          if (!hasError) {
+            setHasError(true);
+            setImgSrc(activeFallback);
+          }
+          setIsLoaded(true);
+          onError?.(e);
+        }}
+      />
+    </div>
   );
 }
-
