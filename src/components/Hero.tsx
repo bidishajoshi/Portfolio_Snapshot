@@ -39,6 +39,14 @@ export default function Hero({
   const [initialLoaded, setInitialLoaded] = useState<boolean>(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Safety fallback: ensure loading skeleton disappears even if image load event is delayed
+  useEffect(() => {
+    const fallbackTimer = setTimeout(() => {
+      setInitialLoaded(true);
+    }, 2000);
+    return () => clearTimeout(fallbackTimer);
+  }, []);
+
   const paginate = useCallback(
     (newDirection: number) => {
       if (images.length <= 1) return;
@@ -181,17 +189,24 @@ export default function Hero({
               className="absolute inset-0 w-full h-full will-change-transform"
             >
               <img
-                src={currentOptimizedSrc}
+                src={currentOptimizedSrc || DEFAULT_HERO_IMAGE}
                 srcSet={currentSrcSet || undefined}
-                sizes="100vw"
+                sizes={currentSrcSet ? "100vw" : undefined}
                 alt="Hero Photography"
                 className="w-full h-full object-cover object-center"
                 loading={currentIndex === 0 ? "eager" : "lazy"}
                 fetchPriority={currentIndex === 0 ? "high" : "auto"}
                 onLoad={() => {
-                  if (!initialLoaded) {
-                    setInitialLoaded(true);
+                  setInitialLoaded(true);
+                }}
+                onError={(e) => {
+                  const target = e.currentTarget;
+                  if (target.src !== currentRawSrc && currentRawSrc) {
+                    target.src = currentRawSrc;
+                  } else if (!target.src.endsWith(DEFAULT_HERO_IMAGE)) {
+                    target.src = DEFAULT_HERO_IMAGE;
                   }
+                  setInitialLoaded(true);
                 }}
               />
             </motion.div>
