@@ -2,10 +2,10 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Aperture } from "lucide-react";
 import { brand } from "@/data/site";
 import Link from "next/link";
-import SafeImage from "@/components/ui/SafeImage";
+import { cloudinaryImageUrl, cloudinarySrcSet } from "@/lib/cloudinary/url";
 
 interface HeroProps {
   brandOverride?: {
@@ -17,6 +17,8 @@ interface HeroProps {
   backgroundImage?: string | null;
   backgroundImages?: string[];
 }
+
+const DEFAULT_HERO_IMAGE = "/images/placeholder/hero.jpg";
 
 export default function Hero({
   brandOverride,
@@ -30,10 +32,11 @@ export default function Hero({
       ? backgroundImages
       : backgroundImage
       ? [backgroundImage]
-      : [];
+      : [DEFAULT_HERO_IMAGE];
 
   const [[currentIndex, direction], setPage] = useState<[number, number]>([0, 0]);
   const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [initialLoaded, setInitialLoaded] = useState<boolean>(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const paginate = useCallback(
@@ -57,31 +60,33 @@ export default function Hero({
     paginate(-1);
   }, [paginate]);
 
-  const goToSlide = (targetIndex: number) => {
-    if (targetIndex === currentIndex || images.length <= 1) return;
-    const newDir = targetIndex > currentIndex ? 1 : -1;
-    setPage([targetIndex, newDir]);
-  };
-
-  // Reset auto-slide 7-second timer whenever user manually moves or slide changes
+  // Auto-slide exactly 20000ms (20 seconds). Resets whenever user manually moves or slide changes
   useEffect(() => {
     if (images.length <= 1) return;
 
     timerRef.current = setInterval(() => {
       paginate(1);
-    }, 7000);
+    }, 20000);
 
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
   }, [currentIndex, images.length, paginate]);
 
-  // Preload next slide image in browser cache for instant transitions
+  // Preload the NEXT slide image + responsive srcSet into browser cache prior to transition
   useEffect(() => {
     if (images.length <= 1) return;
     const nextIdx = (currentIndex + 1) % images.length;
+    const nextImgSrc = images[nextIdx];
+    if (!nextImgSrc) return;
+
     const img = new Image();
-    img.src = images[nextIdx];
+    const responsiveSrcSet = cloudinarySrcSet(nextImgSrc);
+    if (responsiveSrcSet) {
+      img.srcset = responsiveSrcSet;
+      img.sizes = "100vw";
+    }
+    img.src = cloudinaryImageUrl(nextImgSrc, { width: 1920 });
   }, [currentIndex, images]);
 
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -100,14 +105,21 @@ export default function Hero({
   const slideVariants = {
     enter: (dir: number) => ({
       x: dir > 0 ? "100%" : "-100%",
+      opacity: 0.9,
     }),
     center: {
       x: 0,
+      opacity: 1,
     },
     exit: (dir: number) => ({
       x: dir > 0 ? "-100%" : "100%",
+      opacity: 0.9,
     }),
   };
+
+  const currentRawSrc = images[currentIndex] || DEFAULT_HERO_IMAGE;
+  const currentOptimizedSrc = cloudinaryImageUrl(currentRawSrc, { width: 1920 });
+  const currentSrcSet = cloudinarySrcSet(currentRawSrc);
 
   return (
     <section
@@ -116,6 +128,29 @@ export default function Hero({
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
+      {/* Loading Skeleton / Placeholder for Initial Image Load */}
+      <AnimatePresence>
+        {!initialLoaded && (
+          <motion.div
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            className="absolute inset-0 z-15 bg-ink flex items-center justify-center overflow-hidden pointer-events-none"
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-ink via-surface-raised/40 to-ink animate-pulse" />
+            <div className="absolute inset-0 bg-radial-at-c from-cyan-glow/10 via-transparent to-transparent opacity-30" />
+            <div className="relative z-20 flex flex-col items-center gap-3">
+              <div className="w-10 h-10 rounded-full border-2 border-cyan-glow/20 border-t-cyan-glow animate-spin flex items-center justify-center">
+                <Aperture size={18} className="text-cyan-glow/70" />
+              </div>
+              <span className="text-[11px] text-stone/60 font-mono tracking-[0.25em] uppercase animate-pulse">
+                Loading Hero Slider...
+              </span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Photo Slider Background - Full Page Edge-to-Edge */}
       <div className="absolute inset-0 z-0 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-ink/60 via-ink/20 to-ink/90 z-10 pointer-events-none" />
@@ -132,13 +167,23 @@ export default function Hero({
               exit="exit"
               transition={{
                 x: { duration: 0.7, ease: [0.16, 1, 0.3, 1] },
+                opacity: { duration: 0.4 },
               }}
-              className="absolute inset-0 w-full h-full"
+              className="absolute inset-0 w-full h-full will-change-transform"
             >
-              <SafeImage
-                src={images[currentIndex]}
+              <img
+                src={currentOptimizedSrc}
+                srcSet={currentSrcSet || undefined}
+                sizes="100vw"
                 alt="Hero Photography"
                 className="w-full h-full object-cover object-center"
+                loading={currentIndex === 0 ? "eager" : "lazy"}
+                fetchPriority={currentIndex === 0 ? "high" : "auto"}
+                onLoad={() => {
+                  if (!initialLoaded) {
+                    setInitialLoaded(true);
+                  }
+                }}
               />
             </motion.div>
           </AnimatePresence>
@@ -231,7 +276,6 @@ export default function Hero({
           >
             <ChevronRight size={24} className="group-hover:translate-x-0.5 transition-transform" />
           </button>
-
         </>
       )}
     </section>
