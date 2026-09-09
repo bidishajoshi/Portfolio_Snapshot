@@ -91,19 +91,27 @@ export function CategoryFormModal({
           <div className="flex flex-col gap-1.5">
             <label className="text-sm text-stone">Cover image</label>
             <div className="flex items-center gap-3">
-              <div className="h-16 w-16 rounded-sm bg-ink overflow-hidden shrink-0">
-                {cover && (
+              <div className="h-16 w-16 rounded-sm bg-ink overflow-hidden shrink-0 border border-border flex items-center justify-center">
+                {(cover || (category as any)?.cover?.cloudinary_public_id) ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src={cloudinaryImageUrl(cover.secure_url || cover.cloudinary_public_id || (cover as any).public_id || "", { width: 100, height: 100, crop: "fill" })}
+                    src={cloudinaryImageUrl(
+                      cover
+                        ? (cover.secure_url || cover.cloudinary_public_id || (cover as any).public_id || "")
+                        : (category as any).cover.cloudinary_public_id,
+                      { width: 100, height: 100, crop: "fill" }
+                    )}
                     alt=""
                     className="h-full w-full object-cover"
                   />
+                ) : (
+                  <span className="text-[10px] text-stone-dim text-center px-1">No photo</span>
                 )}
               </div>
               <Button variant="secondary" size="sm" onClick={() => setPickerOpen(true)}>
-                {cover ? "Change" : "Choose photo"}
+                {cover || (category as any)?.cover ? "Change" : "Choose photo"}
               </Button>
+              {cover && <span className="text-xs text-gold truncate max-w-[200px]">{cover.title}</span>}
             </div>
           </div>
 

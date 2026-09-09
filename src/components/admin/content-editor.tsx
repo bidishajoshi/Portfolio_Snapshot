@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Pencil, Plus, Trash2, X } from "lucide-react";
+import { Pencil, Plus, Trash2, X, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,6 +29,35 @@ export interface EditableRecord {
 export function ContentEditor({ content, records, categories = [], canDelete = true }: { content: EditableContent; records: EditableRecord[]; categories?: Array<{ id: string; name: string }>; canDelete?: boolean }) {
   const [editing, setEditing] = useState<EditableRecord | "new" | null>(null);
   const [isPending, startTransition] = useTransition();
+
+  const togglePublish = (record: EditableRecord) => {
+    startTransition(async () => {
+      try {
+        await saveContent({
+          content,
+          id: record.id,
+          title: record.title,
+          description: record.description || undefined,
+          introduction: record.introduction || undefined,
+          location: record.location || undefined,
+          date: record.date || undefined,
+          clientName: record.clientName || undefined,
+          review: record.review || undefined,
+          eventType: record.eventType || undefined,
+          mediaId: record.mediaId ?? null,
+          categoryId: record.categoryId || undefined,
+          altText: record.altText || undefined,
+          published: record.published === false ? true : false,
+          featured: record.featured,
+        });
+        toast.success(`"${record.title}" is now ${record.published === false ? "published" : "hidden (draft)"}.`);
+        window.location.reload();
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : "Could not toggle status.");
+      }
+    });
+  };
+
   const remove = (record: EditableRecord) => {
     if (!confirm(`Delete ${record.title}?`)) return;
     startTransition(async () => {
@@ -36,11 +65,33 @@ export function ContentEditor({ content, records, categories = [], canDelete = t
       catch (error) { toast.error(error instanceof Error ? error.message : "Could not delete."); }
     });
   };
+
   return (
     <>
       <div className="flex justify-end"><Button size="sm" onClick={() => setEditing("new")}><Plus size={14} /> New {content}</Button></div>
       <div className="flex flex-col gap-3">
-        {records.map((record) => <div key={record.id} className="flex items-center gap-3 rounded-sm border border-border bg-surface px-4 py-3"><div className="min-w-0 flex-1"><div className="flex items-center gap-2"><p className="text-sm text-ivory font-medium truncate">{record.title}</p>{record.featured && <span className="rounded-sm bg-gold/10 text-gold text-[10px] uppercase font-bold px-1.5 py-0.5 border border-gold/20">Featured</span>}</div><p className="text-xs text-stone-dim truncate">{record.review || record.description || record.introduction || "No description yet."}</p></div><span className="text-xs text-stone-dim shrink-0">{record.published === false ? "Draft" : "Published"}</span><button className="text-stone hover:text-gold" title={`Edit ${content}`} onClick={() => setEditing(record)}><Pencil size={15} /></button>{canDelete && <button disabled={isPending} className="text-stone hover:text-danger" title={`Delete ${content}`} onClick={() => remove(record)}><Trash2 size={15} /></button>}</div>)}
+        {records.map((record) => (
+          <div key={record.id} className="flex items-center gap-3 rounded-sm border border-border bg-surface px-4 py-3">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <p className="text-sm text-ivory font-medium truncate">{record.title}</p>
+                {record.featured && <span className="rounded-sm bg-gold/10 text-gold text-[10px] uppercase font-bold px-1.5 py-0.5 border border-gold/20">Featured</span>}
+              </div>
+              <p className="text-xs text-stone-dim truncate">{record.review || record.description || record.introduction || "No description yet."}</p>
+            </div>
+            <button
+              onClick={() => togglePublish(record)}
+              disabled={isPending}
+              className="text-stone hover:text-ivory"
+              title={record.published !== false ? "Published — click to hide" : "Hidden (draft) — click to publish"}
+            >
+              {record.published !== false ? <Eye size={16} /> : <EyeOff size={16} className="text-stone-dim" />}
+            </button>
+            <span className="text-xs text-stone-dim shrink-0">{record.published === false ? "Draft" : "Published"}</span>
+            <button className="text-stone hover:text-gold" title={`Edit ${content}`} onClick={() => setEditing(record)}><Pencil size={15} /></button>
+            {canDelete && <button disabled={isPending} className="text-stone hover:text-danger" title={`Delete ${content}`} onClick={() => remove(record)}><Trash2 size={15} /></button>}
+          </div>
+        ))}
         {records.length === 0 && <p className="py-12 text-center text-sm text-stone">No {content}s yet. Create one to add text and media.</p>}
       </div>
       {editing && <ContentForm content={content} record={editing === "new" ? null : editing} categories={categories} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); window.location.reload(); }} isPending={isPending} startTransition={startTransition} />}
@@ -178,7 +229,7 @@ function ContentForm({ content, record, categories = [], onClose, onSaved, isPen
           </div>
         </div>
       </div>
-      {picker && <MediaPicker multiple={false} folder={mediaFolder as never} onSelect={(items) => setMedia(items[0] ?? null)} onClose={() => setPicker(false)} />}
+      {picker && <MediaPicker multiple={false} onSelect={(items) => setMedia(items[0] ?? null)} onClose={() => setPicker(false)} />}
     </div>
   );
 }

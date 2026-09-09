@@ -87,7 +87,7 @@ export default async function HomePage() {
     description: item.description,
     cover: item.cover_media_id && mediaById.has(item.cover_media_id)
       ? cloudinaryImageUrl(getMediaUrlOrId(mediaById.get(item.cover_media_id)), { width: 1200, height: 800, crop: "fill" })
-      : "",
+      : "/images/placeholder/hero.jpg",
   }));
 
   const albumMediaCounts = new Map<string, number>();
@@ -156,7 +156,7 @@ export default async function HomePage() {
           introduction: story.introduction ?? "",
           location: story.location ?? "",
           story_date: story.story_date ?? null,
-          cover: media ? cloudinaryImageUrl(getMediaUrlOrId(media), { width: 1400, height: 900, crop: "fill" }) : "",
+          cover: media ? cloudinaryImageUrl(getMediaUrlOrId(media), { width: 1400, height: 900, crop: "fill" }) : "/images/placeholder/hero.jpg",
           category: storyCat,
         };
       })
@@ -251,7 +251,7 @@ export default async function HomePage() {
           bio={typeof aboutContentObj.bio === "string" ? aboutContentObj.bio : Array.isArray(aboutContentObj.bio) ? aboutContentObj.bio : null}
         />
       )}
-      {isEnabled("selected_works") && <Categories categories={liveCategories} title={selectedWorksSec?.subtitle} subtitle={selectedWorksSec?.title} />}
+      {isEnabled("selected_works") && <Categories categories={liveCategories} title={selectedWorksSec?.title || "What I Photograph"} subtitle={selectedWorksSec?.subtitle || "Portfolio"} />}
       {isEnabled("selected_works") && <Gallery photos={allGalleryPhotos} categories={liveCategories?.map((item) => item.name)} title={selectedWorksSec?.title} subtitle={selectedWorksSec?.subtitle} description={selectedWorksSec?.description} />}
       {isEnabled("featured_albums") && <Albums albums={liveAlbums} title={albumsSec?.title} subtitle={albumsSec?.subtitle} description={albumsSec?.description} />}
       {isEnabled("stories") && (
