@@ -201,11 +201,8 @@ export default function Hero({
                 }}
                 onError={(e) => {
                   const target = e.currentTarget;
-                  if (target.src !== currentRawSrc && currentRawSrc) {
-                    target.src = currentRawSrc;
-                  } else if (!target.src.endsWith(DEFAULT_HERO_IMAGE)) {
-                    target.src = DEFAULT_HERO_IMAGE;
-                  }
+                  target.srcset = "";
+                  target.src = DEFAULT_HERO_IMAGE;
                   setInitialLoaded(true);
                 }}
               />

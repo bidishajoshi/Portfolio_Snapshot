@@ -10,8 +10,7 @@ export interface SafeImageProps extends React.ImgHTMLAttributes<HTMLImageElement
   priority?: boolean;
 }
 
-const DEFAULT_FALLBACK =
-  "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='600' viewBox='0 0 800 600'><defs><linearGradient id='g' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' stop-color='%230f172a'/><stop offset='50%' stop-color='%231e293b'/><stop offset='100%' stop-color='%230b0f19'/></linearGradient></defs><rect width='800' height='600' fill='url(%23g)'/><circle cx='400' cy='300' r='80' stroke='%2338bdf8' stroke-width='2' fill='none' opacity='0.4'/><circle cx='400' cy='300' r='40' fill='%2338bdf8' opacity='0.2'/><text x='50%' y='520' font-family='sans-serif' font-size='20' fill='%2394a3b8' text-anchor='middle' letter-spacing='2'>DR DSLR PHOTOGRAPHY</text></svg>";
+const DEFAULT_FALLBACK = "/images/placeholder/hero.jpg";
 
 function getValidSrc(
   src: string | Blob | undefined | null,
@@ -19,9 +18,6 @@ function getValidSrc(
   variant: "thumb" | "medium" | "large" | "original" = "medium"
 ): string {
   if (typeof src === "string" && src.trim() !== "") {
-    if (src.includes("/storage/v1/render/image/public/media/")) {
-      return src.replace("/storage/v1/render/image/public/media/", "/storage/v1/object/public/media/").split("?")[0];
-    }
     return responsiveMediaUrl(src, variant);
   }
   if (typeof fallback === "string" && fallback.trim() !== "") {
@@ -58,17 +54,17 @@ export default function SafeImage({
     setIsLoaded(false);
   }, [src, activeFallback, variant]);
 
-  const finalSrc = hasError ? activeFallback : getValidSrc(imgSrc, activeFallback, variant);
+  const finalSrc = hasError ? activeFallback : imgSrc;
   const srcSet =
     !hasError && typeof src === "string" && (variant === "medium" || variant === "large")
       ? cloudinarySrcSet(src)
       : undefined;
 
   return (
-    <div className={`relative overflow-hidden bg-ink/60 ${aspectRatio || ""}`}>
-      {/* Skeleton Blur & Shimmer Placeholder */}
+    <div className={`relative overflow-hidden bg-ink/40 ${aspectRatio || ""}`}>
+      {/* Background loading shimmer */}
       {!isLoaded && !hasError && (
-        <div className="absolute inset-0 z-0 bg-gradient-to-r from-ink/80 via-surface-raised/40 to-ink/80 animate-pulse pointer-events-none" />
+        <div className="absolute inset-0 z-0 bg-surface-raised/20 animate-pulse pointer-events-none" />
       )}
 
       <img
@@ -80,19 +76,17 @@ export default function SafeImage({
         loading={priority ? "eager" : loading || "lazy"}
         fetchPriority={priority ? "high" : "auto"}
         decoding="async"
-        className={`${className} transition-opacity duration-500 ${isLoaded ? "opacity-100" : "opacity-0"}`}
+        className={`relative z-1 ${className} transition-opacity duration-300 ${
+          isLoaded ? "opacity-100" : "opacity-90"
+        }`}
         onLoad={(e) => {
           setIsLoaded(true);
           onLoad?.(e);
         }}
         onError={(e) => {
-          if (typeof imgSrc === "string" && imgSrc.includes("/storage/v1/render/image/public/media/")) {
-            const direct = imgSrc
-              .replace("/storage/v1/render/image/public/media/", "/storage/v1/object/public/media/")
-              .split("?")[0];
-            setImgSrc(direct);
-            return;
-          }
+          const target = e.currentTarget;
+          target.srcset = "";
+          target.src = activeFallback;
           if (!hasError) {
             setHasError(true);
             setImgSrc(activeFallback);
