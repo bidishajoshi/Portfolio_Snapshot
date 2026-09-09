@@ -170,8 +170,7 @@ export default async function HomePage() {
   const heroImages = (heroSlide ?? [])
     .map((slide) => {
       const media = (slide as any).media as { cloudinary_public_id?: string; secure_url?: string; public_id?: string } | null;
-      const mId = getMediaUrlOrId(media);
-      return mId ? cloudinaryImageUrl(mId, { width: 2000 }) : null;
+      return getMediaUrlOrId(media);
     })
     .filter((url): url is string => Boolean(url));
 
