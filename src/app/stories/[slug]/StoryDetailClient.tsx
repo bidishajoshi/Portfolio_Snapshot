@@ -110,6 +110,7 @@ export default function StoryDetailClient({ story, galleryItems }: StoryDetailCl
  <SafeImage
  src={story.coverImage}
  alt={story.title}
+ variant="large"
  className='w-full max-h-[600px] object-cover transition-transform duration-700 group-hover:scale-105'
  />
  <div className='absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-between p-6'>
@@ -154,6 +155,7 @@ export default function StoryDetailClient({ story, galleryItems }: StoryDetailCl
  <SafeImage
  src={item.url}
  alt={item.title || story.title}
+ variant="medium"
  className='w-full h-full object-cover transition-transform duration-700 group-hover:scale-105'
  />
  <div className='absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4'>

@@ -26,6 +26,9 @@ interface AlbumDetailClientProps {
 
 export default function AlbumDetailClient({ album, mediaItems }: AlbumDetailClientProps) {
   const [activeModalIndex, setActiveModalIndex] = useState<number | null>(null);
+  const [visibleCount, setVisibleCount] = useState<number>(12);
+  const itemsToShow = mediaItems.slice(0, visibleCount);
+  const hasMore = visibleCount < mediaItems.length;
 
   const photosForModal: PhotoDetailItem[] = mediaItems
     .filter((item) => item.kind !== "video")
@@ -89,7 +92,7 @@ export default function AlbumDetailClient({ album, mediaItems }: AlbumDetailClie
           </div>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {mediaItems.map((item, idx) => {
+            {itemsToShow.map((item, idx) => {
               if (item.kind === "video") {
                 return (
                   <div
@@ -118,6 +121,7 @@ export default function AlbumDetailClient({ album, mediaItems }: AlbumDetailClie
                   <SafeImage
                     src={item.url}
                     alt={item.title || album.title}
+                    variant="medium"
                     className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                   />
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center pointer-events-none">
@@ -134,6 +138,17 @@ export default function AlbumDetailClient({ album, mediaItems }: AlbumDetailClie
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {hasMore && (
+          <div className="mt-12 text-center">
+            <button
+              onClick={() => setVisibleCount((prev) => prev + 12)}
+              className="px-8 py-3 rounded-full bg-surface border border-yellow/40 text-yellow hover:bg-yellow hover:text-ink font-semibold text-xs uppercase tracking-wider transition-all duration-300 shadow-lg shadow-yellow/10 hover:scale-105 cursor-pointer font-mono"
+            >
+              Load More Photos ({mediaItems.length - visibleCount} remaining)
+            </button>
           </div>
         )}
       </div>
