@@ -139,7 +139,7 @@ body::before {
   inset: 0;
   z-index: -1;
   background-image: var(--body-bg-image);
-  pointer-events-none;
+  pointer-events: none;
   transform: translateZ(0);
   will-change: transform;
 }
