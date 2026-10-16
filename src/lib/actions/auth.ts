@@ -40,8 +40,17 @@ export async function loginAction(_prevState: LoginState, formData: FormData): P
   }
 
   if (authError) {
-    if (authError.message === "Invalid login credentials") return { error: "Invalid email or password." };
-    return { error: "Unable to sign in right now. Check Supabase configuration." };
+    console.error("ADMIN SIGN-IN ERROR:", authError);
+    if (authError.message === "Invalid login credentials") {
+      return { error: "Invalid email or password." };
+    }
+    if (authError.message?.includes("Email not confirmed")) {
+      return { error: "Admin email is not confirmed in Supabase Auth." };
+    }
+    if (authError.message?.includes("restricted") || (authError as any).status === 402) {
+      return { error: `Supabase project restricted: ${authError.message}` };
+    }
+    return { error: authError.message || "Unable to sign in right now. Check Supabase configuration." };
   }
 
   cookieStore.set("admin_session", "true", { path: "/", httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production" });
