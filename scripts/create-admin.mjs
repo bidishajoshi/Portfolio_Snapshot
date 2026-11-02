@@ -1,7 +1,25 @@
 import { createClient } from '@supabase/supabase-js';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-const supabaseUrl = 'https://eyrwzaapdhjljaxnuzek.supabase.co';
-const supabaseServiceKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5cnd6YWFwZGhqbGpheG51emVrIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4ODI4MjcyNiwiZXhwIjoyMTAzODU4NzI2fQ.iPNNCJI8rm1barBJd_sDh5VJFOla0Lk6ku3zHHpdoqA';
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const envPath = path.resolve(__dirname, '../.env.local');
+
+if (fs.existsSync(envPath)) {
+  const content = fs.readFileSync(envPath, 'utf8');
+  content.split('\n').forEach((line) => {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#')) return;
+    const [k, ...v] = trimmed.split('=');
+    if (k && v.length) {
+      process.env[k.trim()] = v.join('=').trim().replace(/^["']|["']$/g, '');
+    }
+  });
+}
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://eyrwzaapdhjljaxnuzek.supabase.co';
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5cnd6YWFwZGhqbGpheG51emVrIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4ODI4MjcyNiwiZXhwIjoyMTAzODU4NzI2fQ.iPNNCJI8rm1barBJd_sDh5VJFOla0Lk6ku3zHHpdoqA';
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 

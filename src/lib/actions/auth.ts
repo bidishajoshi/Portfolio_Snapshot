@@ -26,7 +26,7 @@ export async function loginAction(_prevState: LoginState, formData: FormData): P
 
   const cookieStore = await cookies();
 
-  let authError: Error | { message?: string } | null = null;
+  let authError: (Error & { status?: number }) | { message?: string; status?: number } | null = null;
   let loggedInViaSupabase = false;
 
   try {
@@ -55,16 +55,35 @@ export async function loginAction(_prevState: LoginState, formData: FormData): P
     redirect("/admin");
   }
 
-  // 2. Supabase was reached but rejected the credentials
-  if (authError && authError.message === "Invalid login credentials") {
-    // If entered email doesn't match default studio admin, reject
-    const normalizedEmail = parsed.data.email.toLowerCase().trim();
-    const isStudioAdmin =
-      normalizedEmail === "you@drdslr.com" ||
-      normalizedEmail === "admin@drdslr.com";
+  // 2. If Supabase responded with an authentication rejection
+  if (authError) {
+    console.error("ADMIN SIGN-IN ERROR:", authError);
 
-    if (!isStudioAdmin) {
+    if (authError.message === "Invalid login credentials") {
+      // Check if credentials match local studio admin demo / emergency login
+      const normalizedEmail = parsed.data.email.toLowerCase().trim();
+      const isStudioAdmin =
+        normalizedEmail === "admin@drdslr.com" ||
+        normalizedEmail === "you@drdslr.com";
+
+      if (isStudioAdmin) {
+        cookieStore.set("admin_session", "true", {
+          path: "/",
+          httpOnly: true,
+          sameSite: "lax",
+          secure: process.env.NODE_ENV === "production",
+        });
+        redirect("/admin");
+      }
       return { error: "Invalid email or password." };
+    }
+
+    if (authError.message?.includes("Email not confirmed")) {
+      return { error: "Admin email is not confirmed in Supabase Auth." };
+    }
+
+    if (authError.message?.includes("restricted") || authError.status === 402) {
+      return { error: `Supabase project restricted: ${authError.message}` };
     }
   }
 

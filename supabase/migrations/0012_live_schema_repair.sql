@@ -2,6 +2,41 @@
 -- Final clean, idempotent SQL for drifted databases.
 -- Safe to run in the Supabase SQL Editor.
 
+-- -1) Admin profile & auth helper function (required by RLS policies)
+CREATE TABLE IF NOT EXISTS public.admin_profile (
+  id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  display_name text NOT NULL DEFAULT 'Himal Shrestha',
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.admin_profile WHERE id = auth.uid()
+  );
+$$;
+
+ALTER TABLE public.admin_profile ENABLE ROW LEVEL SECURITY;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename = 'admin_profile'
+      AND policyname = 'admin self read'
+  ) THEN
+    CREATE POLICY "admin self read"
+      ON public.admin_profile FOR SELECT
+      USING (auth.uid() = id);
+  END IF;
+END $$;
+
 -- 0) Legacy settings table cleanup
 -- Some drifted databases store site settings as a generic key/value table,
 -- which conflicts with the app's required single-row boolean pivot table.
@@ -707,7 +742,7 @@ BEGIN
   IF NOT EXISTS (
     SELECT 1 FROM pg_policies
     WHERE schemaname = 'public'
-      AND tablename = 'album_media'`
+      AND tablename = 'album_media'
       AND policyname = 'public read published album_media'
   ) THEN
     CREATE POLICY "public read published album_media"
@@ -728,6 +763,52 @@ BEGIN
   ) THEN
     CREATE POLICY "admin all album_media"
       ON public.album_media FOR ALL USING (is_admin()) WITH CHECK (is_admin());
+  END IF;
+END $$;
+
+-- 10) Ensure Supabase storage 'media' bucket exists for 50MB direct uploads
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'storage' AND table_name = 'buckets') THEN
+    INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+    VALUES (
+      'media',
+      'media',
+      true,
+      52428800,
+      ARRAY['image/jpeg', 'image/png', 'image/webp', 'image/avif', 'image/gif', 'video/mp4', 'video/quicktime', 'video/webm']
+    )
+    ON CONFLICT (id) DO UPDATE SET
+      public = true,
+      file_size_limit = 52428800;
+  END IF;
+END $$;
+
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'storage' AND table_name = 'objects') THEN
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_policies
+      WHERE schemaname = 'storage'
+        AND tablename = 'objects'
+        AND policyname = 'Public Access Media'
+    ) THEN
+      CREATE POLICY "Public Access Media"
+        ON storage.objects FOR SELECT
+        USING (bucket_id = 'media');
+    END IF;
+
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_policies
+      WHERE schemaname = 'storage'
+        AND tablename = 'objects'
+        AND policyname = 'Admin Full Access Media'
+    ) THEN
+      CREATE POLICY "Admin Full Access Media"
+        ON storage.objects FOR ALL
+        USING (bucket_id = 'media' AND (public.is_admin() OR auth.role() = 'service_role'))
+        WITH CHECK (bucket_id = 'media' AND (public.is_admin() OR auth.role() = 'service_role'));
+    END IF;
   END IF;
 END $$;
 
