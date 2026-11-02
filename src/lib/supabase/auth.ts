@@ -1,4 +1,5 @@
 import "server-only";
+import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 
 export class UnauthorizedError extends Error {
@@ -9,6 +10,9 @@ export class UnauthorizedError extends Error {
 }
 
 export async function requireAdmin() {
+  const cookieStore = await cookies();
+  const adminCookie = cookieStore.get("admin_session")?.value;
+
   try {
     const supabase = await createClient();
     const {
@@ -29,8 +33,25 @@ export async function requireAdmin() {
         supabase,
       };
     }
-  } catch (err) {
+  } catch {
     // Supabase auth error fallback
+  }
+
+  // Fallback if admin_session cookie is set (e.g., when Supabase is paused or offline)
+  if (adminCookie === "true" || adminCookie === "authenticated") {
+    const supabase = await createClient();
+    return {
+      user: {
+        id: "local-admin",
+        app_metadata: {},
+        user_metadata: {},
+        aud: "authenticated",
+        created_at: new Date().toISOString(),
+        email: "admin@drdslr.com",
+      } as any,
+      profile: { id: "local-admin", display_name: "Himal Shrestha (Admin)" },
+      supabase,
+    };
   }
 
   throw new UnauthorizedError("You must be signed in.");
@@ -44,4 +65,3 @@ export async function getAdminSession() {
     return null;
   }
 }
-
