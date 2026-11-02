@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, ChevronLeft, ChevronRight, Camera, Sparkles, MapPin } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, Camera, MapPin } from "lucide-react";
 import clsx from "clsx";
 import SafeImage from "@/components/ui/SafeImage";
 
@@ -28,16 +28,21 @@ export default function Gallery({
   description?: string | null;
 }) {
   const [filter, setFilter] = useState<string>("All");
+  const [prevFilter, setPrevFilter] = useState<string>("All");
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [visibleCount, setVisibleCount] = useState<number>(12);
-  const displayedPhotos = livePhotos ?? [];
-  const photoCategories = Array.from(new Set(displayedPhotos.map((p) => p.category).filter(Boolean)));
-  const combinedCategories = Array.from(new Set([...(liveCategories ?? []), ...photoCategories]));
-  const displayedCategories = ["All", ...combinedCategories];
 
-  useEffect(() => {
+  if (filter !== prevFilter) {
+    setPrevFilter(filter);
     setVisibleCount(12);
-  }, [filter]);
+  }
+
+  const displayedPhotos = livePhotos ?? [];
+  const displayedCategories = useMemo(() => {
+    const photoCategories = Array.from(new Set(displayedPhotos.map((p) => p.category).filter(Boolean)));
+    const combinedCategories = Array.from(new Set([...(liveCategories ?? []), ...photoCategories]));
+    return ["All", ...combinedCategories];
+  }, [displayedPhotos, liveCategories]);
 
   useEffect(() => {
     const handleCategoryFilter = (event: Event) => {
@@ -46,7 +51,7 @@ export default function Gallery({
     };
     window.addEventListener("filter-category", handleCategoryFilter);
     return () => window.removeEventListener("filter-category", handleCategoryFilter);
-  }, [liveCategories, displayedCategories]);
+  }, [displayedCategories]);
 
   const filteredPhotos = filter === "All" ? displayedPhotos : displayedPhotos.filter((p) => p.category === filter);
   const photosToShow = filteredPhotos.slice(0, visibleCount);
@@ -230,7 +235,6 @@ export default function Gallery({
             onClick={(e) => e.stopPropagation()}
           >
             <div className="text-center">
-
               <p className="text-stone text-xs flex items-center justify-center gap-2">
                 <span className="text-cyan-glow font-medium">{filteredPhotos[lightboxIndex].category}</span>
                 {filteredPhotos[lightboxIndex].location && <span>• {filteredPhotos[lightboxIndex].location}</span>}
@@ -263,4 +267,3 @@ export default function Gallery({
     </section>
   );
 }
-

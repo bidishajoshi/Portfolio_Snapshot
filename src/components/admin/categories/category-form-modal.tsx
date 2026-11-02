@@ -10,12 +10,16 @@ import { createCategory, updateCategory } from "@/lib/actions/categories";
 import { cloudinaryImageUrl } from "@/lib/cloudinary/url";
 import type { Category, Media } from "@/types/database";
 
+type CategoryWithOptionalCover = Category & {
+  cover?: { cloudinary_public_id?: string; secure_url?: string; public_id?: string } | null;
+};
+
 export function CategoryFormModal({
   category,
   onClose,
   onSaved,
 }: {
-  category: Category | null;
+  category: CategoryWithOptionalCover | Category | null;
   onClose: () => void;
   onSaved: () => void;
 }) {
@@ -62,6 +66,12 @@ export function CategoryFormModal({
     });
   };
 
+  const existingCover = (category as CategoryWithOptionalCover | null)?.cover;
+  const coverObj = cover as (Media & { public_id?: string }) | null;
+  const coverImageId = coverObj
+    ? (coverObj.secure_url || coverObj.cloudinary_public_id || coverObj.public_id || "")
+    : existingCover?.cloudinary_public_id;
+
   return (
     <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/70 px-4" onClick={onClose}>
       <div
@@ -92,15 +102,10 @@ export function CategoryFormModal({
             <label className="text-sm text-stone">Cover image</label>
             <div className="flex items-center gap-3">
               <div className="h-16 w-16 rounded-sm bg-ink overflow-hidden shrink-0 border border-border flex items-center justify-center">
-                {(cover || (category as any)?.cover?.cloudinary_public_id) ? (
+                {(cover || existingCover?.cloudinary_public_id) ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src={cloudinaryImageUrl(
-                      cover
-                        ? (cover.secure_url || cover.cloudinary_public_id || (cover as any).public_id || "")
-                        : (category as any).cover.cloudinary_public_id,
-                      { width: 100, height: 100, crop: "fill" }
-                    )}
+                    src={cloudinaryImageUrl(coverImageId || "", { width: 100, height: 100, crop: "fill" })}
                     alt=""
                     className="h-full w-full object-cover"
                   />
@@ -109,7 +114,7 @@ export function CategoryFormModal({
                 )}
               </div>
               <Button variant="secondary" size="sm" onClick={() => setPickerOpen(true)}>
-                {cover || (category as any)?.cover ? "Change" : "Choose photo"}
+                {cover || existingCover ? "Change" : "Choose photo"}
               </Button>
               {cover && <span className="text-xs text-gold truncate max-w-[200px]">{cover.title}</span>}
             </div>

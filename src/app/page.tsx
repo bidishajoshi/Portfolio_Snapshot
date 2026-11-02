@@ -125,7 +125,7 @@ export default async function HomePage() {
       : null;
   }).filter((item): item is NonNullable<typeof item> => item !== null);
 
-  const isBrokenLegacy = (m?: any) => {
+  const isBrokenLegacy = (m?: { secure_url?: string | null; cloudinary_public_id?: string | null; public_id?: string | null } | null) => {
     if (!m) return true;
     const raw = getMediaUrlOrId(m);
     return raw.includes("res.cloudinary.com/ohapodix") && (raw.includes("/dr-dslr/photo/") || raw.includes("WhatsApp%20Image") || raw.includes("ChatGPT%20Image"));
@@ -200,7 +200,7 @@ export default async function HomePage() {
 
   const heroSlideImages = (heroSlide ?? [])
     .map((slide) => {
-      const media = (slide as any).media as { cloudinary_public_id?: string; secure_url?: string; public_id?: string } | null;
+      const media = (slide as unknown as { media?: { cloudinary_public_id?: string | null; secure_url?: string | null; public_id?: string | null } | null }).media;
       return getMediaUrlOrId(media);
     })
     .filter((url): url is string => Boolean(url));

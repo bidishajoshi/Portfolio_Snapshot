@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { responsiveMediaUrl, cloudinarySrcSet } from "@/lib/cloudinary/url";
 
 export interface SafeImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
@@ -32,7 +32,7 @@ export default function SafeImage({
   variant = "medium",
   fallbackSrc = DEFAULT_FALLBACK,
   className = "",
-  aspectRatio,
+  aspectRatio: _aspectRatio,
   priority = false,
   loading,
   onLoad,
@@ -44,15 +44,16 @@ export default function SafeImage({
       ? fallbackSrc
       : DEFAULT_FALLBACK;
 
-  const [imgSrc, setImgSrc] = useState<string>(() => getValidSrc(src, activeFallback, variant));
+  const [prevSrc, setPrevSrc] = useState(src);
   const [hasError, setHasError] = useState<boolean>(false);
 
-  useEffect(() => {
-    setImgSrc(getValidSrc(src, activeFallback, variant));
+  if (prevSrc !== src) {
+    setPrevSrc(src);
     setHasError(false);
-  }, [src, activeFallback, variant]);
+  }
 
-  const finalSrc = hasError ? activeFallback : imgSrc;
+  const computedSrc = getValidSrc(src, activeFallback, variant);
+  const finalSrc = hasError ? activeFallback : computedSrc;
   const srcSet =
     !hasError && typeof src === "string" && (variant === "medium" || variant === "large")
       ? cloudinarySrcSet(src)
@@ -78,7 +79,6 @@ export default function SafeImage({
         target.src = activeFallback;
         if (!hasError) {
           setHasError(true);
-          setImgSrc(activeFallback);
         }
         onError?.(e);
       }}

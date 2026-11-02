@@ -1,6 +1,7 @@
 import "server-only";
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
+import type { User } from "@supabase/supabase-js";
 
 export class UnauthorizedError extends Error {
   constructor(message = "Not authorized") {
@@ -48,7 +49,7 @@ export async function requireAdmin() {
         aud: "authenticated",
         created_at: new Date().toISOString(),
         email: "admin@drdslr.com",
-      } as any,
+      } as unknown as User,
       profile: { id: "local-admin", display_name: "Himal Shrestha (Admin)" },
       supabase,
     };

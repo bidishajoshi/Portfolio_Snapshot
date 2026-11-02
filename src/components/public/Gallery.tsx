@@ -17,7 +17,7 @@ export function Gallery() {
   useEffect(() => {
     const handleCustomFilter = (e: Event) => {
       const category = (e as CustomEvent).detail;
-      if (photoCategories.includes(category as any)) {
+      if ((photoCategories as readonly string[]).includes(category)) {
         setActiveCategory(category);
       }
     };
