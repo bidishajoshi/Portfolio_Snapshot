@@ -15,6 +15,11 @@ import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
 import { cloudinaryImageUrl } from "@/lib/cloudinary/url";
 import { stories as fallbackStories } from "@/data/stories";
+import { categories as fallbackCategories } from "@/data/categories";
+import { albums as fallbackAlbums } from "@/data/albums";
+import { photos as fallbackPhotos } from "@/data/photos";
+import { services as fallbackServices } from "@/data/services";
+import { testimonials as fallbackTestimonials } from "@/data/testimonials";
 
 // Force-dynamic ensures the public site always reflects the latest Supabase data after admin saves
 export const dynamic = "force-dynamic";
@@ -81,7 +86,7 @@ export default async function HomePage() {
   const getMediaUrlOrId = (m?: { secure_url?: string | null; cloudinary_public_id?: string | null; public_id?: string | null } | null) =>
     m ? (m.cloudinary_public_id || m.public_id || m.secure_url || "") : "";
 
-  const liveCategories = dbCategories?.map((item) => ({
+  const dbMappedCategories = dbCategories?.map((item) => ({
     id: item.id,
     name: item.name,
     description: item.description,
@@ -89,6 +94,14 @@ export default async function HomePage() {
       ? cloudinaryImageUrl(getMediaUrlOrId(mediaById.get(item.cover_media_id)), { width: 1200, height: 800, crop: "fill" })
       : "/images/placeholder/hero.jpg",
   }));
+  const liveCategories = (dbMappedCategories && dbMappedCategories.length > 0)
+    ? dbMappedCategories
+    : fallbackCategories.map((c) => ({
+        id: String(c.id),
+        name: c.name,
+        description: c.description,
+        cover: c.cover,
+      }));
 
   const albumMediaCounts = new Map<string, number>();
   for (const link of dbAlbumMedia ?? []) {
@@ -97,7 +110,7 @@ export default async function HomePage() {
 
   const featuredAlbums = dbAlbums?.filter((a) => a.featured || a.is_featured) ?? [];
   const albumsToShow = featuredAlbums.length > 0 ? featuredAlbums : (dbAlbums ?? []);
-  const liveAlbums = albumsToShow.map((item) => ({
+  const dbMappedAlbums = albumsToShow.map((item) => ({
     id: item.id,
     title: item.title,
     slug: item.slug,
@@ -109,6 +122,18 @@ export default async function HomePage() {
       : "",
     photoCount: albumMediaCounts.get(item.id) ?? 0,
   }));
+  const liveAlbums = dbMappedAlbums.length > 0
+    ? dbMappedAlbums
+    : fallbackAlbums.map((a) => ({
+        id: String(a.id),
+        title: a.title,
+        slug: a.slug,
+        description: a.description,
+        location: a.location,
+        date: a.date,
+        cover: a.cover,
+        photoCount: a.photos?.length ?? 12,
+      }));
 
   const categoryById = new Map((dbCategories ?? []).map((item) => [item.id, item.name]));
   const livePhotos = dbPhotos?.map((item) => {
@@ -143,7 +168,18 @@ export default async function HomePage() {
       date: "",
     }));
 
-  const allGalleryPhotos = [...(livePhotos ?? []).filter((p) => !p.image.includes("ohapodix/image/upload/v178843")), ...directPhotos];
+  const dbGalleryPhotos = [...(livePhotos ?? []).filter((p) => !p.image.includes("ohapodix/image/upload/v178843")), ...directPhotos];
+  const allGalleryPhotos = dbGalleryPhotos.length > 0
+    ? dbGalleryPhotos
+    : fallbackPhotos.map((p) => ({
+        id: String(p.id),
+        title: p.title,
+        category: p.category,
+        image: p.image,
+        location: p.location,
+        date: p.date,
+        aspect: p.aspect,
+      }));
 
   const liveStories = (dbStories && dbStories.length > 0)
     ? dbStories.map((story) => {
@@ -171,7 +207,7 @@ export default async function HomePage() {
         category: "Visual Story",
       }));
 
-  const liveTestimonials = dbTestimonials?.map((item) => {
+  const dbMappedTestimonials = dbTestimonials?.map((item) => {
     const media = item.client_media_id ? mediaById.get(item.client_media_id) : null;
     return {
       id: item.id,
@@ -181,7 +217,25 @@ export default async function HomePage() {
       event_type: item.event_type,
       avatar: media ? cloudinaryImageUrl(getMediaUrlOrId(media), { width: 200, height: 200, crop: "fill" }) : null,
     };
-  });
+  }) ?? [];
+  const liveTestimonials = dbMappedTestimonials.length > 0
+    ? dbMappedTestimonials
+    : fallbackTestimonials.map((t) => ({
+        id: String(t.id),
+        client_name: t.name,
+        review: t.review,
+        rating: 5,
+        event_type: t.eventType,
+        avatar: t.avatar || null,
+      }));
+
+  const liveServices = (dbServices && dbServices.length > 0)
+    ? dbServices
+    : fallbackServices.map((s) => ({
+        id: String(s.id),
+        title: s.title,
+        description: s.description,
+      }));
 
   // Dynamic About section resolution
   const aboutContentObj = (aboutSection?.content && typeof aboutSection.content === "object" ? aboutSection.content : {}) as Record<string, unknown>;
@@ -257,7 +311,7 @@ export default async function HomePage() {
       {isEnabled("stories") && (
         <Stories stories={liveStories ?? []} title={storiesSec?.title} subtitle={storiesSec?.subtitle} description={storiesSec?.description} />
       )}
-      {isEnabled("services") && <Services services={dbServices ?? []} title={servicesSec?.title} subtitle={servicesSec?.subtitle} description={servicesSec?.description} />}
+      {isEnabled("services") && <Services services={liveServices} title={servicesSec?.title} subtitle={servicesSec?.subtitle} description={servicesSec?.description} />}
       {isEnabled("latest_work") && <Experience title={experienceSec?.title} subtitle={experienceSec?.subtitle} description={experienceSec?.description} />}
       {isEnabled("testimonials") && <Testimonials testimonials={liveTestimonials ?? []} title={testimonialsSec?.title} subtitle={testimonialsSec?.subtitle} description={testimonialsSec?.description} />}
       {isEnabled("social") && (
@@ -277,4 +331,3 @@ export default async function HomePage() {
     </main>
   );
 }
-
