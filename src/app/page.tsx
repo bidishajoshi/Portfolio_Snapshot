@@ -24,24 +24,130 @@ import { testimonials as fallbackTestimonials } from "@/data/testimonials";
 // Force-dynamic ensures the public site always reflects the latest Supabase data after admin saves
 export const dynamic = "force-dynamic";
 
+interface PageSettings {
+  brand_name?: string | null;
+  photographer_name?: string | null;
+  tagline?: string | null;
+  contact_email?: string | null;
+  contact_phone?: string | null;
+  whatsapp_number?: string | null;
+  seo_description?: string | null;
+}
+
+interface PageService {
+  id: string;
+  title: string;
+  description: string | null;
+}
+
+interface PageStory {
+  id: string;
+  title: string;
+  slug: string | null;
+  introduction: string | null;
+  location: string | null;
+  story_date: string | null;
+  cover_media_id: string | null;
+  subtitle?: string | null;
+  tags?: string[] | null;
+}
+
+interface PageTestimonial {
+  id: string;
+  client_name: string;
+  review: string;
+  rating: number | null;
+  event_type: string | null;
+  client_media_id: string | null;
+}
+
+interface PageCategory {
+  id: string;
+  name: string;
+  slug?: string | null;
+  description: string | null;
+  cover_media_id: string | null;
+}
+
+interface PageAlbum {
+  id: string;
+  title: string;
+  slug: string;
+  description: string | null;
+  location: string | null;
+  event_date: string | null;
+  cover_media_id: string | null;
+  featured?: boolean | null;
+  is_featured?: boolean | null;
+}
+
+interface PageMedia {
+  id: string;
+  title: string;
+  cloudinary_public_id: string;
+  secure_url?: string | null;
+  public_id?: string | null;
+  kind: string;
+  folder: string;
+  bytes: number | null;
+  width: number | null;
+  height: number | null;
+  format: string | null;
+}
+
+interface PagePhoto {
+  id: string;
+  title: string;
+  media_id: string;
+  category_id: string | null;
+  location: string | null;
+  photo_date: string | null;
+  status: string;
+}
+
+interface PageSocial {
+  platform: string;
+  label: string;
+  url: string;
+  enabled: boolean;
+}
+
+interface PageHeroSlide {
+  id: string;
+  media: { cloudinary_public_id: string; secure_url?: string | null; public_id?: string | null } | null;
+}
+
+interface PageAlbumMedia {
+  album_id: string;
+}
+
+interface PageSection {
+  id?: string;
+  name: string;
+  title: string | null;
+  subtitle: string | null;
+  content: unknown;
+  is_enabled: boolean | null;
+}
+
 export default async function HomePage() {
-  let settings: any = null;
-  let dbServices: any[] | null = null;
-  let dbStories: any[] | null = null;
-  let dbTestimonials: any[] | null = null;
-  let dbCategories: any[] | null = null;
-  let dbAlbums: any[] | null = null;
-  let dbMedia: any[] | null = null;
-  let dbPhotos: any[] | null = null;
-  let dbSocial: any[] | null = null;
-  let heroSlide: any[] | null = null;
-  let dbAlbumMedia: any[] | null = null;
-  let aboutSection: any = null;
-  let homepageSections: any[] | null = null;
+  let settings: PageSettings | null = null;
+  let dbServices: PageService[] | null = null;
+  let dbStories: PageStory[] | null = null;
+  let dbTestimonials: PageTestimonial[] | null = null;
+  let dbCategories: PageCategory[] | null = null;
+  let dbAlbums: PageAlbum[] | null = null;
+  let dbMedia: PageMedia[] | null = null;
+  let dbPhotos: PagePhoto[] | null = null;
+  let dbSocial: PageSocial[] | null = null;
+  let heroSlide: PageHeroSlide[] | null = null;
+  let dbAlbumMedia: PageAlbumMedia[] | null = null;
+  let aboutSection: PageSection | null = null;
+  let homepageSections: PageSection[] | null = null;
 
   try {
     const supabase = createAdminClient();
-    const res: any = await Promise.all([
+    const res = (await Promise.all([
       supabase.from("site_settings").select("brand_name, photographer_name, tagline, contact_email, contact_phone, whatsapp_number, seo_description").maybeSingle(),
       supabase.from("services").select("id, title, description").eq("published", true).order("display_order"),
       supabase.from("stories").select("id, title, slug, introduction, location, story_date, cover_media_id, subtitle, tags").eq("published", true).order("display_order"),
@@ -55,7 +161,21 @@ export default async function HomePage() {
       supabase.from("album_media").select("album_id"),
       supabase.from("homepage_sections").select("name, title, subtitle, content, is_enabled").eq("name", "about").maybeSingle(),
       supabase.from("homepage_sections").select("id, name, title, subtitle, content, is_enabled").order("order_index"),
-    ]);
+    ])) as unknown as [
+      { data: PageSettings | null },
+      { data: PageService[] | null },
+      { data: PageStory[] | null },
+      { data: PageTestimonial[] | null },
+      { data: PageCategory[] | null },
+      { data: PageAlbum[] | null },
+      { data: PageMedia[] | null },
+      { data: PagePhoto[] | null },
+      { data: PageSocial[] | null },
+      { data: PageHeroSlide[] | null },
+      { data: PageAlbumMedia[] | null },
+      { data: PageSection | null },
+      { data: PageSection[] | null },
+    ];
 
     settings = res[0]?.data;
     dbServices = res[1]?.data;
