@@ -6,6 +6,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { categoryInputSchema, type CategoryInput } from "@/lib/validation/category";
 import { generateUniqueSlug } from "@/lib/utils/slug";
 import type { Category } from "@/types/database";
+import { categories as fallbackCategories } from "@/data/categories";
 
 export type CategoryWithCover = Category & {
   cover?: { cloudinary_public_id: string } | null;
@@ -13,18 +14,38 @@ export type CategoryWithCover = Category & {
 
 export async function listCategoriesAdmin(): Promise<CategoryWithCover[]> {
   await requireAdmin();
-  const supabase = createAdminClient();
-  const { data, error } = await supabase
-    .from("categories")
-    .select("*")
-    .order("display_order");
-  if (error) throw new Error(error.message);
-  const coverIds = (data ?? []).map((category) => category.cover_media_id).filter(Boolean);
-  const { data: media } = coverIds.length
-    ? await supabase.from("media").select("id, cloudinary_public_id").in("id", coverIds)
-    : { data: [] };
-  const mediaById = new Map((media ?? []).map((item) => [item.id, item]));
-  return (data ?? []).map((category) => ({ ...category, cover: category.cover_media_id ? mediaById.get(category.cover_media_id) ?? null : null })) as unknown as CategoryWithCover[];
+  try {
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+      .from("categories")
+      .select("*")
+      .order("display_order");
+    if (!error && data && data.length > 0) {
+      const coverIds = data.map((category) => category.cover_media_id).filter(Boolean);
+      const { data: media } = coverIds.length
+        ? await supabase.from("media").select("id, cloudinary_public_id").in("id", coverIds)
+        : { data: [] };
+      const mediaById = new Map((media ?? []).map((item) => [item.id, item]));
+      return data.map((category) => ({
+        ...category,
+        cover: category.cover_media_id ? mediaById.get(category.cover_media_id) ?? null : null,
+      })) as unknown as CategoryWithCover[];
+    }
+  } catch (err) {
+    console.warn("Could not list categories from database, using fallback:", err);
+  }
+
+  return fallbackCategories.map((c) => ({
+    id: String(c.id),
+    name: c.name,
+    slug: c.slug,
+    description: c.description,
+    cover_media_id: null,
+    published: true,
+    display_order: 0,
+    created_at: new Date().toISOString(),
+    cover: { cloudinary_public_id: c.cover },
+  })) as unknown as CategoryWithCover[];
 }
 
 export async function createCategory(input: CategoryInput) {
@@ -54,7 +75,6 @@ export async function createCategory(input: CategoryInput) {
 
   if (error) throw new Error(error.message);
   revalidatePath("/admin/categories");
-  revalidatePath("/");
   revalidatePath("/");
   return data as Category;
 }

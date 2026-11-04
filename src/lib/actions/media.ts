@@ -36,10 +36,17 @@ export async function searchMedia(params: MediaSearchParams) {
   const to = from + parsed.pageSize - 1;
   query = query.range(from, to);
 
-  const { data, error, count } = await query;
-  if (error) throw new Error(error.message);
-
-  return { items: (data ?? []) as Media[], total: count ?? 0 };
+  try {
+    const { data, error, count } = await query;
+    if (error) {
+      console.warn("searchMedia warning:", error.message);
+      return { items: [], total: 0 };
+    }
+    return { items: (data ?? []) as Media[], total: count ?? 0 };
+  } catch (err) {
+    console.warn("searchMedia error:", err);
+    return { items: [], total: 0 };
+  }
 }
 
 export async function renameMedia(input: {

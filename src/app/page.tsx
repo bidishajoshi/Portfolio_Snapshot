@@ -25,36 +25,54 @@ import { testimonials as fallbackTestimonials } from "@/data/testimonials";
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const supabase = createAdminClient();
-  const [
-    { data: settings },
-    { data: dbServices },
-    { data: dbStories },
-    { data: dbTestimonials },
-    { data: dbCategories },
-    { data: dbAlbums },
-    { data: dbMedia },
-    { data: dbPhotos },
-    { data: dbSocial },
-    { data: heroSlide },
-    { data: dbAlbumMedia },
-    { data: aboutSection },
-    { data: homepageSections },
-  ] = await Promise.all([
-    supabase.from("site_settings").select("brand_name, photographer_name, tagline, contact_email, contact_phone, whatsapp_number, seo_description").maybeSingle(),
-    supabase.from("services").select("id, title, description").eq("published", true).order("display_order"),
-    supabase.from("stories").select("id, title, slug, introduction, location, story_date, cover_media_id, subtitle, tags").eq("published", true).order("display_order"),
-    supabase.from("testimonials").select("id, client_name, review, rating, event_type, client_media_id").eq("published", true).order("created_at", { ascending: false }),
-    supabase.from("categories").select("id, name, slug, description, cover_media_id").eq("published", true).order("display_order"),
-    supabase.from("albums").select("id, title, slug, description, location, event_date, cover_media_id, featured, is_featured").order("display_order"),
-    supabase.from("media").select("id, title, cloudinary_public_id, secure_url, public_id, kind, folder, bytes, width, height, format").eq("archived", false),
-    supabase.from("photos").select("id, title, media_id, category_id, location, photo_date, status").eq("status", "published").order("display_order"),
-    supabase.from("social_links").select("platform, label, url, enabled").eq("enabled", true),
-    supabase.from("hero_slides").select("id, media:media(cloudinary_public_id, secure_url, public_id)").eq("published", true).eq("enabled", true).order("display_order").limit(10),
-    supabase.from("album_media").select("album_id"),
-    supabase.from("homepage_sections").select("name, title, subtitle, content, is_enabled").eq("name", "about").maybeSingle(),
-    supabase.from("homepage_sections").select("id, name, title, subtitle, content, is_enabled").order("order_index"),
-  ]);
+  let settings: any = null;
+  let dbServices: any[] | null = null;
+  let dbStories: any[] | null = null;
+  let dbTestimonials: any[] | null = null;
+  let dbCategories: any[] | null = null;
+  let dbAlbums: any[] | null = null;
+  let dbMedia: any[] | null = null;
+  let dbPhotos: any[] | null = null;
+  let dbSocial: any[] | null = null;
+  let heroSlide: any[] | null = null;
+  let dbAlbumMedia: any[] | null = null;
+  let aboutSection: any = null;
+  let homepageSections: any[] | null = null;
+
+  try {
+    const supabase = createAdminClient();
+    const res: any = await Promise.all([
+      supabase.from("site_settings").select("brand_name, photographer_name, tagline, contact_email, contact_phone, whatsapp_number, seo_description").maybeSingle(),
+      supabase.from("services").select("id, title, description").eq("published", true).order("display_order"),
+      supabase.from("stories").select("id, title, slug, introduction, location, story_date, cover_media_id, subtitle, tags").eq("published", true).order("display_order"),
+      supabase.from("testimonials").select("id, client_name, review, rating, event_type, client_media_id").eq("published", true).order("created_at", { ascending: false }),
+      supabase.from("categories").select("id, name, slug, description, cover_media_id").eq("published", true).order("display_order"),
+      supabase.from("albums").select("id, title, slug, description, location, event_date, cover_media_id, featured, is_featured").order("display_order"),
+      supabase.from("media").select("id, title, cloudinary_public_id, secure_url, public_id, kind, folder, bytes, width, height, format").eq("archived", false),
+      supabase.from("photos").select("id, title, media_id, category_id, location, photo_date, status").eq("status", "published").order("display_order"),
+      supabase.from("social_links").select("platform, label, url, enabled").eq("enabled", true),
+      supabase.from("hero_slides").select("id, media:media(cloudinary_public_id, secure_url, public_id)").eq("published", true).eq("enabled", true).order("display_order").limit(10),
+      supabase.from("album_media").select("album_id"),
+      supabase.from("homepage_sections").select("name, title, subtitle, content, is_enabled").eq("name", "about").maybeSingle(),
+      supabase.from("homepage_sections").select("id, name, title, subtitle, content, is_enabled").order("order_index"),
+    ]);
+
+    settings = res[0]?.data;
+    dbServices = res[1]?.data;
+    dbStories = res[2]?.data;
+    dbTestimonials = res[3]?.data;
+    dbCategories = res[4]?.data;
+    dbAlbums = res[5]?.data;
+    dbMedia = res[6]?.data;
+    dbPhotos = res[7]?.data;
+    dbSocial = res[8]?.data;
+    heroSlide = res[9]?.data;
+    dbAlbumMedia = res[10]?.data;
+    aboutSection = res[11]?.data;
+    homepageSections = res[12]?.data;
+  } catch (error) {
+    console.warn("Could not load homepage data from Supabase, using resilient fallbacks:", error);
+  }
 
   const sectionsMap = new Map((homepageSections ?? []).map((s) => [s.name, s]));
   const getSec = (key: string) => {
@@ -293,7 +311,16 @@ export default async function HomePage() {
       <Navbar />
       {isEnabled("hero") && (
         <Hero
-          brandOverride={settings ? { name: settings.brand_name, photographer: settings.photographer_name, tagline: settings.tagline, supportingText: heroSec?.description || settings?.seo_description } : undefined}
+          brandOverride={
+            settings && settings.brand_name && settings.photographer_name && settings.tagline
+              ? {
+                  name: settings.brand_name,
+                  photographer: settings.photographer_name,
+                  tagline: settings.tagline,
+                  supportingText: heroSec?.description || settings?.seo_description || null,
+                }
+              : undefined
+          }
           backgroundImages={heroImages}
         />
       )}
@@ -306,7 +333,7 @@ export default async function HomePage() {
         />
       )}
       {isEnabled("selected_works") && <Categories categories={liveCategories} title={selectedWorksSec?.title || "What I Photograph"} subtitle={selectedWorksSec?.subtitle || "Portfolio"} />}
-      {isEnabled("selected_works") && <Gallery photos={allGalleryPhotos} categories={liveCategories?.map((item) => item.name)} title={selectedWorksSec?.title} subtitle={selectedWorksSec?.subtitle} description={selectedWorksSec?.description} />}
+      {isEnabled("selected_works") && <Gallery photos={allGalleryPhotos} categories={liveCategories?.map((item: { name: string }) => item.name)} title={selectedWorksSec?.title} subtitle={selectedWorksSec?.subtitle} description={selectedWorksSec?.description} />}
       {isEnabled("featured_albums") && <Albums albums={liveAlbums} title={albumsSec?.title} subtitle={albumsSec?.subtitle} description={albumsSec?.description} />}
       {isEnabled("stories") && (
         <Stories stories={liveStories ?? []} title={storiesSec?.title} subtitle={storiesSec?.subtitle} description={storiesSec?.description} />
@@ -323,10 +350,17 @@ export default async function HomePage() {
           description={socialSec?.description}
         />
       )}
-      {isEnabled("contact_cta") && <Contact contactOverride={settings ? { email: settings.contact_email, phone: settings.contact_phone } : undefined} title={contactSec?.title} subtitle={contactSec?.subtitle} description={contactSec?.description} />}
+      {isEnabled("contact_cta") && (
+        <Contact
+          contactOverride={settings ? { email: settings.contact_email ?? null, phone: settings.contact_phone ?? null } : undefined}
+          title={contactSec?.title}
+          subtitle={contactSec?.subtitle}
+          description={contactSec?.description}
+        />
+      )}
       <Footer
         socialLinks={dbSocial ?? []}
-        brandOverride={settings ? { name: settings.brand_name, tagline: settings.tagline } : undefined}
+        brandOverride={settings?.brand_name ? { name: settings.brand_name, tagline: settings.tagline ?? undefined } : undefined}
       />
     </main>
   );

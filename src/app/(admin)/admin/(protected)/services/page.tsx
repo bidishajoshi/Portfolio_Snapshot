@@ -37,7 +37,7 @@ export default async function AdminServicesPage() {
       slug: s.slug,
       description: s.description,
       published: true,
-      price_label: s.price,
+      price_label: null,
     }));
   }
 

@@ -67,10 +67,10 @@ export function HeroTextEditor({
   settings,
 }: {
   settings: {
-    id: boolean;
+    id: boolean | string;
     brand_name: string;
     photographer_name: string;
-    tagline: string;
+    tagline?: string | null;
     seo_description?: string | null;
   };
 }) {

@@ -18,7 +18,7 @@ export function LoginForm() {
         name="email"
         type="email"
         label="Email"
-        placeholder="you@drdslr.com"
+        placeholder="himalstha85@gmail.com"
         autoComplete="username"
         required
       />

@@ -9,10 +9,19 @@ export async function AdminSectionPage({
   description: string;
   table: string;
 }) {
-  const supabase = await createClient();
-  const { count, error } = await supabase
-    .from(table)
-    .select("id", { count: "exact", head: true });
+  let count: number | null = 0;
+  let hasError = false;
+
+  try {
+    const supabase = await createClient();
+    const res = await supabase
+      .from(table)
+      .select("id", { count: "exact", head: true });
+    count = res.count;
+    if (res.error) hasError = true;
+  } catch {
+    hasError = true;
+  }
 
   return (
     <div className="flex flex-col gap-8">
@@ -23,9 +32,9 @@ export async function AdminSectionPage({
 
       <div className="rounded-sm border border-border bg-surface px-5 py-6">
         <p className="text-xs uppercase tracking-wide text-stone-dim">{title} records</p>
-        <p className="mt-2 font-display text-4xl text-ivory">{error ? 0 : count ?? 0}</p>
+        <p className="mt-2 font-display text-4xl text-ivory">{hasError ? 0 : count ?? 0}</p>
         <p className="mt-1 text-sm text-stone">
-          {error || count === 0
+          {hasError || count === 0
             ? `No ${title.toLowerCase()} have been added yet.`
             : `${count} ${title.toLowerCase()} available.`}
         </p>
