@@ -1,28 +1,48 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { AboutManager } from "@/components/admin/about-manager";
+import { aboutContent as fallbackAbout } from "@/data/site";
 
 export const metadata = { title: "About" };
 export const dynamic = "force-dynamic";
 
 export default async function AboutPage() {
-  const supabase = createAdminClient();
-  const { data: section } = await supabase
-    .from("homepage_sections")
-    .select("id, title, subtitle, content")
-    .eq("name", "about")
-    .maybeSingle();
+  let title = fallbackAbout.title;
+  let subtitle = fallbackAbout.subtitle;
+  let bio = fallbackAbout.bio.join("\n\n");
+  let mediaId: string | null = null;
+  let publicId: string | null = fallbackAbout.portrait;
 
-  const content = (section?.content && typeof section.content === "object" ? section.content : {}) as Record<string, unknown>;
-  const mediaId = (content.portrait_media_id as string) || null;
-
-  let publicId: string | null = null;
-  if (mediaId) {
-    const { data: media } = await supabase
-      .from("media")
-      .select("cloudinary_public_id, secure_url, public_id")
-      .eq("id", mediaId)
+  try {
+    const supabase = createAdminClient();
+    const { data: section } = await supabase
+      .from("homepage_sections")
+      .select("id, title, subtitle, content")
+      .eq("name", "about")
       .maybeSingle();
-    publicId = media?.secure_url || media?.cloudinary_public_id || media?.public_id || null;
+
+    if (section) {
+      if (section.title) title = section.title;
+      if (section.subtitle) subtitle = section.subtitle;
+      const content = (section.content && typeof section.content === "object" ? section.content : {}) as Record<string, unknown>;
+      if (typeof content.bio === "string" && content.bio.trim()) {
+        bio = content.bio;
+      } else if (Array.isArray(content.bio) && content.bio.length > 0) {
+        bio = content.bio.join("\n\n");
+      }
+      mediaId = (content.portrait_media_id as string) || null;
+
+      if (mediaId) {
+        const { data: media } = await supabase
+          .from("media")
+          .select("cloudinary_public_id, secure_url, public_id")
+          .eq("id", mediaId)
+          .maybeSingle();
+        const found = media?.secure_url || media?.cloudinary_public_id || media?.public_id;
+        if (found) publicId = found;
+      }
+    }
+  } catch (error) {
+    console.warn("Could not load about section from database, using fallback:", error);
   }
 
   return (
@@ -35,13 +55,12 @@ export default async function AboutPage() {
       </div>
 
       <AboutManager
-        initialTitle={section?.title}
-        initialSubtitle={section?.subtitle}
-        initialBio={typeof content.bio === "string" ? content.bio : Array.isArray(content.bio) ? content.bio.join("\n\n") : null}
+        initialTitle={title}
+        initialSubtitle={subtitle}
+        initialBio={bio}
         initialMediaId={mediaId}
         initialPublicId={publicId}
       />
     </div>
   );
 }
-
