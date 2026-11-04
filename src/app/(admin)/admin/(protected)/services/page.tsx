@@ -1,19 +1,59 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { ContentMediaManager, type ContentMediaRecord } from "@/components/admin/content-media-manager";
 import { ContentEditor, type EditableRecord } from "@/components/admin/content-editor";
+import { services as fallbackServices } from "@/data/services";
 
 export const metadata = { title: "Services" };
 export const dynamic = "force-dynamic";
 
 export default async function AdminServicesPage() {
-  const supabase = createAdminClient();
-  const { data } = await supabase
-    .from("services")
-    .select("id, title, slug, description, published, media_id, price_label");
-  const services = (data ?? []) as Array<{ id: string; title: string; slug: string; description: string | null; media_id?: string | null; price_label?: string | null; published?: boolean }>;
+  let services: Array<{
+    id: string;
+    title: string;
+    slug: string;
+    description: string | null;
+    media_id?: string | null;
+    price_label?: string | null;
+    published?: boolean;
+  }> = [];
 
-  const records: ContentMediaRecord[] = services.filter((service) => service.id && service.id.length > 10).map((service) => ({ id: service.id, title: service.title }));
-  const editableRecords: EditableRecord[] = services.filter((service) => service.id && service.id.length > 10).map((service) => ({ id: service.id, title: service.title, description: service.description, mediaId: service.media_id ?? null, published: service.published ?? true }));
+  try {
+    const supabase = createAdminClient();
+    const { data } = await supabase
+      .from("services")
+      .select("id, title, slug, description, published, media_id, price_label");
+
+    if (data && data.length > 0) {
+      services = data as typeof services;
+    }
+  } catch (error) {
+    console.warn("Could not load services from database, using fallback:", error);
+  }
+
+  if (services.length === 0) {
+    services = fallbackServices.map((s) => ({
+      id: String(s.id),
+      title: s.title,
+      slug: s.slug,
+      description: s.description,
+      published: true,
+      price_label: s.price,
+    }));
+  }
+
+  const records: ContentMediaRecord[] = services
+    .filter((service) => service.id && service.id.length > 0)
+    .map((service) => ({ id: service.id, title: service.title }));
+
+  const editableRecords: EditableRecord[] = services
+    .filter((service) => service.id && service.id.length > 0)
+    .map((service) => ({
+      id: service.id,
+      title: service.title,
+      description: service.description,
+      mediaId: service.media_id ?? null,
+      published: service.published ?? true,
+    }));
 
   return (
     <div className="flex flex-col gap-8">
