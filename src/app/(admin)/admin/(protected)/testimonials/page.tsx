@@ -1,18 +1,39 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { ReviewsManager } from "@/components/admin/reviews-manager";
 import type { Testimonial } from "@/types/database";
+import { testimonials as fallbackTestimonials } from "@/data/testimonials";
 
 export const metadata = { title: "Client Reviews & Testimonials" };
 export const dynamic = "force-dynamic";
 
 export default async function TestimonialsPage() {
-  const supabase = createAdminClient();
-  const { data } = await supabase
-    .from("testimonials")
-    .select("*")
-    .order("created_at", { ascending: false });
+  let testimonials: Testimonial[] = [];
 
-  const testimonials = (data ?? []) as unknown as Testimonial[];
+  try {
+    const supabase = createAdminClient();
+    const { data } = await supabase
+      .from("testimonials")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (data && data.length > 0) {
+      testimonials = data as unknown as Testimonial[];
+    }
+  } catch (error) {
+    console.warn("Could not load testimonials from database, using fallback:", error);
+  }
+
+  if (testimonials.length === 0) {
+    testimonials = fallbackTestimonials.map((t) => ({
+      id: String(t.id),
+      client_name: t.name,
+      review: t.review,
+      rating: 5,
+      event_type: t.eventType,
+      published: true,
+      created_at: new Date().toISOString(),
+    })) as unknown as Testimonial[];
+  }
 
   return (
     <div className="flex flex-col gap-8">
