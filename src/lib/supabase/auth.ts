@@ -40,7 +40,12 @@ export async function requireAdmin() {
 
   // Fallback if admin_session cookie is set (e.g., when Supabase is paused or offline)
   if (adminCookie === "true" || adminCookie === "authenticated") {
-    const supabase = await createClient();
+    let fallbackSupabase: Awaited<ReturnType<typeof createClient>> | null = null;
+    try {
+      fallbackSupabase = await createClient();
+    } catch {
+      // Supabase offline
+    }
     return {
       user: {
         id: "local-admin",
@@ -48,10 +53,10 @@ export async function requireAdmin() {
         user_metadata: {},
         aud: "authenticated",
         created_at: new Date().toISOString(),
-        email: "admin@drdslr.com",
+        email: "himalstha85@gmail.com",
       } as unknown as User,
       profile: { id: "local-admin", display_name: "Himal Shrestha (Admin)" },
-      supabase,
+      supabase: fallbackSupabase!,
     };
   }
 

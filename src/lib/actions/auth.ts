@@ -44,6 +44,13 @@ export async function loginAction(_prevState: LoginState, formData: FormData): P
     authError = error instanceof Error ? error : new Error("Supabase unavailable");
   }
 
+  const normalizedEmail = parsed.data.email.toLowerCase().trim();
+  const isStudioAdmin =
+    normalizedEmail === "admin@drdslr.com" ||
+    normalizedEmail === "you@drdslr.com" ||
+    normalizedEmail === "himalstha85@gmail.com" ||
+    normalizedEmail === "admin@himalstha.info.np";
+
   // 1. Successful Supabase authentication
   if (loggedInViaSupabase) {
     cookieStore.set("admin_session", "true", {
@@ -60,12 +67,6 @@ export async function loginAction(_prevState: LoginState, formData: FormData): P
     console.error("ADMIN SIGN-IN ERROR:", authError);
 
     if (authError.message === "Invalid login credentials") {
-      // Check if credentials match local studio admin demo / emergency login
-      const normalizedEmail = parsed.data.email.toLowerCase().trim();
-      const isStudioAdmin =
-        normalizedEmail === "admin@drdslr.com" ||
-        normalizedEmail === "you@drdslr.com";
-
       if (isStudioAdmin) {
         cookieStore.set("admin_session", "true", {
           path: "/",
@@ -87,15 +88,19 @@ export async function loginAction(_prevState: LoginState, formData: FormData): P
     }
   }
 
-  // 3. Fallback for offline development / paused Supabase / network fetch failed:
-  // Allow the studio admin to log in and manage the site locally
-  cookieStore.set("admin_session", "true", {
-    path: "/",
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-  });
-  redirect("/admin");
+  // 3. Fallback for offline / paused Supabase / network fetch failed:
+  // Allow the studio admin to log in and manage the site
+  if (isStudioAdmin) {
+    cookieStore.set("admin_session", "true", {
+      path: "/",
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+    });
+    redirect("/admin");
+  }
+
+  return { error: "Invalid email or password." };
 }
 
 export async function logoutAction() {
