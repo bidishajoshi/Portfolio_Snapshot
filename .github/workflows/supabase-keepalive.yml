@@ -1,0 +1,16 @@
+name: Supabase Database Keep-Alive
+
+on:
+  schedule:
+    # Runs at 06:00 UTC every day
+    - cron: '0 6 * * *'
+  workflow_dispatch: # Allows manual trigger from GitHub UI
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Keep-Alive Endpoint
+        run: |
+          echo "Sending automated database heartbeat..."
+          curl -s -f -X GET "https://www.himalstha.info.np/api/cron/keep-alive" || echo "Heartbeat ping completed."

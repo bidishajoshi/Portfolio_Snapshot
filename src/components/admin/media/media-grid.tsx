@@ -32,8 +32,8 @@ export function MediaGrid({ refreshKey }: { refreshKey?: number }) {
   const [loadError, setLoadError] = useState<string | null>(null);
 
   const load = () => {
-    setLoadError(null);
     startTransition(async () => {
+      setLoadError(null);
       try {
         const result = await searchMedia({
           query: query || undefined,
