@@ -29,16 +29,25 @@ export function MediaGrid({ refreshKey }: { refreshKey?: number }) {
   const [folder, setFolder] = useState<MediaFolder | "all">("all");
   const [selected, setSelected] = useState<Media | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const load = () => {
+    setLoadError(null);
     startTransition(async () => {
-      const result = await searchMedia({
-        query: query || undefined,
-        folder: folder === "all" ? undefined : folder,
-        pageSize: 60,
-      });
-      setItems(result.items);
-      setTotal(result.total);
+      try {
+        const result = await searchMedia({
+          query: query || undefined,
+          folder: folder === "all" ? undefined : folder,
+          pageSize: 60,
+        });
+        setItems(result.items);
+        setTotal(result.total);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "Failed to load media";
+        setLoadError(msg);
+        setItems([]);
+        setTotal(0);
+      }
     });
   };
 
@@ -85,11 +94,22 @@ export function MediaGrid({ refreshKey }: { refreshKey?: number }) {
         ))}
       </div>
 
-      {isPending && items.length === 0 && (
+      {loadError && (
+        <div className="p-4 rounded-lg border border-amber-500/40 bg-amber-500/10">
+          <p className="text-amber-400 font-semibold text-sm">⚠ Cannot load media</p>
+          <p className="text-amber-300/80 text-xs mt-1">
+            {loadError.toLowerCase().includes("fetch") || loadError.toLowerCase().includes("network")
+              ? "Database is offline. Go to supabase.com/dashboard and resume your project, then refresh."
+              : loadError}
+          </p>
+        </div>
+      )}
+
+      {isPending && items.length === 0 && !loadError && (
         <p className="text-sm text-stone-dim py-12 text-center">Loading…</p>
       )}
 
-      {!isPending && items.length === 0 && (
+      {!isPending && items.length === 0 && !loadError && (
         <div className="py-16 text-center border border-dashed border-border rounded-sm">
           <p className="text-sm text-stone">No photos here yet.</p>
           <p className="text-xs text-stone-dim mt-1">Upload some above to get started.</p>

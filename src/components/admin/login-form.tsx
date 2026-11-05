@@ -31,7 +31,11 @@ export function LoginForm() {
         autoComplete="current-password"
         required
       />
-      {state?.error && <p className="text-sm text-danger">{state.error}</p>}
+      {state?.error && (
+        <p className="text-sm text-danger bg-danger/10 border border-danger/30 rounded px-3 py-2">
+          {state.error}
+        </p>
+      )}
       <Button type="submit" disabled={pending} className="mt-2 w-full">
         {pending ? "Signing in…" : "Sign in"}
       </Button>

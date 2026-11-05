@@ -14,6 +14,28 @@ export type LoginState = {
   error?: string;
 } | null;
 
+const STUDIO_ADMIN_EMAILS = [
+  "admin@drdslr.com",
+  "you@drdslr.com",
+  "himalstha85@gmail.com",
+  "admin@himalstha.info.np",
+];
+
+function isStudioAdmin(email: string): boolean {
+  return STUDIO_ADMIN_EMAILS.includes(email.toLowerCase().trim());
+}
+
+async function setAdminCookie() {
+  const cookieStore = await cookies();
+  cookieStore.set("admin_session", "true", {
+    path: "/",
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    maxAge: 60 * 60 * 24 * 7, // 7 days
+  });
+}
+
 export async function loginAction(_prevState: LoginState, formData: FormData): Promise<LoginState> {
   const parsed = loginSchema.safeParse({
     email: formData.get("email"),
@@ -24,83 +46,75 @@ export async function loginAction(_prevState: LoginState, formData: FormData): P
     return { error: parsed.error.issues[0]?.message ?? "Invalid input." };
   }
 
-  const cookieStore = await cookies();
+  const normalizedEmail = parsed.data.email.toLowerCase().trim();
+  const studioAdmin = isStudioAdmin(normalizedEmail);
 
-  let authError: (Error & { status?: number }) | { message?: string; status?: number } | null = null;
-  let loggedInViaSupabase = false;
-
+  // Try Supabase authentication first
   try {
     const supabase = await createClient();
     const { error } = await supabase.auth.signInWithPassword({
       email: parsed.data.email,
       password: parsed.data.password,
     });
-    if (error) {
-      authError = error;
-    } else {
-      loggedInViaSupabase = true;
+
+    if (!error) {
+      // Supabase login succeeded
+      await setAdminCookie();
+      redirect("/admin");
     }
-  } catch (error) {
-    authError = error instanceof Error ? error : new Error("Supabase unavailable");
-  }
 
-  const normalizedEmail = parsed.data.email.toLowerCase().trim();
-  const isStudioAdmin =
-    normalizedEmail === "admin@drdslr.com" ||
-    normalizedEmail === "you@drdslr.com" ||
-    normalizedEmail === "himalstha85@gmail.com" ||
-    normalizedEmail === "admin@himalstha.info.np";
-
-  // 1. Successful Supabase authentication
-  if (loggedInViaSupabase) {
-    cookieStore.set("admin_session", "true", {
-      path: "/",
-      httpOnly: true,
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
-    });
-    redirect("/admin");
-  }
-
-  // 2. If Supabase responded with an authentication rejection
-  if (authError) {
-    console.error("ADMIN SIGN-IN ERROR:", authError);
-
-    if (authError.message === "Invalid login credentials") {
-      if (isStudioAdmin) {
-        cookieStore.set("admin_session", "true", {
-          path: "/",
-          httpOnly: true,
-          sameSite: "lax",
-          secure: process.env.NODE_ENV === "production",
-        });
+    // Supabase returned an auth error
+    if (error.message === "Invalid login credentials") {
+      // If studio admin, allow fallback login
+      if (studioAdmin) {
+        await setAdminCookie();
         redirect("/admin");
       }
       return { error: "Invalid email or password." };
     }
 
-    if (authError.message?.includes("Email not confirmed")) {
+    if (error.message?.includes("Email not confirmed")) {
       return { error: "Admin email is not confirmed in Supabase Auth." };
     }
 
-    if (authError.message?.includes("restricted") || authError.status === 402) {
-      return { error: `Supabase project restricted: ${authError.message}` };
+    if (error.message?.includes("restricted") || (error as unknown as { status?: number }).status === 402) {
+      // Supabase project paused or restricted — studio admin can still log in
+      if (studioAdmin) {
+        await setAdminCookie();
+        redirect("/admin");
+      }
+      return { error: `Database service is temporarily restricted. Contact support.` };
     }
-  }
 
-  // 3. Fallback for offline / paused Supabase / network fetch failed:
-  // Allow the studio admin to log in and manage the site
-  if (isStudioAdmin) {
-    cookieStore.set("admin_session", "true", {
-      path: "/",
-      httpOnly: true,
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
-    });
-    redirect("/admin");
-  }
+    // Any other Supabase error
+    console.error("ADMIN SIGN-IN SUPABASE ERROR:", error.message);
+    if (studioAdmin) {
+      await setAdminCookie();
+      redirect("/admin");
+    }
+    return { error: error.message || "Authentication failed." };
+  } catch (err) {
+    // If it's a redirect, re-throw it (Next.js redirect throws an error internally)
+    if (err instanceof Error && err.message === "NEXT_REDIRECT") {
+      throw err;
+    }
+    // Check if this is actually a redirect digest
+    if (typeof err === "object" && err !== null && "digest" in err) {
+      throw err;
+    }
 
-  return { error: "Invalid email or password." };
+    // Supabase completely unreachable (DNS failure, network timeout, project paused)
+    console.error("SUPABASE UNREACHABLE:", err instanceof Error ? err.message : String(err));
+
+    if (studioAdmin) {
+      await setAdminCookie();
+      redirect("/admin");
+    }
+
+    return {
+      error: "Database service is currently offline. Only studio admin accounts can sign in during outages.",
+    };
+  }
 }
 
 export async function logoutAction() {
@@ -111,7 +125,7 @@ export async function logoutAction() {
     const supabase = await createClient();
     await supabase.auth.signOut();
   } catch {
-    // ignore
+    // ignore — Supabase may be offline
   }
 
   redirect("/admin/login");
