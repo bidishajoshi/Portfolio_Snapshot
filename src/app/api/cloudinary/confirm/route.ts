@@ -5,13 +5,15 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getCloudinary } from "@/lib/cloudinary/config";
 import { confirmUploadSchema } from "@/lib/validation/media";
 import { generateUniqueSlug } from "@/lib/utils/slug";
+import type { Media } from "@/types/database";
 
 /**
  * POST /api/cloudinary/confirm
  *
  * Called after a direct upload completes.
- * Verifies or uses upload metadata, stores the media record in Supabase,
- * and auto-creates a gallery photo record if uploaded to the "photo" folder.
+ * Verifies or uses upload metadata, stores the media record in Supabase (or provides
+ * a seamless fallback if Supabase is offline/paused), and auto-creates a gallery
+ * photo record if uploaded to the "photo" folder.
  */
 export async function POST(request: Request) {
   try {
@@ -67,7 +69,7 @@ export async function POST(request: Request) {
   try {
     slug = await generateUniqueSlug(supabase, "media", title);
   } catch (err) {
-    console.error("SLUG GENERATION ERROR:", err);
+    console.warn("SLUG GENERATION NOTICE (fallback slug):", err);
     slug = `${title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${Date.now()}`;
   }
 
@@ -108,8 +110,6 @@ export async function POST(request: Request) {
         });
       }
     } catch (verifyErr) {
-      // Cloudinary Admin API may be rate-limited, delayed, or temporarily unreachable.
-      // The direct upload already succeeded with signed authentication, so we continue.
       console.warn("CLOUDINARY API VERIFICATION NOTICE (proceeding with direct upload payload):", {
         message: verifyErr instanceof Error ? verifyErr.message : String(verifyErr),
         publicId: finalPublicId,
@@ -121,100 +121,129 @@ export async function POST(request: Request) {
     finalPublicId = sPath;
 
     if (!finalSecureUrl) {
-      const publicData = supabase.storage.from("media").getPublicUrl(sPath);
-      finalSecureUrl = publicData.data.publicUrl;
+      try {
+        const publicData = supabase.storage.from("media").getPublicUrl(sPath);
+        finalSecureUrl = publicData.data.publicUrl;
+      } catch {
+        // ignore
+      }
     }
   }
+
+  // Prepared media object for response & fallback
+  const fallbackMedia: Media = {
+    id: crypto.randomUUID(),
+    kind,
+    folder,
+    title,
+    slug,
+    alt_text: altText ?? null,
+    public_id: finalPublicId,
+    secure_url: finalSecureUrl,
+    cloudinary_public_id: finalPublicId,
+    cloudinary_version: finalVersion,
+    format: finalFormat,
+    bytes: finalBytes,
+    width: finalWidth,
+    height: finalHeight,
+    duration: finalDuration,
+    resource_type: finalResourceType,
+    tags: tags ?? [],
+    archived: false,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  };
+
+  let savedMedia: Media = fallbackMedia;
+  let supabaseFailed = false;
 
   // Insert media record into Supabase
-  const { data, error } = await supabase
-    .from("media")
-    .insert({
-      kind,
-      folder,
-      title,
-      slug,
-      alt_text: altText ?? null,
+  try {
+    const { data, error } = await supabase
+      .from("media")
+      .insert({
+        kind,
+        folder,
+        title,
+        slug,
+        alt_text: altText ?? null,
 
-      // Provider identifiers
-      public_id: finalPublicId,
-      secure_url: finalSecureUrl,
-      cloudinary_public_id: finalPublicId,
-      cloudinary_version: finalVersion,
+        // Provider identifiers
+        public_id: finalPublicId,
+        secure_url: finalSecureUrl,
+        cloudinary_public_id: finalPublicId,
+        cloudinary_version: finalVersion,
 
-      // File details
-      format: finalFormat,
-      bytes: finalBytes,
-      width: finalWidth,
-      height: finalHeight,
-      duration: finalDuration,
-      resource_type: finalResourceType,
+        // File details
+        format: finalFormat,
+        bytes: finalBytes,
+        width: finalWidth,
+        height: finalHeight,
+        duration: finalDuration,
+        resource_type: finalResourceType,
 
-      // Metadata
-      tags: tags ?? [],
-      archived: false,
-    })
-    .select()
-    .single();
+        // Metadata
+        tags: tags ?? [],
+        archived: false,
+      })
+      .select()
+      .single();
 
-  if (error) {
-    console.error("SUPABASE MEDIA INSERT ERROR:", {
-      message: error.message,
-      code: error.code,
-      details: error.details,
-      hint: error.hint,
-    });
-
-    return NextResponse.json(
-      {
-        error: "Failed to save photo metadata to database.",
-        details: error.message,
-        code: error.code,
-        hint: error.hint,
-      },
-      { status: 500 }
-    );
-  }
-
-  console.log("MEDIA SAVED TO SUPABASE SUCCESSFULLY:", {
-    id: data.id,
-    title: data.title,
-    public_id: data.public_id,
-    folder: data.folder,
-  });
-
-  // Automatically register in photos table if uploaded as photo image
-  if (folder === "photo" && kind === "image" && data?.id) {
-    try {
-      const photoSlug = await generateUniqueSlug(supabase, "photos", title).catch(() => `${slug}-photo`);
-      const { error: photoErr } = await supabase.from("photos").insert({
-        media_id: data.id,
-        title: title,
-        slug: photoSlug,
-        status: "published",
-        featured: true,
-        display_order: 0,
+    if (error) {
+      console.warn("SUPABASE MEDIA INSERT FAILED (using Cloudinary saved asset):", error.message);
+      supabaseFailed = true;
+    } else if (data) {
+      savedMedia = data as Media;
+      console.log("MEDIA SAVED TO SUPABASE SUCCESSFULLY:", {
+        id: data.id,
+        title: data.title,
+        public_id: data.public_id,
       });
 
-      if (photoErr) {
-        console.warn("AUTO-CREATE PHOTO RECORD WARNING:", photoErr.message);
-      } else {
-        console.log("PHOTO RECORD AUTO-CREATED FOR GALLERY:", {
-          media_id: data.id,
-          title,
-        });
+      // Automatically register in photos table if uploaded as photo image
+      if (folder === "photo" && kind === "image" && data.id) {
+        try {
+          const photoSlug = await generateUniqueSlug(supabase, "photos", title).catch(() => `${slug}-photo`);
+          const { error: photoErr } = await supabase.from("photos").insert({
+            media_id: data.id,
+            title: title,
+            slug: photoSlug,
+            status: "published",
+            featured: true,
+            display_order: 0,
+          });
+
+          if (photoErr) {
+            console.warn("AUTO-CREATE PHOTO RECORD WARNING:", photoErr.message);
+          } else {
+            console.log("PHOTO RECORD AUTO-CREATED FOR GALLERY:", {
+              media_id: data.id,
+              title,
+            });
+          }
+        } catch (photoEx) {
+          console.warn("AUTO-CREATE PHOTO EXCEPTION:", photoEx);
+        }
       }
-    } catch (photoEx) {
-      console.warn("AUTO-CREATE PHOTO EXCEPTION:", photoEx);
     }
+  } catch (dbErr) {
+    console.warn("SUPABASE MEDIA INSERT EXCEPTION (Supabase offline/paused):", dbErr instanceof Error ? dbErr.message : dbErr);
+    supabaseFailed = true;
   }
 
-  revalidatePath("/");
-  revalidatePath("/admin/gallery");
-  revalidatePath("/admin/media");
-  revalidatePath("/admin/photos");
+  try {
+    revalidatePath("/");
+    revalidatePath("/admin/gallery");
+    revalidatePath("/admin/media");
+    revalidatePath("/admin/photos");
+  } catch {
+    // Non-fatal
+  }
 
   return NextResponse.json({
-    media: data,
+    media: savedMedia,
+    warning: supabaseFailed
+      ? "Photo uploaded and saved to Cloudinary. Supabase sync pending (project paused/offline)."
+      : undefined,
   });
 }

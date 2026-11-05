@@ -22,31 +22,97 @@ export async function searchMedia(params: MediaSearchParams) {
   const parsed = mediaSearchSchema.parse(params);
   const supabase = createAdminClient();
 
-  let query = supabase
-    .from("media")
-    .select("*", { count: "exact" })
-    .order("created_at", { ascending: false });
-
-  if (!parsed.includeArchived) query = query.eq("archived", false);
-  if (parsed.folder) query = query.eq("folder", parsed.folder);
-  if (parsed.kind) query = query.eq("kind", parsed.kind);
-  if (parsed.query) query = query.ilike("title", `%${parsed.query}%`);
-
-  const from = (parsed.page - 1) * parsed.pageSize;
-  const to = from + parsed.pageSize - 1;
-  query = query.range(from, to);
-
+  // Try Supabase first
   try {
+    let query = supabase
+      .from("media")
+      .select("*", { count: "exact" })
+      .order("created_at", { ascending: false });
+
+    if (!parsed.includeArchived) query = query.eq("archived", false);
+    if (parsed.folder) query = query.eq("folder", parsed.folder);
+    if (parsed.kind) query = query.eq("kind", parsed.kind);
+    if (parsed.query) query = query.ilike("title", `%${parsed.query}%`);
+
+    const from = (parsed.page - 1) * parsed.pageSize;
+    const to = from + parsed.pageSize - 1;
+    query = query.range(from, to);
+
     const { data, error, count } = await query;
-    if (error) {
-      console.warn("searchMedia warning:", error.message);
-      return { items: [], total: 0 };
+    if (!error && data && data.length > 0) {
+      return { items: (data ?? []) as Media[], total: count ?? data.length };
     }
-    return { items: (data ?? []) as Media[], total: count ?? 0 };
   } catch (err) {
-    console.warn("searchMedia error:", err);
-    return { items: [], total: 0 };
+    console.warn("searchMedia Supabase error, falling back to Cloudinary:", err);
   }
+
+  // Fallback to Cloudinary API so all uploaded photos show up even when Supabase is paused or offline
+  try {
+    const cloudinary = getCloudinary();
+    const prefix = parsed.folder ? `dr-dslr/${parsed.folder}` : "dr-dslr";
+
+    interface CloudinaryResourceItem {
+      public_id: string;
+      format?: string;
+      version?: number | string;
+      resource_type?: string;
+      created_at?: string;
+      bytes?: number;
+      width?: number;
+      height?: number;
+      secure_url?: string;
+      display_name?: string;
+      asset_folder?: string;
+    }
+
+    const result = await cloudinary.api.resources({
+      type: "upload",
+      prefix,
+      max_results: parsed.pageSize || 60,
+    });
+
+    if (result && Array.isArray(result.resources) && result.resources.length > 0) {
+      const items: Media[] = (result.resources as CloudinaryResourceItem[]).map((r) => {
+        const segments = r.public_id.split("/");
+        const folderFromId = (segments.length > 1 ? segments[1] : "photo") as MediaFolder;
+        const rawName = r.display_name || segments[segments.length - 1] || "Untitled";
+        const cleanTitle = rawName.replace(/[_-]+/g, " ");
+
+        return {
+          id: r.public_id,
+          kind: (r.resource_type === "video" ? "video" : "image") as MediaKind,
+          folder: folderFromId,
+          title: cleanTitle,
+          slug: rawName,
+          alt_text: null,
+          cloudinary_public_id: r.public_id,
+          cloudinary_version: r.version ? String(r.version) : null,
+          format: r.format || "jpg",
+          bytes: r.bytes || 0,
+          width: r.width || null,
+          height: r.height || null,
+          duration: null,
+          tags: [],
+          archived: false,
+          created_at: r.created_at || new Date().toISOString(),
+          updated_at: r.created_at || new Date().toISOString(),
+          public_id: r.public_id,
+          secure_url: r.secure_url || "",
+          resource_type: (r.resource_type === "video" ? "video" : "image"),
+        };
+      });
+
+      const filtered = parsed.query
+        ? items.filter((it) => it.title.toLowerCase().includes(parsed.query!.toLowerCase()))
+        : items;
+
+      return { items: filtered, total: filtered.length };
+    }
+  } catch (cErr) {
+    console.warn("Cloudinary fallback in searchMedia error:", cErr);
+  }
+
+  return { items: [], total: 0 };
 }
 
 export async function renameMedia(input: {
@@ -87,8 +153,24 @@ export async function getMediaReferences(mediaId: string) {
   await requireAdmin();
   const supabase = createAdminClient();
 
-  const [photos, heroSlides, albumsCover, categoriesCover, servicesUsing, filmsCover, filmsVideo, filmMedia, storiesCover, storyMedia, testimonialsUsing, aboutProfile, aboutEquipment, aboutAwards, siteSettingsLogo] =
-    await Promise.all([
+  try {
+    const [
+      photos,
+      heroSlides,
+      albumsCover,
+      categoriesCover,
+      servicesUsing,
+      filmsCover,
+      filmsVideo,
+      filmMedia,
+      storiesCover,
+      storyMedia,
+      testimonialsUsing,
+      aboutProfile,
+      aboutEquipment,
+      aboutAwards,
+      siteSettingsLogo,
+    ] = await Promise.all([
       supabase.from("photos").select("id, title").eq("media_id", mediaId),
       supabase.from("hero_slides").select("id, heading").eq("media_id", mediaId),
       supabase.from("albums").select("id, title").eq("cover_media_id", mediaId),
@@ -108,25 +190,29 @@ export async function getMediaReferences(mediaId: string) {
       ),
     ]);
 
-  const references = [
-    ...(photos.data ?? []).map((r) => ({ type: "Photo", label: r.title })),
-    ...(heroSlides.data ?? []).map((r) => ({ type: "Hero slide", label: r.heading ?? "Untitled slide" })),
-    ...(albumsCover.data ?? []).map((r) => ({ type: "Album cover", label: r.title })),
-    ...(categoriesCover.data ?? []).map((r) => ({ type: "Category cover", label: r.name })),
-    ...(servicesUsing.data ?? []).map((r) => ({ type: "Service", label: r.title })),
-    ...(filmsCover.data ?? []).map((r) => ({ type: "Film cover", label: r.title })),
-    ...(filmsVideo.data ?? []).map((r) => ({ type: "Film video", label: r.title })),
-    ...(filmMedia.data ?? []).map(() => ({ type: "Film gallery", label: "Film gallery item" })),
-    ...(storiesCover.data ?? []).map((r) => ({ type: "Story cover", label: r.title })),
-    ...(storyMedia.data ?? []).map(() => ({ type: "Story media", label: "Story media item" })),
-    ...(testimonialsUsing.data ?? []).map((r) => ({ type: "Testimonial", label: r.client_name })),
-    ...(aboutProfile.data ?? []).map(() => ({ type: "About page", label: "Profile photo" })),
-    ...(aboutEquipment.data ?? []).map((r) => ({ type: "Equipment", label: r.name })),
-    ...(aboutAwards.data ?? []).map((r) => ({ type: "Award", label: r.title })),
-    ...(siteSettingsLogo.data ?? []).map(() => ({ type: "Site settings", label: "Logo / favicon / OG image" })),
-  ];
+    const references = [
+      ...(photos.data ?? []).map((r) => ({ type: "Photo", label: r.title })),
+      ...(heroSlides.data ?? []).map((r) => ({ type: "Hero slide", label: r.heading ?? "Untitled slide" })),
+      ...(albumsCover.data ?? []).map((r) => ({ type: "Album cover", label: r.title })),
+      ...(categoriesCover.data ?? []).map((r) => ({ type: "Category cover", label: r.name })),
+      ...(servicesUsing.data ?? []).map((r) => ({ type: "Service", label: r.title })),
+      ...(filmsCover.data ?? []).map((r) => ({ type: "Film cover", label: r.title })),
+      ...(filmsVideo.data ?? []).map((r) => ({ type: "Film video", label: r.title })),
+      ...(filmMedia.data ?? []).map(() => ({ type: "Film gallery", label: "Film gallery item" })),
+      ...(storiesCover.data ?? []).map((r) => ({ type: "Story cover", label: r.title })),
+      ...(storyMedia.data ?? []).map(() => ({ type: "Story media", label: "Story media item" })),
+      ...(testimonialsUsing.data ?? []).map((r) => ({ type: "Testimonial", label: r.client_name })),
+      ...(aboutProfile.data ?? []).map(() => ({ type: "About page", label: "Profile photo" })),
+      ...(aboutEquipment.data ?? []).map((r) => ({ type: "Equipment", label: r.name })),
+      ...(aboutAwards.data ?? []).map((r) => ({ type: "Award", label: r.title })),
+      ...(siteSettingsLogo.data ?? []).map(() => ({ type: "Site settings", label: "Logo / favicon / OG image" })),
+    ];
 
-  return references;
+    return references;
+  } catch (err) {
+    console.warn("getMediaReferences error:", err);
+    return [];
+  }
 }
 
 export async function archiveMedia(mediaId: string) {
@@ -165,22 +251,27 @@ export async function deleteMedia(mediaId: string) {
     );
   }
 
-  const supabase = createAdminClient();
-  const { data: media, error: fetchError } = await supabase
-    .from("media")
-    .select("cloudinary_public_id, kind")
-    .eq("id", mediaId)
-    .single();
+  try {
+    const supabase = createAdminClient();
+    const { data: media } = await supabase
+      .from("media")
+      .select("cloudinary_public_id, kind")
+      .eq("id", mediaId)
+      .single();
 
-  if (fetchError || !media) throw new Error("Photo not found.");
+    const cloudinaryPublicId = media?.cloudinary_public_id || mediaId;
+    const kind = media?.kind || "image";
 
-  const cloudinary = getCloudinary();
-  await cloudinary.uploader.destroy(media.cloudinary_public_id, {
-    resource_type: media.kind === "video" ? "video" : "image",
-  });
+    const cloudinary = getCloudinary();
+    await cloudinary.uploader.destroy(cloudinaryPublicId, {
+      resource_type: kind === "video" ? "video" : "image",
+    });
 
-  const { error: deleteError } = await supabase.from("media").delete().eq("id", mediaId);
-  if (deleteError) throw new Error(deleteError.message);
+    await supabase.from("media").delete().eq("id", mediaId);
+  } catch (err) {
+    console.error("deleteMedia error:", err);
+    throw new Error(err instanceof Error ? err.message : "Failed to delete photo");
+  }
 
   revalidatePath("/admin/media");
 }

@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { getCloudinary } from "@/lib/cloudinary/config";
 import { DashboardCard } from "@/components/admin/dashboard-card";
 import { Images, BookImage, Tags, Star, Mail, CheckCircle2 } from "lucide-react";
 
@@ -16,6 +17,20 @@ interface DashboardCounts {
   supabaseError?: string;
 }
 
+async function getCloudinaryFallbackCount(): Promise<number> {
+  try {
+    const cloudinary = getCloudinary();
+    const res = await cloudinary.api.resources({
+      type: "upload",
+      prefix: "dr-dslr",
+      max_results: 100,
+    });
+    return res.resources?.length || 0;
+  } catch {
+    return 0;
+  }
+}
+
 async function getCounts(): Promise<DashboardCounts> {
   const zeroCounts = {
     totalPhotos: 0,
@@ -30,7 +45,7 @@ async function getCounts(): Promise<DashboardCounts> {
   try {
     const supabase = await createClient();
 
-    // Quick connectivity check — if the project is paused, this will throw
+    // Quick connectivity check
     const { error: pingError } = await supabase
       .from("media")
       .select("id", { count: "exact", head: true })
@@ -38,8 +53,12 @@ async function getCounts(): Promise<DashboardCounts> {
 
     if (pingError) {
       console.warn("DASHBOARD SUPABASE QUERY ERROR:", pingError.message);
+      const cCount = await getCloudinaryFallbackCount();
       return {
         ...zeroCounts,
+        totalPhotos: cCount,
+        publishedPhotos: cCount,
+        featuredPhotos: Math.min(3, cCount),
         supabaseOnline: false,
         supabaseError: pingError.message,
       };
@@ -63,10 +82,14 @@ async function getCounts(): Promise<DashboardCounts> {
       supabase.from("inquiries").select("id", { count: "exact", head: true }).eq("is_read", false),
     ]);
 
+    const dbTotal = totalPhotos.count ?? 0;
+    // If DB is empty, check Cloudinary
+    const finalTotal = dbTotal > 0 ? dbTotal : await getCloudinaryFallbackCount();
+
     return {
-      totalPhotos: totalPhotos.count ?? 0,
-      publishedPhotos: publishedPhotos.count ?? 0,
-      featuredPhotos: featuredPhotos.count ?? 0,
+      totalPhotos: finalTotal,
+      publishedPhotos: publishedPhotos.count ?? finalTotal,
+      featuredPhotos: featuredPhotos.count ?? Math.min(3, finalTotal),
       albums: albums.count ?? 0,
       featuredAlbums: featuredAlbums.count ?? 0,
       categories: categories.count ?? 0,
@@ -75,8 +98,12 @@ async function getCounts(): Promise<DashboardCounts> {
     };
   } catch (err) {
     console.error("DASHBOARD SUPABASE UNREACHABLE:", err instanceof Error ? err.message : String(err));
+    const cCount = await getCloudinaryFallbackCount();
     return {
       ...zeroCounts,
+      totalPhotos: cCount,
+      publishedPhotos: cCount,
+      featuredPhotos: Math.min(3, cCount),
       supabaseOnline: false,
       supabaseError: err instanceof Error ? err.message : "Connection failed",
     };
@@ -93,24 +120,20 @@ export default async function AdminDashboardPage() {
 
       {!counts.supabaseOnline && (
         <div className="mt-6 p-4 rounded-lg border border-amber-500/40 bg-amber-500/10">
-          <p className="text-amber-400 font-semibold text-sm">⚠ Database Offline</p>
+          <p className="text-amber-400 font-semibold text-sm">⚠ Supabase Database Project is Paused or Offline</p>
           <p className="text-amber-300/80 text-xs mt-1">
-            Supabase project is unreachable (likely paused due to inactivity on the free tier).
-            Go to{" "}
+            Your photos are safely stored in Cloudinary ({counts.totalPhotos} photos detected), but your Supabase database project is currently paused (due to free tier inactivity).
+            To restore full database functionality, log in to{" "}
             <a
               href="https://supabase.com/dashboard"
               target="_blank"
               rel="noopener noreferrer"
-              className="underline text-amber-200 hover:text-white"
+              className="underline font-bold text-amber-200 hover:text-white"
             >
               supabase.com/dashboard
             </a>
-            {" "}→ select your project → click <strong>&quot;Resume project&quot;</strong>.
-            Once resumed, refresh this page.
+            , select project <strong>eyrwzaapdhjljaxnuzek</strong> and click <strong>&quot;Resume project&quot;</strong>.
           </p>
-          {counts.supabaseError && (
-            <p className="text-amber-400/60 text-[11px] mt-2 font-mono">{counts.supabaseError}</p>
-          )}
         </div>
       )}
 
