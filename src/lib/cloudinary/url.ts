@@ -6,8 +6,10 @@
  * instead of full-resolution originals (spec section 39).
  */
 
-const CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://eyrwzaapdhjljaxnuzek.supabase.co";
+const CLOUD_NAME =
+  process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ||
+  process.env.CLOUDINARY_CLOUD_NAME ||
+  "ohapodix";
 
 export interface CloudinaryImageOptions {
   width?: number;

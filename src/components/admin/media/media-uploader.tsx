@@ -99,7 +99,11 @@ export function MediaUploader({
     setItems((prev) => prev.filter((it) => it.id !== id));
   };
 
-  const uploadOne = async (item: QueueItem) => {
+  const uploadOne = async (item: QueueItem): Promise<boolean> => {
+    if (item.status === "done") {
+      return true; // Already uploaded
+    }
+
     updateItem(item.id, {
       status: "uploading",
       progress: 0,
@@ -141,9 +145,13 @@ export function MediaUploader({
       onUploaded?.(result.media);
       return true;
     } catch (err) {
+      let rawMsg = err instanceof Error ? err.message : "Upload failed.";
+      if (rawMsg.toLowerCase().includes("fetch failed")) {
+        rawMsg = "Connection failed. Please check network and retry.";
+      }
       updateItem(item.id, {
         status: "error",
-        error: err instanceof Error ? err.message : "Upload failed.",
+        error: rawMsg,
       });
       return false;
     }
@@ -157,12 +165,19 @@ export function MediaUploader({
     // Limit concurrency to 2 parallel streams for high-res 50 MB files
     const concurrency = 2;
     let index = 0;
+    let successCount = 0;
+    let failureCount = 0;
 
     async function worker() {
       while (index < pending.length) {
         const item = pending[index++];
         if (item) {
-          await uploadOne(item);
+          const ok = await uploadOne(item);
+          if (ok) {
+            successCount++;
+          } else {
+            failureCount++;
+          }
         }
       }
     }
@@ -170,20 +185,35 @@ export function MediaUploader({
     await Promise.all(Array.from({ length: concurrency }, worker));
     setIsBatchUploading(false);
 
-    const failures = items.filter((it) => it.status === "error").length;
-    if (failures === 0) {
-      toast.success("All photos uploaded successfully!");
-    } else {
-      toast.error(`${failures} upload(s) failed. You can click retry.`);
+    if (failureCount === 0 && successCount > 0) {
+      toast.success(
+        successCount === 1
+          ? "Photo uploaded successfully!"
+          : `All ${successCount} photos uploaded successfully!`
+      );
+    } else if (failureCount > 0 && successCount > 0) {
+      toast.error(
+        `${successCount} uploaded, but ${failureCount} failed. Click retry to re-upload.`
+      );
+    } else if (failureCount > 0 && successCount === 0) {
+      toast.error(
+        `Upload failed for ${failureCount} item${failureCount > 1 ? "s" : ""}. Please check error and retry.`
+      );
     }
   };
 
   // Batch stats
   const totalBatchBytes = items.reduce((sum, it) => sum + it.file.size, 0);
-  const totalLoadedBytes = items.reduce((sum, it) => sum + (it.status === "done" ? it.file.size : it.loadedBytes), 0);
+  const totalLoadedBytes = items.reduce(
+    (sum, it) => sum + (it.status === "done" ? it.file.size : it.loadedBytes),
+    0
+  );
   const totalBatchMb = (totalBatchBytes / (1024 * 1024)).toFixed(1);
   const totalLoadedMb = (totalLoadedBytes / (1024 * 1024)).toFixed(1);
-  const batchPercent = totalBatchBytes > 0 ? Math.min(100, Math.round((totalLoadedBytes / totalBatchBytes) * 100)) : 0;
+  const batchPercent =
+    totalBatchBytes > 0
+      ? Math.min(100, Math.round((totalLoadedBytes / totalBatchBytes) * 100))
+      : 0;
   const doneCount = items.filter((it) => it.status === "done").length;
 
   return (
@@ -213,7 +243,9 @@ export function MediaUploader({
         )}
       >
         <UploadCloud size={32} strokeWidth={1.5} className="text-cyan-glow animate-pulse" />
-        <p className="text-sm font-medium text-ivory">Drag & drop high-resolution photos here, or click to browse</p>
+        <p className="text-sm font-medium text-ivory">
+          Drag & drop high-resolution photos here, or click to browse
+        </p>
         <p className="text-xs text-stone">
           Maximum <span className="text-cyan-glow font-semibold">50 MB per photo</span> &bull; Unlimited batch total &bull; JPG, PNG, WebP, HEIC, TIFF
         </p>
@@ -339,7 +371,10 @@ export function MediaUploader({
                       )}
 
                       {item.status === "error" && (
-                        <span className="flex min-w-0 items-start gap-1 text-[11px] text-danger" title={item.error}>
+                        <span
+                          className="flex min-w-0 items-start gap-1 text-[11px] text-danger"
+                          title={item.error}
+                        >
                           <AlertCircle size={12} className="mt-0.5 shrink-0" />
                           <span className="truncate">{item.error || "Upload failed."}</span>
                         </span>

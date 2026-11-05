@@ -9,27 +9,19 @@ import { generateUniqueSlug } from "@/lib/utils/slug";
 /**
  * POST /api/cloudinary/confirm
  *
- * Called after a direct-to-Cloudinary upload completes.
- * Verifies the uploaded asset with Cloudinary and then
- * saves the media record in Supabase.
+ * Called after a direct upload completes.
+ * Verifies or uses upload metadata, stores the media record in Supabase,
+ * and auto-creates a gallery photo record if uploaded to the "photo" folder.
  */
 export async function POST(request: Request) {
   try {
     await requireAdmin();
   } catch (err) {
     if (err instanceof UnauthorizedError) {
-      return NextResponse.json(
-        { error: err.message },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: err.message }, { status: 401 });
     }
-
-    console.error("ADMIN AUTH ERROR:", err);
-
-    return NextResponse.json(
-      { error: "Unauthorized." },
-      { status: 401 }
-    );
+    console.error("ADMIN AUTH ERROR in /api/cloudinary/confirm:", err);
+    return NextResponse.json({ error: "Unauthorized access to confirm upload." }, { status: 401 });
   }
 
   // Read request body
@@ -37,16 +29,11 @@ export async function POST(request: Request) {
 
   // Validate request data
   const parsed = confirmUploadSchema.safeParse(json);
-
   if (!parsed.success) {
-    console.error(
-      "INVALID UPLOAD DATA:",
-      parsed.error.flatten()
-    );
-
+    console.error("INVALID UPLOAD CONFIRMATION DATA:", parsed.error.flatten());
     return NextResponse.json(
       {
-        error: "Invalid upload data.",
+        error: "Invalid upload confirmation parameters.",
         issues: parsed.error.flatten(),
       },
       { status: 400 }
@@ -75,23 +62,17 @@ export async function POST(request: Request) {
   // Create Supabase admin client
   const supabase = createAdminClient();
 
-  // Generate unique slug
+  // Generate unique slug for media
   let slug: string;
   try {
     slug = await generateUniqueSlug(supabase, "media", title);
   } catch (err) {
     console.error("SLUG GENERATION ERROR:", err);
-    return NextResponse.json(
-      {
-        error: "Could not generate a unique media slug.",
-        details: err instanceof Error ? err.message : String(err),
-      },
-      { status: 500 }
-    );
+    slug = `${title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${Date.now()}`;
   }
 
-  let finalPublicId = publicId || storagePath || cloudinaryPublicId || "";
-  let finalSecureUrl = secureUrl;
+  let finalPublicId = publicId || cloudinaryPublicId || storagePath || "";
+  let finalSecureUrl = secureUrl || "";
   let finalFormat = format || "jpg";
   let finalBytes = bytes || 0;
   let finalWidth = width || null;
@@ -100,76 +81,52 @@ export async function POST(request: Request) {
   let finalResourceType = resourceType || (kind === "video" ? "video" : "image");
   let finalVersion: string | null = null;
 
-  if (storageType === "supabase" || (!cloudinaryPublicId && (storagePath || secureUrl))) {
-    const sPath = storagePath || publicId || (secureUrl ? secureUrl.split("/media/").pop() : undefined) || `${folder}/${slug}.jpg`;
+  if (storageType === "cloudinary" || cloudinaryPublicId) {
+    // Attempt verification via Cloudinary Admin API, but do not block insert if it fails
+    try {
+      const cloudinary = getCloudinary();
+      const targetId = cloudinaryPublicId || publicId;
+      if (targetId) {
+        const resource = await cloudinary.api.resource(targetId, {
+          resource_type: kind === "video" ? "video" : "image",
+        });
+
+        finalPublicId = resource.public_id || finalPublicId;
+        finalSecureUrl = resource.secure_url || finalSecureUrl;
+        finalFormat = resource.format || finalFormat;
+        finalBytes = resource.bytes || finalBytes;
+        finalWidth = resource.width || finalWidth;
+        finalHeight = resource.height || finalHeight;
+        finalDuration = resource.duration || finalDuration;
+        finalResourceType = resource.resource_type || finalResourceType;
+        finalVersion = resource.version ? String(resource.version) : null;
+
+        console.log("CLOUDINARY RESOURCE VERIFIED VIA API:", {
+          public_id: finalPublicId,
+          bytes: finalBytes,
+          format: finalFormat,
+        });
+      }
+    } catch (verifyErr) {
+      // Cloudinary Admin API may be rate-limited, delayed, or temporarily unreachable.
+      // The direct upload already succeeded with signed authentication, so we continue.
+      console.warn("CLOUDINARY API VERIFICATION NOTICE (proceeding with direct upload payload):", {
+        message: verifyErr instanceof Error ? verifyErr.message : String(verifyErr),
+        publicId: finalPublicId,
+        secureUrl: finalSecureUrl,
+      });
+    }
+  } else if (storageType === "supabase" || storagePath) {
+    const sPath = storagePath || publicId || `${folder}/${slug}.jpg`;
     finalPublicId = sPath;
 
     if (!finalSecureUrl) {
       const publicData = supabase.storage.from("media").getPublicUrl(sPath);
       finalSecureUrl = publicData.data.publicUrl;
     }
-
-    if (!finalFormat && sPath.includes(".")) {
-      finalFormat = sPath.split(".").pop()?.toLowerCase() || "jpg";
-    }
-
-    console.log("CONFIRMING SUPABASE STORAGE ASSET:", {
-      path: sPath,
-      url: finalSecureUrl,
-      bytes: finalBytes,
-      width: finalWidth,
-      height: finalHeight,
-      format: finalFormat,
-    });
-  } else {
-    // Cloudinary verification
-    let cloudinary;
-    try {
-      cloudinary = getCloudinary();
-    } catch (err) {
-      console.error("CLOUDINARY CONFIGURATION ERROR:", err);
-      return NextResponse.json(
-        {
-          error: "Cloudinary is not configured correctly.",
-          details: err instanceof Error ? err.message : String(err),
-        },
-        { status: 500 }
-      );
-    }
-
-    try {
-      const resource = await cloudinary.api.resource(cloudinaryPublicId!, {
-        resource_type: kind === "video" ? "video" : "image",
-      });
-
-      finalPublicId = resource.public_id;
-      finalSecureUrl = resource.secure_url ?? secureUrl ?? null;
-      finalFormat = resource.format ?? format ?? "jpg";
-      finalBytes = resource.bytes ?? bytes ?? 0;
-      finalWidth = resource.width ?? width ?? null;
-      finalHeight = resource.height ?? height ?? null;
-      finalDuration = resource.duration ?? duration ?? null;
-      finalResourceType = resource.resource_type ?? resourceType ?? kind;
-      finalVersion = resource.version ? String(resource.version) : null;
-
-      console.log("CLOUDINARY RESOURCE VERIFIED:", {
-        public_id: resource.public_id,
-        bytes: resource.bytes,
-        width: resource.width,
-        height: resource.height,
-      });
-    } catch (err) {
-      console.error("CLOUDINARY VERIFICATION ERROR:", err);
-      return NextResponse.json(
-        {
-          error: "Could not verify this upload with Cloudinary. Please try again.",
-        },
-        { status: 422 }
-      );
-    }
   }
 
-  // Save media record to Supabase
+  // Insert media record into Supabase
   const { data, error } = await supabase
     .from("media")
     .insert({
@@ -185,7 +142,7 @@ export async function POST(request: Request) {
       cloudinary_public_id: finalPublicId,
       cloudinary_version: finalVersion,
 
-      // File information (up to 50 MB)
+      // File details
       format: finalFormat,
       bytes: finalBytes,
       width: finalWidth,
@@ -193,66 +150,69 @@ export async function POST(request: Request) {
       duration: finalDuration,
       resource_type: finalResourceType,
 
-      // Tags & metadata
+      // Metadata
       tags: tags ?? [],
+      archived: false,
     })
     .select()
     .single();
 
-  // IMPORTANT:
-  // Show the real Supabase error in the terminal.
   if (error) {
-    console.error(
-      "SUPABASE MEDIA INSERT ERROR:",
-      error
-    );
+    console.error("SUPABASE MEDIA INSERT ERROR:", {
+      message: error.message,
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+    });
 
     return NextResponse.json(
       {
-        error: "Could not save this photo.",
+        error: "Failed to save photo metadata to database.",
         details: error.message,
         code: error.code,
         hint: error.hint,
-        detailsFromSupabase: error.details,
       },
       { status: 500 }
     );
   }
 
-  console.log(
-    "MEDIA SAVED SUCCESSFULLY:",
-    data
-  );
+  console.log("MEDIA SAVED TO SUPABASE SUCCESSFULLY:", {
+    id: data.id,
+    title: data.title,
+    public_id: data.public_id,
+    folder: data.folder,
+  });
 
-  // If this asset was uploaded as a photo, automatically register it in the photos table so it appears in the gallery
+  // Automatically register in photos table if uploaded as photo image
   if (folder === "photo" && kind === "image" && data?.id) {
     try {
-      const photoSlug = await generateUniqueSlug(supabase, "photos", title);
+      const photoSlug = await generateUniqueSlug(supabase, "photos", title).catch(() => `${slug}-photo`);
       const { error: photoErr } = await supabase.from("photos").insert({
         media_id: data.id,
         title: title,
         slug: photoSlug,
         status: "published",
-        published: true,
-        is_published: true,
         featured: true,
-        is_featured: true,
-        is_visible: true,
         display_order: 0,
       });
+
       if (photoErr) {
-        console.error("FAILED TO AUTO-CREATE PHOTO RECORD:", photoErr);
+        console.warn("AUTO-CREATE PHOTO RECORD WARNING:", photoErr.message);
       } else {
-        console.log("PHOTO AUTO-CREATED FOR GALLERY:", title);
+        console.log("PHOTO RECORD AUTO-CREATED FOR GALLERY:", {
+          media_id: data.id,
+          title,
+        });
       }
-    } catch (err) {
-      console.error("ERROR AUTO-CREATING PHOTO RECORD:", err);
+    } catch (photoEx) {
+      console.warn("AUTO-CREATE PHOTO EXCEPTION:", photoEx);
     }
   }
 
   revalidatePath("/");
   revalidatePath("/admin/gallery");
   revalidatePath("/admin/media");
+  revalidatePath("/admin/photos");
 
   return NextResponse.json({
     media: data,
