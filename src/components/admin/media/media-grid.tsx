@@ -95,9 +95,9 @@ export function MediaGrid({ refreshKey }: { refreshKey?: number }) {
       </div>
 
       {loadError && (
-        <div className="p-4 rounded-lg border border-amber-500/40 bg-amber-500/10">
-          <p className="text-amber-400 font-semibold text-sm">⚠ Cannot load media</p>
-          <p className="text-amber-300/80 text-xs mt-1">
+        <div className="p-4 rounded-lg border border-red-500/70 bg-red-500/15">
+          <p className="text-red-400 font-semibold text-sm">⚠ Cannot load media</p>
+          <p className="text-red-100/90 text-xs mt-1">
             {loadError.toLowerCase().includes("fetch") || loadError.toLowerCase().includes("network")
               ? "Database is offline. Go to supabase.com/dashboard and resume your project, then refresh."
               : loadError}

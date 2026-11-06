@@ -119,16 +119,16 @@ export default async function AdminDashboardPage() {
       <p className="text-stone text-sm mt-1">A live snapshot of the studio, pulled straight from the database.</p>
 
       {!counts.supabaseOnline && (
-        <div className="mt-6 p-4 rounded-lg border border-amber-500/40 bg-amber-500/10">
-          <p className="text-amber-400 font-semibold text-sm">⚠ Supabase Database Project is Paused or Offline</p>
-          <p className="text-amber-300/80 text-xs mt-1">
+        <div className="mt-6 p-4 rounded-lg border border-red-500/70 bg-red-500/15">
+          <p className="text-red-400 font-semibold text-sm">⚠ Supabase Database Project is Paused or Offline</p>
+          <p className="text-red-100/90 text-xs mt-1">
             Your photos are safely stored in Cloudinary ({counts.totalPhotos} photos detected), but your Supabase database project is currently paused (due to free tier inactivity).
             To restore full database functionality, log in to{" "}
             <a
               href="https://supabase.com/dashboard"
               target="_blank"
               rel="noopener noreferrer"
-              className="underline font-bold text-amber-200 hover:text-white"
+              className="underline font-bold text-red-200 hover:text-white"
             >
               supabase.com/dashboard
             </a>
