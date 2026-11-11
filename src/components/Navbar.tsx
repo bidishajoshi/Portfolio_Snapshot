@@ -45,7 +45,8 @@ export default function Navbar() {
             </span>
             <span className="absolute -bottom-1 left-0 w-0 h-[1.5px] bg-gradient-to-r from-yellow via-gold to-rose-600 transition-all duration-300 group-hover:w-full opacity-0 group-hover:opacity-100" />
           </Link>
-          <div className="hidden sm:block">
+          {/* Desktop only next to brand logo — avoids double shutter on tablet resize */}
+          <div className="hidden md:block">
             <DslrCameraControl />
           </div>
         </div>
@@ -75,12 +76,12 @@ export default function Navbar() {
           </div>
         </nav>
 
-        {/* Mobile Toggle & Shutter Button */}
-        <div className="flex items-center gap-3 md:hidden z-50">
+        {/* Mobile Controls & Shutter Button */}
+        <div className="flex items-center gap-2 sm:gap-3 md:hidden z-50">
           <ThemeToggle />
           <DslrCameraControl />
           <button
-            className="text-ivory p-2 hover:text-yellow transition-colors"
+            className="text-ivory p-2 hover:text-yellow transition-colors cursor-pointer"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label="Toggle Menu"
           >
@@ -111,7 +112,7 @@ export default function Navbar() {
                 </li>
               ))}
               <li className="mt-4">
-                 <Link
+                <Link
                   href="#contact"
                   onClick={() => setMobileMenuOpen(false)}
                   className="px-6 py-3 bg-gold text-ink rounded text-base font-semibold"
