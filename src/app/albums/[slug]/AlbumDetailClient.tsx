@@ -92,7 +92,7 @@ export default function AlbumDetailClient({ album, mediaItems }: AlbumDetailClie
           </div>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {itemsToShow.map((item, idx) => {
+            {itemsToShow.map((item) => {
               if (item.kind === "video") {
                 return (
                   <div

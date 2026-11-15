@@ -66,7 +66,7 @@ export default function Testimonials({
     setIsSubmitting(true);
 
     try {
-      const res = await submitPublicReview({
+      await submitPublicReview({
         name: formName,
         email: formEmail || `${formName.toLowerCase().replace(/\s+/g, ".")}@client.review`,
         rating: formRating,

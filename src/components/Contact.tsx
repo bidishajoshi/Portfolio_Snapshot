@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { contact } from "@/data/site";
-import { Send, CheckCircle2, MessageSquare, Loader2, Sparkles } from "lucide-react";
+import { Send, CheckCircle2, Loader2, Sparkles } from "lucide-react";
 import { createInquiry } from "@/lib/actions/inquiries";
 import WhatsappIcon from "@/components/icons/WhatsappIcon";
 

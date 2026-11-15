@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Clock, MapPin, ArrowRight, Eye, Calendar, Tag } from "lucide-react";
+import { MapPin, ArrowRight, Eye, Calendar } from "lucide-react";
 import SafeImage from "@/components/ui/SafeImage";
 import Link from "next/link";
 import PhotoViewerModal, { PhotoDetailItem } from "@/components/ui/PhotoViewerModal";

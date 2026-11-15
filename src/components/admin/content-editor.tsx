@@ -111,7 +111,7 @@ function ContentForm({ content, record, categories = [], onClose, onSaved, isPen
   const [eventType, setEventType] = useState(record?.eventType ?? "");
   const [media, setMedia] = useState<Media | null>(null);
   const [categoryId, setCategoryId] = useState(record?.categoryId ?? "");
-  const [altText, setAltText] = useState(record?.altText ?? "");
+  const altText = record?.altText ?? "";
   const [published, setPublished] = useState(record?.published ?? true);
   const [featured, setFeatured] = useState(record?.featured ?? (content === "photo" ? true : false));
   const [picker, setPicker] = useState(false);
@@ -158,7 +158,7 @@ function ContentForm({ content, record, categories = [], onClose, onSaved, isPen
     } catch (error) { toast.error(error instanceof Error ? error.message : "Could not save."); }
   });
 
-  const mediaFolder = content === "film" ? "film" : content === "story" ? "story" : content === "testimonial" ? "testimonial" : "photo";
+
 
   return (
     <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/70 px-4" onClick={onClose}>

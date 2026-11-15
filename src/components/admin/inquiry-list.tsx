@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Check, Trash2, MessageSquare, ExternalLink } from "lucide-react";
+import { Check, Trash2, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { deleteInquiry, setInquiryRead, setInquiryStatus } from "@/lib/actions/inquiries";
 import WhatsappIcon from "@/components/icons/WhatsappIcon";

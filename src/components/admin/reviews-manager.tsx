@@ -4,14 +4,12 @@ import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import {
   CheckCircle2,
-  XCircle,
   Trash2,
   Star,
   Plus,
   Mail,
   Calendar,
   Pencil,
-  Eye,
   EyeOff,
   Clock,
 } from "lucide-react";
@@ -61,7 +59,7 @@ export function ReviewsManager({
         toast.success(
           nextStatus ? "Review published to public site." : "Review hidden from public site."
         );
-      } catch (err) {
+      } catch {
         toast.error("Failed to update status.");
         setItems(initialTestimonials);
       }
@@ -77,7 +75,7 @@ export function ReviewsManager({
       try {
         await deleteTestimonial(id);
         toast.success("Review deleted.");
-      } catch (err) {
+      } catch {
         toast.error("Failed to delete review.");
         setItems(initialTestimonials);
       }
