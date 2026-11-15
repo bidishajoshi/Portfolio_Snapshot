@@ -60,8 +60,9 @@ export function Lightbox({
         >
           {/* Close button */}
           <button
+            type="button"
             onClick={onClose}
-            className="absolute top-4 right-4 z-10 p-3 text-white/70 hover:text-white transition-colors"
+            className="absolute top-4 right-4 z-10 p-3 text-white/70 hover:text-white hover:bg-white/10 active:bg-white/20 rounded-full transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-gold/70"
             aria-label="Close lightbox"
           >
             <X size={28} />
@@ -70,11 +71,12 @@ export function Lightbox({
           {/* Previous */}
           {images.length > 1 && (
             <button
+              type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 onPrev();
               }}
-              className="absolute left-4 top-1/2 -translate-y-1/2 z-10 p-3 text-white/60 hover:text-white transition-colors"
+              className="absolute left-4 top-1/2 -translate-y-1/2 z-10 p-3 text-white/60 hover:text-white hover:bg-white/10 active:bg-white/20 rounded-full transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-gold/70"
               aria-label="Previous image"
             >
               <ChevronLeft size={36} />
@@ -119,11 +121,12 @@ export function Lightbox({
           {/* Next */}
           {images.length > 1 && (
             <button
+              type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 onNext();
               }}
-              className="absolute right-4 top-1/2 -translate-y-1/2 z-10 p-3 text-white/60 hover:text-white transition-colors"
+              className="absolute right-4 top-1/2 -translate-y-1/2 z-10 p-3 text-white/60 hover:text-white hover:bg-white/10 active:bg-white/20 rounded-full transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-gold/70"
               aria-label="Next image"
             >
               <ChevronRight size={36} />

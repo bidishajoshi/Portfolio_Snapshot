@@ -52,13 +52,16 @@ export function Gallery() {
         />
 
         {/* Filter Bar */}
-        <div className="flex items-center justify-center flex-wrap gap-2 mb-12">
+        <div className="flex items-center justify-center flex-wrap gap-2 mb-12" role="tablist" aria-label="Photo category filters">
           {photoCategories.map((cat) => (
             <button
               key={cat}
+              type="button"
+              role="tab"
+              aria-selected={activeCategory === cat}
               onClick={() => setActiveCategory(cat)}
               className={cn(
-                "px-4 py-2 text-xs md:text-sm font-medium transition-all duration-300 rounded-sm",
+                "px-4 py-2 text-xs md:text-sm font-medium transition-all duration-300 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70",
                 activeCategory === cat
                   ? "bg-gold text-ink"
                   : "bg-surface text-stone border border-border/50 hover:text-ivory hover:border-stone-dim"
@@ -80,8 +83,17 @@ export function Gallery() {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.4 }}
-                className="group relative cursor-pointer overflow-hidden rounded-sm bg-surface border border-border/40"
+                className="group relative cursor-pointer overflow-hidden rounded-sm bg-surface border border-border/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70"
                 onClick={() => openLightbox(idx)}
+                role="button"
+                tabIndex={0}
+                aria-label={`View photo: ${photo.title}`}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    openLightbox(idx);
+                  }
+                }}
               >
                 {/* Image */}
                 <div
