@@ -37,7 +37,7 @@ export default function Gallery({
     setVisibleCount(12);
   }
 
-  const displayedPhotos = livePhotos ?? [];
+  const displayedPhotos = useMemo(() => livePhotos ?? [], [livePhotos]);
   const displayedCategories = useMemo(() => {
     const photoCategories = Array.from(new Set(displayedPhotos.map((p) => p.category).filter(Boolean)));
     const combinedCategories = Array.from(new Set([...(liveCategories ?? []), ...photoCategories]));

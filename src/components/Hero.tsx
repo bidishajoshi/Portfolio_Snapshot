@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Aperture } from "lucide-react";
 import { brand } from "@/data/site";
@@ -27,12 +27,15 @@ export default function Hero({
 }: HeroProps) {
   const displayedBrand = brandOverride ?? brand;
 
-  const images =
-    backgroundImages && backgroundImages.length > 0
-      ? backgroundImages
-      : backgroundImage
-      ? [backgroundImage]
-      : [DEFAULT_HERO_IMAGE];
+  const images = useMemo(() => {
+    if (backgroundImages && backgroundImages.length > 0) {
+      return backgroundImages;
+    }
+    if (backgroundImage) {
+      return [backgroundImage];
+    }
+    return [DEFAULT_HERO_IMAGE];
+  }, [backgroundImages, backgroundImage]);
 
   const [[currentIndex, direction], setPage] = useState<[number, number]>([0, 0]);
   const [touchStart, setTouchStart] = useState<number | null>(null);
