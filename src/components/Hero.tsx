@@ -213,6 +213,7 @@ export default function Hero({
               }}
               className="absolute inset-0 w-full h-full will-change-transform"
             >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={currentOptimizedSrc || DEFAULT_HERO_IMAGE}
                 srcSet={currentSrcSet || undefined}

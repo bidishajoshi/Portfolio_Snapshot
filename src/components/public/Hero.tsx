@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { ChevronDown, Aperture } from "lucide-react";
 import { brand } from "@/data/site";
+import SafeImage from "@/components/ui/SafeImage";
 
 export function Hero() {
   const scrollTo = (id: string) => {
@@ -21,12 +22,12 @@ export function Hero() {
         animate={{ scale: 1 }}
         transition={{ duration: 1.5, ease: "easeOut" }}
       >
-        <img
+        <SafeImage
           src="/images/placeholder/hero.jpg"
           alt="Photographer overlooking Himalayan mountains at golden hour"
           className="w-full h-full object-cover"
-          loading="eager"
-          fetchPriority="high"
+          priority={true}
+          variant="large"
         />
       </motion.div>
 

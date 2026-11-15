@@ -32,11 +32,12 @@ export default function SafeImage({
   variant = "medium",
   fallbackSrc = DEFAULT_FALLBACK,
   className = "",
-  aspectRatio: _aspectRatio,
+  aspectRatio,
   priority = false,
   loading,
   onLoad,
   onError,
+  style,
   ...props
 }: SafeImageProps) {
   const activeFallback =
@@ -60,8 +61,13 @@ export default function SafeImage({
       : undefined;
 
   return (
+    // eslint-disable-next-line @next/next/no-img-element
     <img
       {...props}
+      style={{
+        ...(aspectRatio ? { aspectRatio } : {}),
+        ...style,
+      }}
       src={finalSrc}
       srcSet={srcSet || undefined}
       sizes={srcSet ? "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" : undefined}

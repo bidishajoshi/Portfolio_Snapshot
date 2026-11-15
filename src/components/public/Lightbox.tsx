@@ -3,6 +3,7 @@
 import { useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
+import SafeImage from "@/components/ui/SafeImage";
 
 interface LightboxProps {
   images: { src: string; title?: string; caption?: string }[];
@@ -90,11 +91,12 @@ export function Lightbox({
             className="flex flex-col items-center"
             onClick={(e) => e.stopPropagation()}
           >
-            <img
+            <SafeImage
               src={current.src}
               alt={current.title || `Image ${currentIndex + 1}`}
               className="max-h-[85vh] max-w-[90vw] object-contain rounded"
               draggable={false}
+              variant="large"
             />
             {(current.title || current.caption) && (
               <div className="mt-4 text-center max-w-lg">

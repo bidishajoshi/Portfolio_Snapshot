@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { SectionHeading } from "./SectionHeading";
 import { AnimatedCounter } from "./AnimatedCounter";
 import { aboutContent, stats } from "@/data/site";
+import SafeImage from "@/components/ui/SafeImage";
 
 export function About() {
   return (
@@ -29,11 +30,12 @@ export function About() {
               <div className="absolute -inset-3 border border-gold/20 rounded-sm translate-x-2 translate-y-2 pointer-events-none" />
               
               <div className="relative aspect-[3/4] overflow-hidden rounded-sm bg-surface">
-                <img
+                <SafeImage
                   src={aboutContent.portrait}
                   alt={aboutContent.subtitle}
                   className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700"
                   loading="lazy"
+                  variant="medium"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-ink/80 via-transparent to-transparent opacity-60" />
               </div>

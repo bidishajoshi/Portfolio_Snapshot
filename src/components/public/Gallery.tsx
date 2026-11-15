@@ -7,6 +7,7 @@ import { SectionHeading } from "./SectionHeading";
 import { Lightbox } from "./Lightbox";
 import { photos, photoCategories } from "@/data/photos";
 import { cn } from "@/lib/utils/cn";
+import SafeImage from "@/components/ui/SafeImage";
 
 export function Gallery() {
   const [activeCategory, setActiveCategory] = useState<string>("All");
@@ -93,11 +94,12 @@ export function Gallery() {
                       : "aspect-[4/3]"
                   )}
                 >
-                  <img
+                  <SafeImage
                     src={photo.image}
                     alt={photo.title}
                     className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                     loading="lazy"
+                    variant="medium"
                   />
                 </div>
 
