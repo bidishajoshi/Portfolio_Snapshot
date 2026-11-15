@@ -2,80 +2,121 @@
 
 Photography portfolio + private CMS for **Himal Shrestha** -- *"Capturing Moments Beyond Vision"*.
 
-A single-admin, code-free content system: log in, upload photos, name them, organize them into albums/films/stories, publish, and the public site updates immediately -- no redeploy, no touching the database or Cloudinary directly.
+A unified, code-free content management system and cinematic portfolio: upload high-resolution photos and video reels, curate albums and visual stories, manage inquiries and client reviews, and publish changes instantly to [himalstha.info.np](https://himalstha.info.np).
 
 ---
 
-## 1. Status
+## 1. System Overview & Completed Features
 
-This project is being built in phases. **What's real and working right now:**
+- **Public Cinematic Showcase**:
+  - Full-screen responsive hero slider with Cloudinary preloaded image presets and custom motion animations.
+  - Interactive DSLR shutter control simulation with aperture, shutter speed, and ISO controls.
+  - Curated masonry gallery with category filters, keyboard navigation, and full-screen accessible modal lightbox.
+  - Dedicated dynamic detail pages for Albums (`/albums/[slug]`) and Visual Stories (`/stories/[slug]`).
+  - Client inquiries and review submission forms with anti-spam honeypot protection.
 
-- Full Postgres schema + Row Level Security, migrated and verified against a live Postgres instance
-- Supabase Auth (single admin), protected `/admin` routes via `src/proxy.ts`
-- Cloudinary signed direct-upload flow, with server-side verification of every upload before it's saved (the app never trusts client-reported file metadata)
-- Media Library: drag-and-drop multi-upload, human-readable renaming, auto-slugging, search/filter, safe delete (checks references first) and archive
-- Reusable Media Picker used anywhere the CMS needs "Add Photos"
-- Categories: full CRUD, drag-to-reorder, publish/hide, safe delete
-- Admin dashboard with real (not fake) counts from the database
-
-**Not built yet:** Albums, Homepage curation, Films, Stories, Services, Testimonials, Contact form, the public-facing cinematic site (hero slider, galleries, lightbox), SEO/structured data, analytics wiring. These follow the same patterns already established (Server Actions + Zod validation + RLS + Media Picker), so they're mechanical to add -- see `supabase/migrations/0001_init_schema.sql` for every table already in place waiting for a CMS screen.
-
-TypeScript, ESLint, and `next build` all pass clean as of this export.
+- **Admin CMS (`/admin`)**:
+  - Role-protected administrative dashboard backed by Supabase Auth with Row Level Security (RLS).
+  - Media Library with drag-and-drop batch upload, real-time progress indicators, slug generation, metadata editing, and safe deletion.
+  - Direct Cloudinary upload with server-side HMAC-SHA1 signing and two-step verification (`/api/cloudinary/sign` & `/api/cloudinary/confirm`).
+  - Full management of Albums, Visual Stories, Films, Categories, Client Inquiries, and Testimonials.
+  - Real-time system health checks and database status diagnostics.
 
 ---
 
-## 2. Stack
+## 2. Technology Stack
 
-Next.js (App Router, Server Components/Actions) - TypeScript - Tailwind CSS - Supabase (Postgres + Auth) - Cloudinary - GSAP + Framer Motion - Zod - Vercel
+- **Framework**: Next.js 16 (React 19 App Router)
+- **Styling**: Tailwind CSS v4, Lucide Icons, Framer Motion
+- **Database & Auth**: Supabase (PostgreSQL with Row Level Security & Auth)
+- **Media Asset Storage**: Cloudinary (Direct unsigned/signed uploads, dynamic transformations, responsive srcset)
+- **Validation**: Zod schema validation
+- **Testing**: Node.js native test runner (`node --test`), TypeScript (`tsc --noEmit`), ESLint
+- **Deployment**: Vercel (Edge & Serverless safe)
 
-## 3. Local setup
+---
+
+## 3. Getting Started
+
+### Local Development Setup
 
 ```bash
+# Install dependencies
 npm install
-cp .env.example .env.local   # fill in the values below
+
+# Copy environment variables
+cp .env.example .env.local
+
+# Run the local development server
 npm run dev
 ```
 
-### Supabase
+Visit `http://localhost:3000` to view the public site or `http://localhost:3000/admin` to access the CMS.
 
-1. Create a project at [supabase.com](https://supabase.com).
-2. In the SQL Editor, run the migrations in order from `supabase/migrations/`:
-   - `0001_init_schema.sql`
-   - `0002_rls_policies.sql`
-   - `0003_seed_homepage_sections.sql`
-3. Copy **Project Settings -> API** into `.env.local`:
-   - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-   - `SUPABASE_SERVICE_ROLE_KEY` (keep this secret -- never expose it to the browser)
-4. Create the one admin user: **Authentication -> Users -> Add user** (email + password). Then, in the SQL Editor:
-   ```sql
-   insert into admin_profile (id, display_name)
-   values ('<the new user''s UUID from the Users table>', 'Himal Shrestha');
-   ```
-   Only a user with a matching row in `admin_profile` can sign in to `/admin` or write any data -- everyone else is read-only, and only for published content (see `0002_rls_policies.sql`).
+---
 
-### Cloudinary
+## 4. Environment Configuration
 
-1. Create an account at [cloudinary.com](https://cloudinary.com).
-2. From the Dashboard, copy your **Cloud name**, **API key**, and **API secret** into `.env.local` as `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`, and set `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` to the same cloud name.
-3. Nothing else to configure -- uploads are signed server-side per-request (`/api/cloudinary/sign`), so no upload preset is needed.
+Ensure the following environment variables are configured in `.env.local` (and in Vercel project settings):
 
-## 4. Deployment
+```env
+# Supabase Configuration
+NEXT_PUBLIC_SUPABASE_URL="https://your-project.supabase.co"
+NEXT_PUBLIC_SUPABASE_ANON_KEY="your-anon-key"
+SUPABASE_SERVICE_ROLE_KEY="your-service-role-key"
 
-Push to GitHub, import into Vercel, add the same environment variables from `.env.local` in the Vercel project settings, deploy. No filesystem persistence is used anywhere -- all media lives in Cloudinary, all data in Supabase, so this is fully serverless-safe.
+# Cloudinary Configuration
+NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME="your-cloud-name"
+CLOUDINARY_CLOUD_NAME="your-cloud-name"
+CLOUDINARY_API_KEY="your-api-key"
+CLOUDINARY_API_SECRET="your-api-secret"
 
-## 5. Using the CMS
+# Admin & Cron Security
+CRON_SECRET="your-secure-cron-secret"
+```
 
-Sign in at `/admin/login`. From there:
+> **Security Note**: `SUPABASE_SERVICE_ROLE_KEY` and `CLOUDINARY_API_SECRET` are strictly server-only credentials guarded with the `server-only` package. They are never exposed to browser bundles.
 
-- **Media** -- drag in as many photos as you like, name them, and they're immediately reusable everywhere else in the CMS.
-- **Categories** -- create the categories you want (Wedding, Portrait, Night, etc.), drag to reorder.
-- More sections (Albums, Homepage, Films, Stories, ...) will appear here as they're built.
+---
 
-The admin never sees a Cloudinary ID, a database UUID, or a URL -- only names and thumbnails.
+## 5. Testing & Quality Assurance
 
-## 6. Security notes
+The project includes an automated test suite executed via the native Node.js test runner:
 
-- `SUPABASE_SERVICE_ROLE_KEY` and `CLOUDINARY_API_SECRET` are read only in server-only files (`src/lib/supabase/admin.ts`, `src/lib/cloudinary/config.ts`, both guarded with the `server-only` package) and are never sent to the browser.
-- Every Server Action that mutates data calls `requireAdmin()` first (`src/lib/supabase/auth.ts`), independent of the proxy/middleware check -- so even if a route were misconfigured, the database itself still enforces who can write.
-- Row Level Security is enabled on every table; public (anon) reads are restricted to published/enabled content only. Draft and hidden content never leaves the server to an unauthenticated visitor.
+```bash
+# Run unit and integration tests (26 test cases)
+npm test
+
+# Run TypeScript type verification
+npx tsc --noEmit
+
+# Run ESLint checks
+npm run lint
+
+# Build production bundle
+npm run build
+```
+
+### Test Suite Structure
+
+- `tests/unit/cloudinary-url.test.ts`: URL building, transformations, and responsive `srcset` generation.
+- `tests/unit/media-validation.test.ts`: File type safety, size constraints, and payload schema validations.
+- `tests/unit/site-config.test.ts`: Site branding, navigation, social links, and Tailwind class merging utilities.
+- `tests/unit/slug.test.ts`: Human-readable slug generation and character sanitization.
+- `tests/integration/keep-alive.test.ts`: Automated Cloudinary connectivity and resource listing.
+- `tests/integration/upload-flow.test.ts`: Direct upload signing verification and database media mapping.
+
+---
+
+## 6. Supabase Keep-Alive & Cloudinary Architecture
+
+To ensure the free-tier Supabase database remains active without pausing due to inactivity:
+- An automated keep-alive route is configured at `/api/cron/keep-alive`.
+- The route executes a lightweight ping against the database and Cloudinary storage.
+- If the database ever pauses during prolonged downtime, visit [supabase.com/dashboard](https://supabase.com/dashboard) and click **Resume project** to restore real-time syncing.
+
+---
+
+## 7. License & Credits
+
+Created by **Himal Shrestha**. All photographs, media, and design assets are copyright © DR DSLR. All rights reserved.
