@@ -48,11 +48,6 @@ export function AdminNav({ adminName }: { adminName: string }) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  // Close mobile drawer when route changes
-  useEffect(() => {
-    setMobileOpen(false);
-  }, [pathname]);
-
   // Lock scroll when mobile drawer is open
   useEffect(() => {
     if (mobileOpen) {
@@ -131,6 +126,7 @@ export function AdminNav({ adminName }: { adminName: string }) {
                   <Link
                     key={item.href}
                     href={item.href}
+                    onClick={() => setMobileOpen(false)}
                     className={cn(
                       "flex items-center gap-3 rounded-md px-3.5 py-2.5 text-sm transition-colors",
                       active

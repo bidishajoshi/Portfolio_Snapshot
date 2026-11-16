@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Aperture, ArrowLeft, Home, Images } from "lucide-react";
+import { Aperture, Home, Images } from "lucide-react";
 import { brand } from "@/data/site";
 
 export const metadata = {
