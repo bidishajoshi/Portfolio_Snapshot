@@ -18,7 +18,7 @@ export default async function ProtectedAdminLayout({
   }
 
   return (
-    <div className="min-h-screen flex bg-ink">
+    <div className="min-h-screen flex flex-col md:flex-row bg-ink">
       <AdminNav adminName={session.profile.display_name} />
       <main className="flex-1 min-w-0 px-6 py-8 md:px-10 md:py-10">{children}</main>
     </div>
