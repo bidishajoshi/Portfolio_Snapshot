@@ -269,16 +269,20 @@ export function ReviewsManager({
 
                 <div className="flex items-center gap-2">
                   <button
+                    type="button"
                     onClick={() => openEditModal(item)}
-                    className="p-1.5 rounded text-stone hover:text-gold hover:bg-surface-raised transition-colors cursor-pointer"
+                    className="p-1.5 rounded text-stone hover:text-gold hover:bg-surface-raised transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold"
                     title="Edit Review"
+                    aria-label={`Edit review from ${item.client_name}`}
                   >
                     <Pencil size={15} />
                   </button>
                   <button
+                    type="button"
                     onClick={() => handleDelete(item.id, item.client_name)}
-                    className="p-1.5 rounded text-stone hover:text-danger hover:bg-surface-raised transition-colors cursor-pointer"
+                    className="p-1.5 rounded text-stone hover:text-danger hover:bg-surface-raised transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-danger"
                     title="Delete Review"
+                    aria-label={`Delete review from ${item.client_name}`}
                   >
                     <Trash2 size={15} />
                   </button>

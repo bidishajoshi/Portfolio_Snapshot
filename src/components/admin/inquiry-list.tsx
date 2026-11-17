@@ -149,19 +149,23 @@ export function InquiryList({ inquiries }: { inquiries: Inquiry[] }) {
                 </select>
 
                 <button
+                  type="button"
                   disabled={isPending}
                   onClick={() => updateRead(item)}
-                  className="p-1.5 text-stone hover:text-gold rounded transition-colors"
+                  className="p-1.5 text-stone hover:text-gold rounded transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold"
                   title={item.is_read ? "Mark unread" : "Mark read"}
+                  aria-label={item.is_read ? "Mark inquiry as unread" : "Mark inquiry as read"}
                 >
                   <Check size={16} />
                 </button>
 
                 <button
+                  type="button"
                   disabled={isPending}
                   onClick={() => remove(item)}
-                  className="p-1.5 text-stone hover:text-danger rounded transition-colors"
+                  className="p-1.5 text-stone hover:text-danger rounded transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-danger"
                   title="Delete inquiry"
+                  aria-label={`Delete inquiry from ${item.name}`}
                 >
                   <Trash2 size={16} />
                 </button>
