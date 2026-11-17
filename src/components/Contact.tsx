@@ -19,8 +19,12 @@ export default function Contact({
   description?: string | null;
 }) {
   const displayedContact = { ...contact, ...contactOverride };
-  const targetWhatsAppNumber = "9844437665";
-  const intlWhatsAppNumber = "9779844437665";
+  const rawPhone = displayedContact.phone || contact.phone || "9844437665";
+  const cleanPhone = rawPhone.replace(/[^0-9]/g, "");
+  const targetWhatsAppNumber = cleanPhone.length === 10 ? cleanPhone : cleanPhone.slice(-10) || "9844437665";
+  const intlWhatsAppNumber = cleanPhone.startsWith("977")
+    ? cleanPhone
+    : `977${targetWhatsAppNumber}`;
 
   const [formData, setFormData] = useState({
     name: "",
@@ -183,7 +187,7 @@ export default function Contact({
                 <div>
                   <p className="text-[11px] text-stone-dim uppercase tracking-widest font-mono mb-1">Phone</p>
                   <a
-                    href={`tel:${displayedContact.phone}`}
+                    href={`tel:${(displayedContact.phone || contact.phone).replace(/\s+/g, "")}`}
                     className="text-ivory hover:text-gold transition-colors font-medium"
                   >
                     {displayedContact.phone || contact.phone}
@@ -397,7 +401,7 @@ export default function Contact({
                   </button>
 
                   <span className="text-xs text-stone-dim text-center sm:text-left">
-                    Direct line: <strong className="text-stone">9844437665</strong>
+                    Direct line: <strong className="text-stone">{displayedContact.phone || targetWhatsAppNumber}</strong>
                   </span>
                 </div>
               </form>
