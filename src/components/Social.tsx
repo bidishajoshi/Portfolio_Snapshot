@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
 import SocialIcon from "@/components/icons/SocialIcon";
 import SafeImage from "@/components/ui/SafeImage";
+import { socialLinks as fallbackSocialLinks } from "@/data/site";
 
 function getSocialUrl(platform: string, url: string): string {
   const p = platform.toLowerCase().trim();
@@ -22,13 +23,21 @@ export default function Social({
   subtitle,
   description,
 }: {
-  socialLinks?: Array<{ platform: string; label: string | null; url: string; enabled: boolean }>;
+  socialLinks?: Array<{ platform: string; label?: string | null; url: string; enabled?: boolean }>;
   photos?: Array<{ id: string; publicId: string; title: string }>;
   title?: string | null;
   subtitle?: string | null;
   description?: string | null;
 }) {
-  const displayedLinks = (liveLinks ?? []).filter((link) => link.enabled);
+  const displayedLinks: Array<{ platform: string; url: string; label?: string | null; enabled?: boolean }> =
+    liveLinks && liveLinks.length > 0
+      ? liveLinks.filter((link) => link.enabled !== false)
+      : fallbackSocialLinks.map((l) => ({
+          platform: l.platform,
+          url: l.url,
+          label: `Follow on ${l.platform}`,
+          enabled: l.enabled,
+        }));
 
   return (
     <section className="py-24 bg-surface border-t border-border/50">
@@ -77,7 +86,8 @@ export default function Social({
               href={getSocialUrl(link.platform, link.url)}
               target="_blank"
               rel="noreferrer"
-              className="flex items-center gap-3 text-ivory hover:text-cyan-glow bg-surface-raised hover:bg-surface border border-border hover:border-cyan-glow/40 transition-all duration-300 font-semibold px-6 py-3.5 rounded-full text-sm shadow-md hover:shadow-cyan-glow/10"
+              aria-label={link.label || `Follow DR DSLR on ${link.platform}`}
+              className="flex items-center gap-3 text-ivory hover:text-cyan-glow bg-surface-raised hover:bg-surface border border-border hover:border-cyan-glow/40 transition-all duration-300 font-semibold px-6 py-3.5 rounded-full text-sm shadow-md hover:shadow-cyan-glow/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow"
             >
               <SocialIcon platform={link.platform} size={18} className="text-cyan-glow" />
               <span>{link.label || `Follow on ${link.platform}`}</span>
