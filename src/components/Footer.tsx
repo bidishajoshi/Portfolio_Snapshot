@@ -16,14 +16,21 @@ function getSocialUrl(platform: string, url: string): string {
 export default function Footer({
   socialLinks: liveSocialLinks,
   brandOverride,
+  contactOverride,
 }: {
   socialLinks?: Array<{ platform: string; url: string; label?: string | null; enabled?: boolean }>;
   brandOverride?: { name?: string; tagline?: string };
+  contactOverride?: { email?: string | null; phone?: string | null; location?: string | null };
 }) {
   const activeSocial = (liveSocialLinks && liveSocialLinks.length > 0)
     ? liveSocialLinks.filter((l) => l.enabled !== false)
     : fallbackSocialLinks;
   const displayedBrand = { ...brand, ...brandOverride };
+  const displayedContact = {
+    email: contactOverride?.email?.trim() || contact.email,
+    phone: contactOverride?.phone?.trim() || contact.phone,
+    location: contactOverride?.location?.trim() || contact.location,
+  };
 
   return (
     <footer className="relative overflow-hidden bg-gradient-to-br from-ink via-ink-deep to-maroon-dark bg-gradient-animate border-t border-border pt-20 pb-8 text-stone">
@@ -65,20 +72,20 @@ export default function Footer({
             <h4 className="text-sm font-semibold text-ivory uppercase tracking-widest mb-6">Contact</h4>
             <ul className="flex flex-col gap-4 text-sm">
               <li>
-                <a href={`mailto:${contact.email}`} className="flex items-center gap-3 hover:text-cyan-glow transition-colors group">
+                <a href={`mailto:${displayedContact.email}`} className="flex items-center gap-3 hover:text-cyan-glow transition-colors group">
                   <Mail size={16} className="text-maroon-deep group-hover:text-cyan-glow transition-colors" />
-                  <span className="link-underline">{contact.email}</span>
+                  <span className="link-underline">{displayedContact.email}</span>
                 </a>
               </li>
               <li>
-                <a href={`tel:${contact.phone.replace(/\s+/g, '')}`} className="flex items-center gap-3 hover:text-cyan-glow transition-colors group">
+                <a href={`tel:${displayedContact.phone.replace(/\s+/g, '')}`} className="flex items-center gap-3 hover:text-cyan-glow transition-colors group">
                   <Phone size={16} className="text-maroon-deep group-hover:text-cyan-glow transition-colors" />
-                  <span className="link-underline">{contact.phone}</span>
+                  <span className="link-underline">{displayedContact.phone}</span>
                 </a>
               </li>
               <li className="flex items-start gap-3">
                 <MapPin size={16} className="text-maroon-deep mt-0.5 shrink-0" />
-                <span>{contact.location}</span>
+                <span>{displayedContact.location}</span>
               </li>
             </ul>
           </div>

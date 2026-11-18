@@ -481,6 +481,7 @@ export default async function HomePage() {
       <Footer
         socialLinks={dbSocial ?? []}
         brandOverride={settings?.brand_name ? { name: settings.brand_name, tagline: settings.tagline ?? undefined } : undefined}
+        contactOverride={settings ? { email: settings.contact_email ?? null, phone: settings.contact_phone ?? null } : undefined}
       />
     </main>
   );
