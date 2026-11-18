@@ -31,6 +31,8 @@ export default function Experience({
         <div className="relative">
           {/* Vertical line for desktop */}
           <div className="hidden md:block absolute left-1/2 top-0 bottom-0 w-[1px] bg-border -translate-x-1/2 z-0" />
+          {/* Vertical line for mobile */}
+          <div className="md:hidden absolute left-4 top-4 bottom-12 w-[1px] bg-border/60 z-0" />
           
           <div className="space-y-12 md:space-y-0">
             {processSteps.map((step, idx) => {
@@ -44,8 +46,13 @@ export default function Experience({
                   transition={{ duration: 0.6, delay: 0.1 }}
                   className={`relative z-10 flex flex-col md:flex-row items-center md:items-start ${isEven ? 'md:flex-row-reverse' : ''}`}
                 >
+                  {/* Mobile Node Indicator */}
+                  <div className="md:hidden absolute left-4 -translate-x-1/2 top-8 w-6 h-6 rounded-full border border-gold/60 bg-surface-raised flex items-center justify-center z-20 shadow-sm shadow-gold/20">
+                    <div className="w-1.5 h-1.5 rounded-full bg-gold" />
+                  </div>
+
                   {/* Content Box */}
-                  <div className={`w-full md:w-1/2 ${isEven ? 'md:pl-16' : 'md:pr-16 text-left md:text-right'} mb-8 md:mb-0 pb-12`}>
+                  <div className={`w-full md:w-1/2 pl-10 md:pl-0 ${isEven ? 'md:pl-16' : 'md:pr-16 text-left md:text-right'} mb-8 md:mb-0 pb-12`}>
                     <div className="glass-card p-8 rounded-lg relative overflow-hidden group hover:border-gold/30 transition-colors">
                       <div className="text-gold/10 font-display text-8xl absolute -right-4 -top-8 font-black select-none pointer-events-none group-hover:text-gold/20 transition-colors duration-500">
                         {step.number}
