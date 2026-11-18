@@ -13,6 +13,8 @@ A unified, code-free content management system and cinematic portfolio: upload h
   - Interactive DSLR shutter control simulation with aperture, shutter speed, and ISO controls.
   - Curated masonry gallery with category filters, keyboard navigation, and full-screen accessible modal lightbox.
   - Dedicated dynamic detail pages for Albums (`/albums/[slug]`) and Visual Stories (`/stories/[slug]`).
+  - Responsive client experience timeline with dual-mode desktop and mobile progress indicators and step nodes.
+  - Synchronized footer and contact components reflecting real-time administrative studio settings.
   - Branded, accessible 404 Not Found error page with quick navigation back to the portfolio.
   - Contextual service iconography with intelligent category mapping and offline fallbacks.
   - Client inquiries and dynamic WhatsApp direct routing with international phone formatting.
@@ -87,7 +89,7 @@ CRON_SECRET="your-secure-cron-secret"
 The project includes an automated test suite executed via the native Node.js test runner:
 
 ```bash
-# Run unit and integration tests (35 test cases)
+# Run unit and integration tests (41 test cases)
 npm test
 
 # Run TypeScript type verification
@@ -104,6 +106,7 @@ npm run build
 
 - `tests/unit/admin-navigation.test.ts`: Category schema validation, UUID format verification, and fallback dataset integrity.
 - `tests/unit/cloudinary-url.test.ts`: URL building, transformations, and responsive `srcset` generation.
+- `tests/unit/footer-theme.test.ts`: Dynamic contact override merging, process step sequence validation, and social URL parsing.
 - `tests/unit/media-validation.test.ts`: File type safety, size constraints, and payload schema validations.
 - `tests/unit/services-social.test.ts`: WhatsApp URL resolution, international phone normalization, and service dataset integrity.
 - `tests/unit/site-config.test.ts`: Site branding, navigation, social links, and Tailwind class merging utilities.
