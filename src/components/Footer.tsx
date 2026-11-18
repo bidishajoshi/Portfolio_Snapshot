@@ -100,8 +100,8 @@ export default function Footer({
                   href={getSocialUrl(link.platform, link.url)}
                   target="_blank"
                   rel="noreferrer"
-                  aria-label={link.platform}
-                  className="flex items-center justify-center w-10 h-10 rounded-full bg-surface border border-border hover:border-cyan-glow hover:bg-surface-raised transition-all duration-300 icon-glow"
+                  aria-label={`Visit our ${link.platform} profile`}
+                  className="flex items-center justify-center w-10 h-10 rounded-full bg-surface border border-border hover:border-cyan-glow hover:bg-surface-raised transition-all duration-300 icon-glow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-glow"
                 >
                   <SocialIcon platform={link.platform} size={18} />
                 </a>
@@ -114,9 +114,21 @@ export default function Footer({
         {/* Bottom Copyright */}
         <div className="pt-8 border-t border-border/50 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-stone-dim">
           <p className="tracking-wider">{displayedBrand.copyright}</p>
-          <div className="flex gap-4">
-            <Link href="#" className="hover:text-cyan-glow transition-colors">Privacy Policy</Link>
-            <Link href="#" className="hover:text-cyan-glow transition-colors">Terms of Service</Link>
+          <div className="flex gap-6">
+            <Link
+              href="#contact"
+              className="hover:text-cyan-glow transition-colors focus-visible:outline-none focus-visible:underline"
+              aria-label="Privacy Policy and client data protection inquiries"
+            >
+              Privacy Policy
+            </Link>
+            <Link
+              href="#contact"
+              className="hover:text-cyan-glow transition-colors focus-visible:outline-none focus-visible:underline"
+              aria-label="Terms of Service and commercial image licensing terms"
+            >
+              Terms of Service
+            </Link>
           </div>
         </div>
       </div>
