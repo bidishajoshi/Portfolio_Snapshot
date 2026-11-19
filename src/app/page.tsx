@@ -472,7 +472,7 @@ export default async function HomePage() {
       )}
       {isEnabled("contact_cta") && (
         <Contact
-          contactOverride={settings ? { email: settings.contact_email ?? null, phone: settings.contact_phone ?? null } : undefined}
+          contactOverride={settings ? { email: settings.contact_email ?? null, phone: settings.contact_phone ?? null, whatsapp: settings.whatsapp_number ?? null } : undefined}
           title={contactSec?.title}
           subtitle={contactSec?.subtitle}
           description={contactSec?.description}

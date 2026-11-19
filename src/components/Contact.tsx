@@ -13,13 +13,22 @@ export default function Contact({
   subtitle,
   description,
 }: {
-  contactOverride?: { email: string | null; phone: string | null };
+  contactOverride?: {
+    email?: string | null;
+    phone?: string | null;
+    location?: string | null;
+    whatsapp?: string | null;
+  };
   title?: string | null;
   subtitle?: string | null;
   description?: string | null;
 }) {
-  const displayedContact = { ...contact, ...contactOverride };
-  const rawPhone = displayedContact.phone || contact.phone || "9844437665";
+  const displayedContact = {
+    email: contactOverride?.email?.trim() || contact.email,
+    phone: contactOverride?.phone?.trim() || contact.phone,
+    location: contactOverride?.location?.trim() || contact.location,
+  };
+  const rawPhone = contactOverride?.whatsapp?.trim() || displayedContact.phone || contact.phone || "9844437665";
   const cleanPhone = rawPhone.replace(/[^0-9]/g, "");
   const targetWhatsAppNumber = cleanPhone.length === 10 ? cleanPhone : cleanPhone.slice(-10) || "9844437665";
   const intlWhatsAppNumber = cleanPhone.startsWith("977")
@@ -180,23 +189,23 @@ export default function Contact({
                     href={`mailto:${displayedContact.email}`}
                     className="text-ivory hover:text-cyan-glow transition-colors font-medium"
                   >
-                    {displayedContact.email || contact.email}
+                    {displayedContact.email}
                   </a>
                 </div>
 
                 <div>
                   <p className="text-[11px] text-stone-dim uppercase tracking-widest font-mono mb-1">Phone</p>
                   <a
-                    href={`tel:${(displayedContact.phone || contact.phone).replace(/\s+/g, "")}`}
+                    href={`tel:${displayedContact.phone.replace(/\s+/g, "")}`}
                     className="text-ivory hover:text-gold transition-colors font-medium"
                   >
-                    {displayedContact.phone || contact.phone}
+                    {displayedContact.phone}
                   </a>
                 </div>
 
                 <div>
                   <p className="text-[11px] text-stone-dim uppercase tracking-widest font-mono mb-1">Studio Location</p>
-                  <p className="text-ivory font-medium">{contact.location}</p>
+                  <p className="text-ivory font-medium">{displayedContact.location}</p>
                 </div>
               </div>
             </div>
