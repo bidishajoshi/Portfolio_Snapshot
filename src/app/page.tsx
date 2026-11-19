@@ -428,7 +428,7 @@ export default async function HomePage() {
 
   return (
     <main className="flex flex-col min-h-screen relative w-full overflow-x-hidden bg-ink">
-      <Navbar />
+      <Navbar brandName={settings?.brand_name} />
       {isEnabled("hero") && (
         <Hero
           brandOverride={

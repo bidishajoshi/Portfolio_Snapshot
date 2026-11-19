@@ -9,9 +9,10 @@ import clsx from "clsx";
 import { DslrCameraControl } from "@/components/DslrCameraControl";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
-export default function Navbar() {
+export default function Navbar({ brandName }: { brandName?: string | null } = {}) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const displayedBrandName = brandName?.trim() || brand.name;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -58,7 +59,7 @@ export default function Navbar() {
             className="group text-xl font-display font-medium text-ivory relative tracking-wider cursor-pointer select-none"
           >
             <span className="relative z-10 transition-colors duration-300 group-hover:text-yellow">
-              {brand.name}
+              {displayedBrandName}
             </span>
             <span className="absolute -bottom-1 left-0 w-0 h-[1.5px] bg-gradient-to-r from-yellow via-gold to-rose-600 transition-all duration-300 group-hover:w-full opacity-0 group-hover:opacity-100" />
           </Link>
