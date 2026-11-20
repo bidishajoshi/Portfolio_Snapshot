@@ -10,8 +10,8 @@ A unified, code-free content management system and cinematic portfolio: upload h
 
 - **Public Cinematic Showcase**:
   - Full-screen responsive hero slider with Cloudinary preloaded image presets and custom motion animations.
-  - Interactive DSLR shutter control simulation with aperture, shutter speed, and ISO controls.
-  - Curated masonry gallery with category filters, keyboard navigation, and full-screen accessible modal lightbox.
+  - Interactive DSLR shutter control simulation with aperture, shutter speed, ISO controls, and WAI-ARIA accessible dialog panel.
+  - Curated masonry gallery with category filters, keyboard navigation, and full-screen accessible modal lightbox dialog.
   - Dedicated dynamic detail pages for Albums (`/albums/[slug]`) and Visual Stories (`/stories/[slug]`).
   - Responsive client experience timeline with dual-mode desktop and mobile progress indicators and step nodes.
   - Synchronized navbar, footer, and contact components reflecting real-time administrative studio brand and WhatsApp routing settings.
@@ -89,7 +89,7 @@ CRON_SECRET="your-secure-cron-secret"
 The project includes an automated test suite executed via the native Node.js test runner:
 
 ```bash
-# Run unit and integration tests (47 test cases)
+# Run unit and integration tests (53 test cases)
 npm test
 
 # Run TypeScript type verification
@@ -108,6 +108,7 @@ npm run build
 - `tests/unit/cloudinary-url.test.ts`: URL building, transformations, and responsive `srcset` generation.
 - `tests/unit/contact-navbar.test.ts`: WhatsApp international routing, contact override null fallbacks, and navbar brand normalization.
 - `tests/unit/footer-theme.test.ts`: Dynamic contact override merging, process step sequence validation, and social URL parsing.
+- `tests/unit/gallery-stories.test.ts`: Gallery category extraction/deduplication, filter logic, and story modal photo normalization.
 - `tests/unit/media-validation.test.ts`: File type safety, size constraints, and payload schema validations.
 - `tests/unit/services-social.test.ts`: WhatsApp URL resolution, international phone normalization, and service dataset integrity.
 - `tests/unit/site-config.test.ts`: Site branding, navigation, social links, and Tailwind class merging utilities.
