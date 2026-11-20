@@ -92,9 +92,12 @@ export default function Stories({
           <div className="gold-line mx-auto mt-6" />
 
           {uniqueCategories.length > 1 && (
-            <div className="flex flex-wrap items-center justify-center gap-2.5 mt-8">
+            <div className="flex flex-wrap items-center justify-center gap-2.5 mt-8" role="group" aria-label="Stories category filters">
               <button
+                type="button"
                 onClick={() => setSelectedCategory("All")}
+                aria-pressed={selectedCategory === "All"}
+                aria-label="Filter stories by all categories"
                 className={`rounded-full px-4 py-1.5 text-xs font-semibold uppercase tracking-wider transition-all duration-300 cursor-pointer ${
                   selectedCategory === "All"
                     ? "bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-ink shadow-md shadow-amber-500/25 font-bold"
@@ -105,8 +108,11 @@ export default function Stories({
               </button>
               {uniqueCategories.map((cat) => (
                 <button
+                  type="button"
                   key={cat}
                   onClick={() => setSelectedCategory(cat)}
+                  aria-pressed={selectedCategory === cat}
+                  aria-label={`Filter stories by ${cat}`}
                   className={`rounded-full px-4 py-1.5 text-xs font-semibold uppercase tracking-wider transition-all duration-300 cursor-pointer ${
                     selectedCategory === cat
                       ? "bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-ink shadow-md shadow-amber-500/25 font-bold"
@@ -139,8 +145,17 @@ export default function Stories({
               >
                 {/* Photo container with click-to-view lightbox */}
                 <div
+                  role="button"
+                  tabIndex={0}
                   onClick={() => setActiveModalIndex(idx)}
-                  className={`lg:col-span-7 rounded-2xl border border-border/60 hover:border-yellow/50 overflow-hidden relative group cursor-pointer shadow-2xl transition-all duration-500 bg-ink ${
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setActiveModalIndex(idx);
+                    }
+                  }}
+                  aria-label={`View full photograph: ${story.title}`}
+                  className={`lg:col-span-7 rounded-2xl border border-border/60 hover:border-yellow/50 overflow-hidden relative group cursor-pointer shadow-2xl transition-all duration-500 bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow ${
                     idx % 2 === 1 ? "lg:order-2" : "lg:order-1"
                   }`}
                 >
