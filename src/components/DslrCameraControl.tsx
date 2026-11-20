@@ -146,6 +146,9 @@ export function DslrCameraControl() {
         className="relative group flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3.5 py-1.5 rounded-full bg-surface/90 border border-border/80 hover:border-yellow/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow transition-all duration-300 shadow-sm cursor-pointer select-none"
         title="View Camera & Lens Information"
         aria-expanded={isOpen}
+        aria-haspopup="dialog"
+        aria-controls="gear-optics-dialog"
+        aria-label="Camera gear and optical controls"
       >
         <span className="relative flex h-2 w-2 shrink-0">
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow opacity-75" />
@@ -166,6 +169,10 @@ export function DslrCameraControl() {
       <AnimatePresence>
         {isOpen && (
           <motion.div
+            id="gear-optics-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Camera Gear and Optics"
             initial={{ opacity: 0, y: 8, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 8, scale: 0.96 }}
@@ -181,8 +188,9 @@ export function DslrCameraControl() {
                 </span>
               </div>
               <button
+                type="button"
                 onClick={() => setIsOpen(false)}
-                className="text-stone hover:text-ivory transition-colors p-1 rounded-md cursor-pointer shrink-0 ml-2"
+                className="text-stone hover:text-ivory transition-colors p-1 rounded-md cursor-pointer shrink-0 ml-2 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-yellow"
                 aria-label="Close gear panel"
               >
                 <X size={15} />

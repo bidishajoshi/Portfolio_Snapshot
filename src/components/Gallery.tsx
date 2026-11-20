@@ -104,11 +104,14 @@ export default function Gallery({
           <div className="gold-line mx-auto my-6" />
 
           {/* Category Filter Pills */}
-          <div className="flex flex-wrap justify-center gap-2.5 max-w-2xl mx-auto">
+          <div className="flex flex-wrap justify-center gap-2.5 max-w-2xl mx-auto" role="group" aria-label="Gallery category filters">
             {displayedCategories.map((cat) => (
               <button
+                type="button"
                 key={cat}
                 onClick={() => setFilter(cat)}
+                aria-pressed={filter === cat}
+                aria-label={`Filter gallery by ${cat}`}
                 className={clsx(
                   "px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider transition-all duration-300 border cursor-pointer",
                   filter === cat
@@ -177,6 +180,7 @@ export default function Gallery({
         {hasMore && (
           <div className="mt-12 text-center">
             <button
+              type="button"
               onClick={() => setVisibleCount((prev) => prev + 12)}
               className="px-8 py-3 rounded-full bg-surface border border-yellow/40 text-yellow hover:bg-yellow hover:text-ink font-semibold text-xs uppercase tracking-wider transition-all duration-300 shadow-lg shadow-yellow/10 hover:scale-105 cursor-pointer font-mono"
             >
@@ -188,16 +192,24 @@ export default function Gallery({
 
       {/* Lightbox Overlay */}
       {lightboxIndex !== null && filteredPhotos[lightboxIndex] && (
-        <div className="lightbox-overlay z-50 flex flex-col items-center justify-between p-4" onClick={closeLightbox}>
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Image Lightbox Viewer"
+          className="lightbox-overlay z-50 flex flex-col items-center justify-between p-4"
+          onClick={closeLightbox}
+        >
           {/* Header Controls */}
           <div className="w-full flex items-center justify-between px-4 py-2 z-20" onClick={(e) => e.stopPropagation()}>
             <span className="text-xs font-mono text-stone-dim">
               {lightboxIndex + 1} / {filteredPhotos.length}
             </span>
             <button
-              className="text-stone hover:text-yellow transition-colors p-2 rounded-full hover:bg-white/5 cursor-pointer"
+              type="button"
+              className="text-stone hover:text-yellow transition-colors p-2 rounded-full hover:bg-white/5 cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-yellow"
               onClick={closeLightbox}
               title="Close (Esc)"
+              aria-label="Close image lightbox"
             >
               <X size={28} />
             </button>
@@ -206,9 +218,11 @@ export default function Gallery({
           {/* Main Image with Navigation Arrows */}
           <div className="relative flex-1 flex items-center justify-center w-full max-h-[75vh]" onClick={(e) => e.stopPropagation()}>
             <button
-              className="absolute left-2 sm:left-6 text-stone hover:text-yellow transition-colors p-3 rounded-full hover:bg-white/10 z-20 cursor-pointer"
+              type="button"
+              className="absolute left-2 sm:left-6 text-stone hover:text-yellow transition-colors p-3 rounded-full hover:bg-white/10 z-20 cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-yellow"
               onClick={prevImage}
               title="Previous (Left Arrow)"
+              aria-label="Previous photograph"
             >
               <ChevronLeft size={40} />
             </button>
@@ -221,9 +235,11 @@ export default function Gallery({
             />
 
             <button
-              className="absolute right-2 sm:right-6 text-stone hover:text-cyan-glow transition-colors p-3 rounded-full hover:bg-white/10 z-20"
+              type="button"
+              className="absolute right-2 sm:right-6 text-stone hover:text-cyan-glow transition-colors p-3 rounded-full hover:bg-white/10 z-20 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-cyan-glow"
               onClick={nextImage}
               title="Next (Right Arrow)"
+              aria-label="Next photograph"
             >
               <ChevronRight size={40} />
             </button>
@@ -247,8 +263,10 @@ export default function Gallery({
               <div className="flex items-center gap-2 overflow-x-auto max-w-full py-1 px-2 scrollbar-thin">
                 {filteredPhotos.map((thumb, tIdx) => (
                   <button
+                    type="button"
                     key={thumb.id}
                     onClick={() => setLightboxIndex(tIdx)}
+                    aria-label={`View photo ${tIdx + 1}: ${thumb.title}`}
                     className={clsx(
                       "relative w-12 h-12 rounded overflow-hidden shrink-0 border transition-all",
                       lightboxIndex === tIdx
