@@ -31,13 +31,16 @@ export default function Categories({
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {displayedCategories.map((cat, idx) => (
-            <motion.a href="#gallery" onClick={() => window.dispatchEvent(new CustomEvent("filter-category", { detail: cat.name }))}
+            <motion.a
               key={cat.id}
+              href="#gallery"
+              onClick={() => window.dispatchEvent(new CustomEvent("filter-category", { detail: cat.name }))}
+              aria-label={`Filter gallery to ${cat.name} photographs`}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.6, delay: idx * 0.08 }}
-              className="group cursor-pointer block h-[400px] img-card card-3d"
+              className="group cursor-pointer block h-[400px] img-card card-3d rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow focus-visible:ring-offset-2 focus-visible:ring-offset-ink"
             >
               <div className="card-3d-inner w-full h-full relative rounded-xl overflow-hidden border border-border/40">
                 <SafeImage
