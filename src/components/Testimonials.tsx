@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Quote,
@@ -44,6 +44,20 @@ export default function Testimonials({
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Lock background scroll and listen for Escape key when review modal is open
+  useEffect(() => {
+    if (!isModalOpen) return;
+    document.body.style.overflow = "hidden";
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setIsModalOpen(false);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isModalOpen]);
 
   // Form State
   const [formName, setFormName] = useState("");
@@ -162,19 +176,32 @@ export default function Testimonials({
 
           {displayedTestimonials.length > 1 && (
             <>
-              <button onClick={prev} className="absolute left-0 top-1/2 -translate-y-1/2 text-stone hover:text-gold transition-colors p-2 cursor-pointer" aria-label="Previous testimonial">
+              <button
+                type="button"
+                onClick={prev}
+                className="absolute left-0 top-1/2 -translate-y-1/2 text-stone hover:text-gold transition-colors p-2 cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-yellow rounded-full"
+                aria-label="Previous testimonial"
+              >
                  <ChevronLeft size={28} />
               </button>
-              <button onClick={next} className="absolute right-0 top-1/2 -translate-y-1/2 text-stone hover:text-gold transition-colors p-2 cursor-pointer" aria-label="Next testimonial">
+              <button
+                type="button"
+                onClick={next}
+                className="absolute right-0 top-1/2 -translate-y-1/2 text-stone hover:text-gold transition-colors p-2 cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-yellow rounded-full"
+                aria-label="Next testimonial"
+              >
                  <ChevronRight size={28} />
               </button>
 
-              <div className="flex justify-center gap-1.5 mt-8 w-full">
+              <div className="flex justify-center gap-1.5 mt-8 w-full" role="tablist" aria-label="Testimonial slides">
                 {displayedTestimonials.map((_, idx) => (
                   <button 
+                    type="button"
                     key={idx}
+                    role="tab"
+                    aria-selected={idx === currentIndex}
                     onClick={() => setCurrentIndex(idx)}
-                    className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${idx === currentIndex ? 'bg-gold w-5' : 'bg-border/60 hover:bg-stone w-1.5'}`}
+                    className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-yellow ${idx === currentIndex ? 'bg-gold w-5' : 'bg-border/60 hover:bg-stone w-1.5'}`}
                     aria-label={`Go to testimonial ${idx + 1}`}
                   />
                 ))}
@@ -206,12 +233,14 @@ export default function Testimonials({
             </div>
 
             <button
+              type="button"
+              aria-haspopup="dialog"
               onClick={() => {
                 setIsModalOpen(true);
                 setSuccessMsg(null);
                 setErrorMsg(null);
               }}
-              className="mt-1 px-5 py-2.5 bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-ink font-semibold text-xs uppercase tracking-wider rounded-full shadow-md shadow-amber-500/20 hover:scale-105 transition-all flex items-center gap-2 cursor-pointer font-sans"
+              className="mt-1 px-5 py-2.5 bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-ink font-semibold text-xs uppercase tracking-wider rounded-full shadow-md shadow-amber-500/20 hover:scale-105 transition-all flex items-center gap-2 cursor-pointer font-sans focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
             >
               <Star size={14} className="fill-ink" />
               <span>Leave a Review</span>
@@ -225,6 +254,9 @@ export default function Testimonials({
         {isModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
             <motion.div
+              role="dialog"
+              aria-modal="true"
+              aria-label="Share Client Review"
               initial={{ opacity: 0, scale: 0.9, y: 15 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 15 }}
@@ -232,9 +264,11 @@ export default function Testimonials({
               className="w-full max-w-md rounded-2xl border border-border/80 bg-ink p-6 sm:p-7 shadow-2xl relative"
             >
               <button
+                type="button"
                 onClick={() => setIsModalOpen(false)}
-                className="absolute top-4 right-4 text-stone hover:text-ivory transition-colors p-1.5 rounded-full hover:bg-surface cursor-pointer"
-                title="Close"
+                className="absolute top-4 right-4 text-stone hover:text-ivory transition-colors p-1.5 rounded-full hover:bg-surface cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-yellow"
+                title="Close (Esc)"
+                aria-label="Close review dialog"
               >
                 <X size={20} />
               </button>
@@ -256,6 +290,7 @@ export default function Testimonials({
                   </div>
                   <p className="text-emerald-300 text-sm font-medium max-w-xs">{successMsg}</p>
                   <button
+                    type="button"
                     onClick={() => setIsModalOpen(false)}
                     className="mt-4 px-6 py-2 bg-surface text-ivory text-xs font-semibold uppercase tracking-wider rounded-full border border-border hover:bg-surface-raised transition-colors cursor-pointer"
                   >
@@ -291,7 +326,9 @@ export default function Testimonials({
                           key={star}
                           type="button"
                           onClick={() => setFormRating(star)}
-                          className="p-1 transition-transform hover:scale-125 cursor-pointer"
+                          aria-label={`Rate ${star} star${star > 1 ? "s" : ""}`}
+                          aria-pressed={star <= formRating}
+                          className="p-1 transition-transform hover:scale-125 cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-amber-400 rounded"
                         >
                           <Star
                             size={22}
