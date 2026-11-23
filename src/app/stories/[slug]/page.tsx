@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { createAdminClient } from "@/lib/supabase/admin";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
@@ -6,6 +7,89 @@ import { cloudinaryImageUrl, cloudinaryVideoUrl } from "@/lib/cloudinary/url";
 import { stories as fallbackStories } from "@/data/stories";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  let title = "Visual Story";
+  let description = "Capturing moments beyond vision — photo essays and stories by Himal Shrestha.";
+  let coverUrl = "/og-image.jpg";
+
+  try {
+    const supabase = createAdminClient();
+    const { data: dbStory } = await supabase
+      .from("stories")
+      .select("title, introduction, cover_media_id, subtitle")
+      .eq("slug", slug)
+      .maybeSingle();
+
+    if (dbStory) {
+      if (dbStory.title) title = dbStory.title;
+      if (dbStory.introduction) description = dbStory.introduction.slice(0, 160);
+
+      if (dbStory.cover_media_id) {
+        const { data: media } = await supabase
+          .from("media")
+          .select("cloudinary_public_id, secure_url, public_id")
+          .eq("id", dbStory.cover_media_id)
+          .maybeSingle();
+
+        const mediaId = media?.secure_url || media?.cloudinary_public_id || media?.public_id;
+        if (mediaId) {
+          coverUrl = cloudinaryImageUrl(mediaId, {
+            width: 1200,
+            height: 630,
+            crop: "fill",
+          });
+        }
+      }
+    }
+  } catch {
+    // Supabase unavailable, fallback to static dataset
+  }
+
+  if (title === "Visual Story") {
+    const matchedFallback = fallbackStories.find((s) => s.slug === slug || String(s.id) === slug);
+    if (matchedFallback) {
+      title = matchedFallback.title;
+      if (matchedFallback.excerpt) {
+        description = matchedFallback.excerpt.slice(0, 160);
+      }
+      if (matchedFallback.cover) {
+        coverUrl = matchedFallback.cover;
+      }
+    }
+  }
+
+  const pageTitle = `${title} — Visual Story`;
+
+  return {
+    title: pageTitle,
+    description,
+    openGraph: {
+      title: `${pageTitle} | DR DSLR`,
+      description,
+      type: "article",
+      images: [
+        {
+          url: coverUrl,
+          width: 1200,
+          height: 630,
+          alt: title,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${pageTitle} | DR DSLR`,
+      description,
+      images: [coverUrl],
+    },
+  };
+}
 
 export default async function StoryPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
