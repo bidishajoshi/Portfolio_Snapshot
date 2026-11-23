@@ -307,8 +307,9 @@ export default function Hero({
       {images.length > 1 && (
         <>
           <button
+            type="button"
             onClick={prevSlide}
-            className="absolute left-4 sm:left-8 top-1/2 -translate-y-1/2 z-30 p-3 sm:p-3.5 rounded-full bg-black/30 hover:bg-black/70 border border-white/15 hover:border-cyan-glow/60 text-ivory hover:text-cyan-glow backdrop-blur-md transition-all shadow-xl hover:scale-110 cursor-pointer group"
+            className="absolute left-4 sm:left-8 top-1/2 -translate-y-1/2 z-30 p-3 sm:p-3.5 rounded-full bg-black/30 hover:bg-black/70 border border-white/15 hover:border-cyan-glow/60 text-ivory hover:text-cyan-glow backdrop-blur-md transition-all shadow-xl hover:scale-110 cursor-pointer group focus:outline-none focus:ring-2 focus:ring-cyan-glow/50"
             aria-label="Previous Slide"
             title="Previous Photo"
           >
@@ -316,8 +317,9 @@ export default function Hero({
           </button>
 
           <button
+            type="button"
             onClick={nextSlide}
-            className="absolute right-4 sm:right-8 top-1/2 -translate-y-1/2 z-30 p-3 sm:p-3.5 rounded-full bg-black/30 hover:bg-black/70 border border-white/15 hover:border-cyan-glow/60 text-ivory hover:text-cyan-glow backdrop-blur-md transition-all shadow-xl hover:scale-110 cursor-pointer group"
+            className="absolute right-4 sm:right-8 top-1/2 -translate-y-1/2 z-30 p-3 sm:p-3.5 rounded-full bg-black/30 hover:bg-black/70 border border-white/15 hover:border-cyan-glow/60 text-ivory hover:text-cyan-glow backdrop-blur-md transition-all shadow-xl hover:scale-110 cursor-pointer group focus:outline-none focus:ring-2 focus:ring-cyan-glow/50"
             aria-label="Next Slide"
             title="Next Photo"
           >
@@ -328,12 +330,20 @@ export default function Hero({
 
       {/* Slide Navigation Dots / Active Pill Indicator */}
       {images.length > 1 && (
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 flex items-center justify-center gap-2.5 px-4 py-2 rounded-full bg-black/25 backdrop-blur-md border border-white/10 shadow-lg">
+        <div
+          role="tablist"
+          aria-label="Hero photo slides"
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 flex items-center justify-center gap-2.5 px-4 py-2 rounded-full bg-black/25 backdrop-blur-md border border-white/10 shadow-lg"
+        >
           {images.map((_, idx) => (
             <button
               key={idx}
+              type="button"
+              role="tab"
+              aria-selected={idx === currentIndex}
+              aria-current={idx === currentIndex ? "true" : undefined}
               onClick={() => goToSlide(idx)}
-              className={`h-2.5 rounded-full transition-all duration-300 cursor-pointer ${
+              className={`h-2.5 rounded-full transition-all duration-300 cursor-pointer focus:outline-none focus:ring-2 focus:ring-amber-400/50 ${
                 idx === currentIndex
                   ? "w-8 bg-amber-400 shadow-md shadow-amber-400/30"
                   : "w-2.5 bg-white/40 hover:bg-white/70"
