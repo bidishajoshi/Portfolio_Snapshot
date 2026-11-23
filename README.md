@@ -9,10 +9,10 @@ A unified, code-free content management system and cinematic portfolio: upload h
 ## 1. System Overview & Completed Features
 
 - **Public Cinematic Showcase**:
-  - Full-screen responsive hero slider with Cloudinary preloaded image presets and custom motion animations.
+  - Full-screen responsive hero slider with Cloudinary preloaded image presets, WAI-ARIA tab semantics, and custom motion animations.
   - Interactive DSLR shutter control simulation with aperture, shutter speed, ISO controls, and WAI-ARIA accessible dialog panel.
-  - Curated masonry gallery with category filters, keyboard navigation, and full-screen accessible modal lightbox dialog.
-  - Dedicated dynamic detail pages for Albums (`/albums/[slug]`) and Visual Stories (`/stories/[slug]`).
+  - Curated masonry gallery with category filters, keyboard navigation, and full-screen accessible modal lightbox dialog with background scroll lock and WAI-ARIA dialog semantics.
+  - Dedicated dynamic detail pages for Albums (`/albums/[slug]`) and Visual Stories (`/stories/[slug]`) with dynamic Next.js `generateMetadata`, OpenGraph images, and Twitter cards.
   - Interactive client testimonials carousel and accessible review submission modal with background scroll lock and Escape dismiss.
   - Responsive client experience timeline with dual-mode desktop and mobile progress indicators and step nodes.
   - Synchronized navbar, footer, and contact components reflecting real-time administrative studio brand and WhatsApp routing settings.
@@ -90,7 +90,7 @@ CRON_SECRET="your-secure-cron-secret"
 The project includes an automated test suite executed via the native Node.js test runner:
 
 ```bash
-# Run unit and integration tests (60 test cases)
+# Run unit and integration tests (66 test cases across 13 test suites)
 npm test
 
 # Run TypeScript type verification
@@ -111,6 +111,7 @@ npm run build
 - `tests/unit/footer-theme.test.ts`: Dynamic contact override merging, process step sequence validation, and social URL parsing.
 - `tests/unit/gallery-stories.test.ts`: Gallery category extraction/deduplication, filter logic, and story modal photo normalization.
 - `tests/unit/media-validation.test.ts`: File type safety, size constraints, and payload schema validations.
+- `tests/unit/metadata-generation.test.ts`: Dynamic OpenGraph and Twitter card metadata generation, album/story title resolution, description clipping, and fallback handling.
 - `tests/unit/services-social.test.ts`: WhatsApp URL resolution, international phone normalization, and service dataset integrity.
 - `tests/unit/site-config.test.ts`: Site branding, navigation, social links, and Tailwind class merging utilities.
 - `tests/unit/slug.test.ts`: Human-readable slug generation and character sanitization.
